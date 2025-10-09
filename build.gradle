@@ -8,10 +8,19 @@ allprojects {
     group = 'com.tastyhouse'
     version = '0.0.1-SNAPSHOT'
 
+    repositories {
+        mavenCentral()
+    }
+
     java {
         sourceCompatibility = '21'
         targetCompatibility = '21'
     }
+}
+
+// Disable bootJar for root project as it's not an executable application
+bootJar {
+    enabled = false
 }
 
 subprojects {
