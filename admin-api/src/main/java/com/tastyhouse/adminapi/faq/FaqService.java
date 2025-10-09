@@ -14,7 +14,6 @@ import com.tastyhouse.core.service.FaqCoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -24,9 +23,9 @@ public class FaqService {
     private final FaqCoreService faqCoreService;
     private final CompanyCoreService companyCoreService;
 
-    public PageResult<FaqListItem> findFaqList(Long companyId, String title, Boolean active, LocalDate startDate, LocalDate endDate, PageRequest pageRequest) {
+    public PageResult<FaqListItem> findFaqList(Long companyId, String title, Boolean active, PageRequest pageRequest) {
         FaqCoreService.FaqPageResult coreResult = faqCoreService.findAllWithPagination(
-            companyId, title, active, startDate, endDate,
+            companyId, title, active,
             pageRequest.getPage(), pageRequest.getSize()
         );
 

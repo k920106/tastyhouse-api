@@ -29,8 +29,6 @@ public class FaqApiController {
             query.getCompanyId(),
             query.getTitle(),
             query.getActive(),
-            query.getStartDate(),
-            query.getEndDate(),
             pageRequest
         );
 
