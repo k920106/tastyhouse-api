@@ -55,7 +55,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
 
         if (display != null) {
-            builder.and(product.isDisplay.eq(display));
+            builder.and(product.display.eq(display));
         }
 
         JPAQuery<ProductListItemDto> query = queryFactory
@@ -70,7 +70,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 product.exhibitionPrice,
                 product.regularPrice,
                 product.supplyPrice,
-                product.isDisplay,
+                product.display,
                 product.sort,
                 product.createdAt,
                 product.updatedAt

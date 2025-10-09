@@ -17,7 +17,7 @@ public class ProductListItemDto {
     private final Integer exhibitionPrice;
     private final Integer regularPrice;
     private final Integer supplyPrice;
-    private final Boolean isDisplay;
+    private final Boolean display;
     private final Integer sort;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
@@ -26,7 +26,7 @@ public class ProductListItemDto {
     public ProductListItemDto(Long id, Long companyId, String productCode, String name,
                               Long brandId, Long supplyId, Integer validityPeriod,
                               Integer exhibitionPrice, Integer regularPrice, Integer supplyPrice,
-                              Boolean isDisplay, Integer sort, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                              Boolean display, Integer sort, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.companyId = companyId;
         this.productCode = productCode;
@@ -37,7 +37,7 @@ public class ProductListItemDto {
         this.exhibitionPrice = exhibitionPrice;
         this.regularPrice = regularPrice;
         this.supplyPrice = supplyPrice;
-        this.isDisplay = isDisplay;
+        this.display = display;
         this.sort = sort;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;

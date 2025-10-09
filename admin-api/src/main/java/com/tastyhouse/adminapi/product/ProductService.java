@@ -48,7 +48,7 @@ public class ProductService {
             .exhibitionPrice(dto.getExhibitionPrice())
             .regularPrice(dto.getRegularPrice())
             .supplyPrice(dto.getSupplyPrice())
-            .isDisplay(dto.getIsDisplay())
+            .display(dto.getDisplay())
             .sort(dto.getSort())
             .build();
     }
