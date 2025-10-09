@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -19,11 +18,11 @@ public class FaqCoreService {
     private final FaqRepository faqRepository;
     private final FaqJpaRepository faqJpaRepository;
 
-    public FaqPageResult findAllWithPagination(Long companyId, String title, Boolean active, LocalDate startDate, LocalDate endDate,
+    public FaqPageResult findAllWithPagination(Long companyId, String title, Boolean active,
                                                  int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<FaqListItemDto> faqPage = faqRepository.findAllWithFilter(
-            companyId, title, active, startDate, endDate, pageRequest
+            companyId, title, active, pageRequest
         );
 
         return new FaqPageResult(

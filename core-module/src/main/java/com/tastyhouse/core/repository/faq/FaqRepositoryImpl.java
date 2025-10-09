@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -23,7 +22,7 @@ public class FaqRepositoryImpl implements FaqRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<FaqListItemDto> findAllWithFilter(Long companyId, String title, Boolean active, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<FaqListItemDto> findAllWithFilter(Long companyId, String title, Boolean active, Pageable pageable) {
         QFaq faq = QFaq.faq;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -38,14 +37,6 @@ public class FaqRepositoryImpl implements FaqRepository {
 
         if (active != null) {
             builder.and(faq.active.eq(active));
-        }
-
-        if (startDate != null) {
-            builder.and(faq.createdAt.goe(startDate.atStartOfDay()));
-        }
-
-        if (endDate != null) {
-            builder.and(faq.createdAt.loe(endDate.atTime(23, 59, 59)));
         }
 
         JPAQuery<FaqListItemDto> query = queryFactory
