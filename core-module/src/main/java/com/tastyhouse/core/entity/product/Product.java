@@ -41,8 +41,8 @@ public class Product extends BaseEntity {
     @Column(name = "supply_price", nullable = false)
     private int supplyPrice; // 공급가
 
-    @Column(name = "display", nullable = false)
-    private Boolean isDisplay; // 전시상태
+    @Column(name = "is_display", nullable = false)
+    private Boolean display; // 전시상태
 
     @Column(name = "sort", nullable = false)
     private Integer sort; // 우선순위

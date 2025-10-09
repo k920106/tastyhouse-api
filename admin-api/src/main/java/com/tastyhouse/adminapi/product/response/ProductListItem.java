@@ -16,6 +16,6 @@ public class ProductListItem {
     private final Integer exhibitionPrice;
     private final Integer regularPrice;
     private final Integer supplyPrice;
-    private final Boolean isDisplay;
+    private final Boolean display;
     private final Integer sort;
 }
