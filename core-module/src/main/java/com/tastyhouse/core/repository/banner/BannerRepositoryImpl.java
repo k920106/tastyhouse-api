@@ -29,13 +29,7 @@ public class BannerRepositoryImpl implements BannerRepository {
                 banner.id,
                 banner.title,
                 banner.imageUrl,
-                banner.linkUrl,
-                banner.startDate,
-                banner.endDate,
-                banner.sort,
-                banner.active,
-                banner.createdAt,
-                banner.updatedAt
+                banner.linkUrl
             ))
             .from(banner)
             .where(

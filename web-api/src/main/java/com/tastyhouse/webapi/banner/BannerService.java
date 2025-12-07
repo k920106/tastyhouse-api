@@ -40,10 +40,6 @@ public class BannerService {
             .title(dto.getTitle())
             .imageUrl(dto.getImageUrl())
             .linkUrl(dto.getLinkUrl())
-            .startDate(dto.getStartDate())
-            .endDate(dto.getEndDate())
-            .sort(dto.getSort())
-            .active(dto.getActive())
             .build();
     }
 }
