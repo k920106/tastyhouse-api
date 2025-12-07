@@ -3,18 +3,20 @@ package com.tastyhouse.core.entity.place;
 import com.tastyhouse.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
 @Entity
 @Table(name = "PLACE")
-@Getter @Setter
 public class Place extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "station_id", nullable = false)
+    private Long stationId;
 
     @Column(name = "place_name", nullable = false, unique = true)
     private String placeName;
