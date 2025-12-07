@@ -1,7 +1,6 @@
 package com.tastyhouse.webapi.banner;
 
 import com.tastyhouse.core.common.PagedApiResponse;
-import com.tastyhouse.webapi.banner.request.BannerListQuery;
 import com.tastyhouse.webapi.banner.response.BannerListItem;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
@@ -14,7 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Banner", description = "배너 관리 API")
 @RestController
