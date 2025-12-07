@@ -1,0 +1,59 @@
+package com.tastyhouse.webapi.banner;
+
+import com.tastyhouse.core.common.PagedApiResponse;
+import com.tastyhouse.webapi.banner.request.BannerListQuery;
+import com.tastyhouse.webapi.banner.response.BannerListItem;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "Banner", description = "배너 관리 API")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/banners")
+public class BannerApiController {
+
+    private final BannerService bannerService;
+
+    @Operation(
+        summary = "배너 목록 조회",
+        description = "페이징된 배너 목록을 조회합니다. 제목 검색과 활성화 상태 필터링이 가능합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = PagedApiResponse.class))
+        )
+    })
+    @GetMapping("/v1")
+    public ResponseEntity<PagedApiResponse<BannerListItem>> getBannerList(
+        @Parameter(description = "배너 검색 조건 (제목, 활성화 상태, 페이지 정보)")
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size
+    ) {
+        PageRequest pageRequest = new PageRequest(page, size);
+
+        PageResult<BannerListItem> pageResult = bannerService.findBannerList(
+            pageRequest
+        );
+
+        PagedApiResponse<BannerListItem> response = PagedApiResponse.success(
+            pageResult.getContent(),
+            page,
+            size,
+            pageResult.getTotalElements()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+}
