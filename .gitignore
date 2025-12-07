@@ -28,3 +28,6 @@ Thumbs.db
 application-local.yml
 application-dev.yml
 application-prod.yml
+
+# Claude
+.claude/settings.local.json
