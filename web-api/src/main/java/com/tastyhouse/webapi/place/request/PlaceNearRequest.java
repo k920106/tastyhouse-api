@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.places.request;
+package com.tastyhouse.webapi.place.request;
 
 public record PlaceNearRequest(
     Double latitude,

@@ -1,6 +1,6 @@
-package com.tastyhouse.webapi.reviews;
+package com.tastyhouse.webapi.review;
 
-import com.tastyhouse.webapi.reviews.request.ReviewCreateRequest;
+import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
