@@ -5,7 +5,6 @@ import com.tastyhouse.webapi.banner.response.BannerListItem;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +38,6 @@ public class BannerApiController {
     })
     @GetMapping("/v1")
     public ResponseEntity<PagedApiResponse<BannerListItem>> getBannerList(
-        @Parameter(description = "배너 검색 조건 (제목, 활성화 상태, 페이지 정보)")
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "5") int size
     ) {
