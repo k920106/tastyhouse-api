@@ -26,4 +26,7 @@ public class Place extends BaseEntity {
 
     @Column(name = "longitude", nullable = false)
     private BigDecimal longitude;
+
+    @Column(name = "rating")
+    private Double rating;
 }
