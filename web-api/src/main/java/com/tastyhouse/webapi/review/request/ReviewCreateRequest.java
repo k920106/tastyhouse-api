@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.reviews.request;
+package com.tastyhouse.webapi.review.request;
 
 import org.springframework.web.multipart.MultipartFile;
 

@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.places;
+package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.service.PlaceCoreService;

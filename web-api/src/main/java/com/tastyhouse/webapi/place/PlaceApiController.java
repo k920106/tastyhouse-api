@@ -1,8 +1,8 @@
-package com.tastyhouse.webapi.places;
+package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.common.ApiResponse;
-import com.tastyhouse.webapi.places.request.PlaceNearRequest;
+import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
