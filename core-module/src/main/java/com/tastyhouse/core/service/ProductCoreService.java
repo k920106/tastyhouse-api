@@ -1,7 +1,6 @@
 package com.tastyhouse.core.service;
 
-import com.tastyhouse.core.entity.product.Product;
-import com.tastyhouse.core.entity.product.dto.ProductListItemDto;
+import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
 import com.tastyhouse.core.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,15 +15,11 @@ public class ProductCoreService {
 
     private final ProductRepository productRepository;
 
-    public ProductListItemPageResult findProductListItems(Long companyId, String productCode, String name,
-                                                         Long brandId, Long supplyId, Boolean display,
-                                                         int page, int size) {
+    public TodayDiscountProductPageResult findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<ProductListItemDto> productPage = productRepository.findAllWithFilterAsDto(
-            companyId, productCode, name, brandId, supplyId, display, pageRequest
-        );
+        Page<TodayDiscountProductDto> productPage = productRepository.findTodayDiscountProducts(pageRequest);
 
-        return new ProductListItemPageResult(
+        return new TodayDiscountProductPageResult(
             productPage.getContent(),
             productPage.getTotalElements(),
             productPage.getTotalPages(),
@@ -33,14 +28,14 @@ public class ProductCoreService {
         );
     }
 
-    public static class ProductPageResult {
-        private final List<Product> content;
+    public static class TodayDiscountProductPageResult {
+        private final List<TodayDiscountProductDto> content;
         private final long totalElements;
         private final int totalPages;
         private final int currentPage;
         private final int pageSize;
 
-        public ProductPageResult(List<Product> content, long totalElements, int totalPages, int currentPage, int pageSize) {
+        public TodayDiscountProductPageResult(List<TodayDiscountProductDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
             this.content = content;
             this.totalElements = totalElements;
             this.totalPages = totalPages;
@@ -48,29 +43,7 @@ public class ProductCoreService {
             this.pageSize = pageSize;
         }
 
-        public List<Product> getContent() { return content; }
-        public long getTotalElements() { return totalElements; }
-        public int getTotalPages() { return totalPages; }
-        public int getCurrentPage() { return currentPage; }
-        public int getPageSize() { return pageSize; }
-    }
-
-    public static class ProductListItemPageResult {
-        private final List<ProductListItemDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public ProductListItemPageResult(List<ProductListItemDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<ProductListItemDto> getContent() { return content; }
+        public List<TodayDiscountProductDto> getContent() { return content; }
         public long getTotalElements() { return totalElements; }
         public int getTotalPages() { return totalPages; }
         public int getCurrentPage() { return currentPage; }
