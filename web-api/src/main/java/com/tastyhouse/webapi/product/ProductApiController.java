@@ -1,8 +1,11 @@
 package com.tastyhouse.webapi.product;
 
+import com.tastyhouse.core.common.ApiResponse;
 import com.tastyhouse.core.common.PagedApiResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.place.PlaceService;
+import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
 import com.tastyhouse.webapi.product.response.TodayDiscountProductItem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductApiController {
 
     private final ProductService productService;
+    private final PlaceService placeService;
 
     @Operation(
         summary = "오늘의 할인 상품 목록 조회",
@@ -48,6 +52,24 @@ public class ProductApiController {
             pageResult.getTotalElements()
         );
 
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "에디터 초이스 조회",
+        description = "에디터 초이스의 가게 이미지, 제목, 내용, 관련 상품 목록을 조회합니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/v1/editor-choice")
+    public ResponseEntity<ApiResponse<java.util.List<EditorChoiceResponse>>> getEditorChoices() {
+        java.util.List<EditorChoiceResponse> editorChoiceResponses = placeService.findEditorChoices();
+        ApiResponse<java.util.List<EditorChoiceResponse>> response = ApiResponse.success(editorChoiceResponses);
         return ResponseEntity.ok(response);
     }
 }

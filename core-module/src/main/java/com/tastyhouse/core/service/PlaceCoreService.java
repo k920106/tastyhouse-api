@@ -2,7 +2,12 @@ package com.tastyhouse.core.service;
 
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
+import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
+import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
+import com.tastyhouse.core.repository.place.PlaceChoiceRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
+import com.tastyhouse.core.repository.product.ProductRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +21,8 @@ import java.util.List;
 public class PlaceCoreService {
 
     private final PlaceRepository placeRepository;
+    private final PlaceChoiceRepository placeChoiceRepository;
+    private final ProductRepository productRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         BigDecimal lat = BigDecimal.valueOf(latitude);
@@ -34,6 +41,10 @@ public class PlaceCoreService {
             bestPlacePage.getNumber(),
             bestPlacePage.getSize()
         );
+    }
+
+    public List<EditorChoiceDto> findEditorChoices() {
+        return placeChoiceRepository.findEditorChoice();
     }
 
     public static class BestPlacePageResult {
