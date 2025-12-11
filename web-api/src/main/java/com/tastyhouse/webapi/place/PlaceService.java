@@ -2,13 +2,18 @@ package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
+import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
+import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
+import com.tastyhouse.webapi.place.response.EditorChoiceProductItem;
+import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,14 +44,51 @@ public class PlaceService {
         );
     }
 
+    public List<EditorChoiceResponse> findEditorChoices() {
+        List<EditorChoiceDto> editorChoices = placeCoreService.findEditorChoices();
+
+        return editorChoices.stream()
+            .map(this::convertToEditorChoiceResponse)
+            .toList();
+    }
+
+    private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
+        List<EditorChoiceProductItem> productItems = dto.getProducts() != null
+            ? dto.getProducts().stream()
+                .map(this::convertToEditorChoiceProductItem)
+                .toList()
+            : new ArrayList<>();
+
+        return EditorChoiceResponse.builder()
+            .id(dto.getId())
+            .name(dto.getPlaceName())
+            .imageUrl(dto.getPlaceImageUrl())
+            .title(dto.getTitle())
+            .content(dto.getContent())
+            .products(productItems)
+            .build();
+    }
+
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
         return BestPlaceListItem.builder()
             .id(dto.getId())
-            .placeName(dto.getPlaceName())
+            .name(dto.getPlaceName())
             .stationName(dto.getStationName())
             .rating(dto.getRating())
             .imageUrl(dto.getImageUrl())
             .tags(dto.getTags())
+            .build();
+    }
+
+    private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
+        return EditorChoiceProductItem.builder()
+            .id(dto.getId())
+            .placeName(dto.getPlaceName())
+            .name(dto.getName())
+            .imageUrl(dto.getImageUrl())
+            .originalPrice(dto.getOriginalPrice())
+            .discountPrice(dto.getDiscountPrice())
+            .discountRate(dto.getDiscountRate())
             .build();
     }
 }

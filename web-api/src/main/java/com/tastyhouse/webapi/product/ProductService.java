@@ -38,7 +38,7 @@ public class ProductService {
         return TodayDiscountProductItem.builder()
             .id(dto.getId())
             .placeName(dto.getPlaceName())
-            .productName(dto.getName())
+            .name(dto.getName())
             .imageUrl(dto.getImageUrl())
             .originalPrice(dto.getOriginalPrice())
             .discountPrice(dto.getDiscountPrice())

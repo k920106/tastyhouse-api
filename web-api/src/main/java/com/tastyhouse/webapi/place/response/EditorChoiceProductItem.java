@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.product.response;
+package com.tastyhouse.webapi.place.response;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Builder
-public class TodayDiscountProductItem {
+public class EditorChoiceProductItem {
     private final Long id;
     private final String placeName;
     private final String name;

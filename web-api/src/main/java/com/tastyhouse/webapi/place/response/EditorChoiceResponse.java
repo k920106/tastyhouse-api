@@ -7,11 +7,11 @@ import java.util.List;
 
 @Getter
 @Builder
-public class BestPlaceListItem {
+public class EditorChoiceResponse {
     private final Long id;
     private final String name;
-    private final String stationName;
-    private final Double rating;
     private final String imageUrl;
-    private final List<String> tags;
+    private final String title;
+    private final String content;
+    private final List<EditorChoiceProductItem> products;
 }
