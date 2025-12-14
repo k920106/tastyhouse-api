@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "STATION")
-public class Station {
+@Table(name = "PLACE_STATION")
+public class PlaceStation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
