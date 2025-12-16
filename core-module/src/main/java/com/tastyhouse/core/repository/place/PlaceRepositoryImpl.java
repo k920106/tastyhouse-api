@@ -47,12 +47,13 @@ public class PlaceRepositoryImpl implements PlaceRepository {
     @Override
     public Page<BestPlaceItemDto> findBestPlaces(Pageable pageable) {
         // 1. 전체 개수 조회
-        long total = queryFactory
-            .selectFrom(place)
-            .where(place.rating.isNotNull())
-            .fetchCount();
+        Long total = queryFactory
+                .select(place.count())
+                .from(place)
+                .where(place.rating.isNotNull())
+                .fetchOne();
 
-        if (total == 0) {
+        if (total == null || total == 0) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
