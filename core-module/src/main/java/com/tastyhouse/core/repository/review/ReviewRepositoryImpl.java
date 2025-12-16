@@ -4,7 +4,9 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.place.QPlace;
-import com.tastyhouse.core.entity.place.QStation;
+import com.tastyhouse.core.entity.place.QPlaceStation;
+import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
+import com.tastyhouse.core.entity.rank.dto.QMemberReviewCountDto;
 import com.tastyhouse.core.entity.review.QReview;
 import com.tastyhouse.core.entity.review.QReviewImage;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -27,7 +30,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public Page<BestReviewListItemDto> findBestReviews(Pageable pageable) {
         QReview review = QReview.review;
         QPlace place = QPlace.place;
-        QStation station = QStation.station;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
         QReviewImage reviewImage = QReviewImage.reviewImage;
         QReviewImage subReviewImage = new QReviewImage("subReviewImage");
 
@@ -35,14 +38,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .select(new QBestReviewListItemDto(
                 review.id,
                 reviewImage.imageUrl,
-                station.stationName,
+                placeStation.stationName,
                 review.totalRating,
                 review.title,
                 review.content
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
-            .innerJoin(station).on(place.stationId.eq(station.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .leftJoin(reviewImage).on(
                 reviewImage.reviewId.eq(review.id)
                 .and(reviewImage.sort.eq(
@@ -62,5 +65,32 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         return new PageImpl<>(reviews, pageable, total);
+    }
+
+    @Override
+    public List<MemberReviewCountDto> countReviewsByMemberWithPeriod(
+        LocalDateTime startDate,
+        LocalDateTime endDate
+    ) {
+        QReview review = QReview.review;
+
+        return queryFactory
+            .select(new QMemberReviewCountDto(
+                review.memberId,
+                review.count(),
+                review.createdAt.max()
+            ))
+            .from(review)
+            .where(
+                review.createdAt.goe(startDate),
+                review.createdAt.lt(endDate)
+            )
+            .groupBy(review.memberId)
+            .orderBy(
+                review.count().desc(),
+                review.createdAt.max().asc(),
+                review.memberId.asc()
+            )
+            .fetch();
     }
 }
