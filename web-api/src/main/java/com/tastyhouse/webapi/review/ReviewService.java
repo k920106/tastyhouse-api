@@ -37,7 +37,7 @@ public class ReviewService {
     private BestReviewListItem convertToBestReviewListItem(BestReviewListItemDto dto) {
         return BestReviewListItem.builder()
             .id(dto.getId())
-            .image(dto.getReviewImage())
+            .imageUrl(dto.getImageUrl())
             .stationName(dto.getStationName())
             .totalRating(dto.getTotalRating())
             .title(dto.getTitle())

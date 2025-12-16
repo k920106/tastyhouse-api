@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.tastyhouse.core.entity.place.QPlace.place;
-import static com.tastyhouse.core.entity.place.QStation.station;
+import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
 import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
 import static com.tastyhouse.core.entity.place.QPlaceTag.placeTag;
 import static com.tastyhouse.core.entity.place.QTag.tag;
@@ -75,15 +75,15 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         // 3. Place별 Station 정보 조회
         var stationMap = queryFactory
-            .select(place.id, station.stationName)
+            .select(place.id, placeStation.stationName)
             .from(place)
-            .join(station).on(station.id.eq(place.stationId))
+            .join(placeStation).on(placeStation.id.eq(place.stationId))
             .where(place.id.in(placeIds))
             .fetch()
             .stream()
             .collect(Collectors.toMap(
                 tuple -> tuple.get(place.id),
-                tuple -> tuple.get(station.stationName)
+                tuple -> tuple.get(placeStation.stationName)
             ));
 
         // 4. Place별 썸네일 이미지 조회
