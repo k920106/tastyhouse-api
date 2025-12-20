@@ -5,8 +5,11 @@ import com.tastyhouse.core.entity.rank.dto.MemberRankDto;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberReviewRankRepository {
 
     List<MemberRankDto> findMemberRankList(RankType rankType, LocalDate baseDate, int limit);
+
+    Optional<MemberRankDto> findMemberRank(Long memberId, RankType rankType, LocalDate baseDate);
 }

@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.rank;
 
 import com.tastyhouse.core.common.ApiResponse;
 import com.tastyhouse.webapi.rank.response.MemberRankItem;
+import com.tastyhouse.webapi.rank.response.MyRankResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,6 +43,30 @@ public class RankApiController {
     ) {
         List<MemberRankItem> ranks = rankService.getMemberRankList(type, limit);
         ApiResponse<List<MemberRankItem>> response = ApiResponse.success(ranks);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "내 리뷰 랭킹 조회",
+        description = "현재 로그인한 유저의 리뷰 작성 개수 기준 랭킹을 조회합니다. (전체/월간/주간)"
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    @GetMapping("/v1/members/me")
+    public ResponseEntity<ApiResponse<MyRankResponse>> getMyMemberRank(
+        @Parameter(description = "랭킹 타입 (ALL, MONTHLY, WEEKLY)", example = "MONTHLY")
+        @RequestParam(defaultValue = "ALL") String type
+    ) {
+        // TODO: 로그인 기능 구현 후 실제 memberId로 변경
+        Long currentMemberId = 1L; // User PK 1번으로 가정
+
+        MyRankResponse myRank = rankService.getMyMemberRank(currentMemberId, type);
+        ApiResponse<MyRankResponse> response = ApiResponse.success(myRank);
         return ResponseEntity.ok(response);
     }
 }
