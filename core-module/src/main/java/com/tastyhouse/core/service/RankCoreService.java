@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,6 +27,10 @@ public class RankCoreService {
 
     public List<MemberRankDto> getMemberRankList(RankType rankType, LocalDate baseDate, int limit) {
         return memberReviewRankRepository.findMemberRankList(rankType, baseDate, limit);
+    }
+
+    public Optional<MemberRankDto> getMemberRank(Long memberId, RankType rankType, LocalDate baseDate) {
+        return memberReviewRankRepository.findMemberRank(memberId, rankType, baseDate);
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.rank.dto.MemberRankDto;
 import com.tastyhouse.core.service.RankCoreService;
 import com.tastyhouse.webapi.rank.response.MemberRankItem;
+import com.tastyhouse.webapi.rank.response.MyRankResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,15 @@ public class RankService {
         return ranks.stream()
             .map(this::convertToMemberRankItem)
             .toList();
+    }
+
+    public MyRankResponse getMyMemberRank(Long memberId, String rankType) {
+        RankType type = parseRankType(rankType);
+        LocalDate baseDate = calculateBaseDate(type);
+
+        return rankCoreService.getMemberRank(memberId, type, baseDate)
+            .map(MyRankResponse::from)
+            .orElse(null);
     }
 
     private MemberRankItem convertToMemberRankItem(MemberRankDto dto) {
