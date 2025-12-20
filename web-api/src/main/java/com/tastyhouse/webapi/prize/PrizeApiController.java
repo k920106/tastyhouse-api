@@ -35,9 +35,7 @@ public class PrizeApiController {
     @GetMapping("/v1")
     public ResponseEntity<ApiResponse<List<PrizeItem>>> getActivePrizeList() {
         List<PrizeItem> prizes = prizeService.getActivePrizes();
-
         ApiResponse<List<PrizeItem>> response = ApiResponse.success(prizes);
-
         return ResponseEntity.ok(response);
     }
 }

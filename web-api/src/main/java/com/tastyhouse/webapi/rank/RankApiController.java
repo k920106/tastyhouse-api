@@ -41,9 +41,7 @@ public class RankApiController {
         @RequestParam(defaultValue = "100") int limit
     ) {
         List<MemberRankItem> ranks = rankService.getMemberRankList(type, limit);
-
         ApiResponse<List<MemberRankItem>> response = ApiResponse.success(ranks);
-
         return ResponseEntity.ok(response);
     }
 }
