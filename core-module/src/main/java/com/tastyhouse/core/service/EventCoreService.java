@@ -3,6 +3,7 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.entity.event.Event;
 import com.tastyhouse.core.entity.event.EventPrize;
 import com.tastyhouse.core.entity.event.EventStatus;
+import com.tastyhouse.core.entity.event.EventType;
 import com.tastyhouse.core.repository.event.EventJpaRepository;
 import com.tastyhouse.core.repository.event.EventPrizeJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ public class EventCoreService {
     private final EventJpaRepository eventJpaRepository;
     private final EventPrizeJpaRepository eventPrizeJpaRepository;
 
-    public Optional<Event> getActiveEvent() {
-        return eventJpaRepository.findFirstByStatusOrderByStartAtDesc(EventStatus.ACTIVE);
+    public Optional<Event> getActiveRankingEvent() {
+        return eventJpaRepository.findFirstByStatusAndTypeOrderByStartAtDesc(EventStatus.ACTIVE, EventType.RANKING);
     }
 
     public List<Event> getEventsByStatus(EventStatus status) {

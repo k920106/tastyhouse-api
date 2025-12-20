@@ -2,6 +2,7 @@ package com.tastyhouse.core.repository.event;
 
 import com.tastyhouse.core.entity.event.Event;
 import com.tastyhouse.core.entity.event.EventStatus;
+import com.tastyhouse.core.entity.event.EventType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface EventJpaRepository extends JpaRepository<Event, Long> {
     List<Event> findByStatusOrderByStartAtDesc(EventStatus status);
 
     Optional<Event> findFirstByStatusOrderByStartAtDesc(EventStatus status);
+
+    Optional<Event> findFirstByStatusAndTypeOrderByStartAtDesc(EventStatus status, EventType type);
 }
