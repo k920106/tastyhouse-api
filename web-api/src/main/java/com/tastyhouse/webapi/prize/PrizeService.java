@@ -16,7 +16,7 @@ public class PrizeService {
     private final EventCoreService eventCoreService;
 
     public List<PrizeItem> getActivePrizes() {
-        return eventCoreService.getActiveEvent()
+        return eventCoreService.getActiveRankingEvent()
             .map(event -> {
                 List<EventPrize> eventPrizes = eventCoreService.getEventPrizes(event.getId());
                 return eventPrizes.stream()
