@@ -3,8 +3,10 @@ package com.tastyhouse.core.entity.user;
 import com.tastyhouse.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter; // Add Setter annotation
 
 @Getter
+@Setter // Add Setter annotation for all fields, or selectively if preferred
 @Entity
 @Table(name = "MEMBER")
 public class Member extends BaseEntity {
@@ -57,4 +59,23 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "member_status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private MemberStatus memberStatus = MemberStatus.ACTIVE;
+
+    // No-argument constructor required by JPA
+    public Member() {
+    }
+
+    // Convenient constructor for test user creation
+    public Member(String username, String password, String nickname, String fullName, Gender gender) {
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.fullName = fullName;
+        this.gender = gender;
+        this.memberGrade = MemberGrade.NEWCOMER; // Default
+        this.memberStatus = MemberStatus.ACTIVE; // Default
+        this.pushNotificationEnabled = true; // Default
+        this.marketingInfoEnabled = false; // Default
+        this.eventInfoEnabled = false; // Default
+    }
 }
+
