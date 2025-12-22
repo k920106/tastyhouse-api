@@ -3,6 +3,7 @@ package com.tastyhouse.webapi.rank;
 import com.tastyhouse.core.common.ApiResponse;
 import com.tastyhouse.webapi.rank.response.MemberRankItem;
 import com.tastyhouse.webapi.rank.response.MyRankResponse;
+import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -62,8 +68,8 @@ public class RankApiController {
         @Parameter(description = "랭킹 타입 (ALL, MONTHLY, WEEKLY)", example = "MONTHLY")
         @RequestParam(defaultValue = "ALL") String type
     ) {
-        // TODO: 로그인 기능 구현 후 실제 memberId로 변경
-        Long currentMemberId = 1L; // User PK 1번으로 가정
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long currentMemberId = ((CustomUserDetails) authentication.getPrincipal()).getMemberId();
 
         MyRankResponse myRank = rankService.getMyMemberRank(currentMemberId, type);
         ApiResponse<MyRankResponse> response = ApiResponse.success(myRank);
