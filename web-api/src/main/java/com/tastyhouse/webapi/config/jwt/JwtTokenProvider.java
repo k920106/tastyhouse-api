@@ -4,6 +4,8 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,7 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -20,8 +22,10 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
+
     private final JwtProperties jwtProperties;
-    private Key key;
+    private SecretKey key;
 
     public JwtTokenProvider(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
@@ -34,20 +38,12 @@ public class JwtTokenProvider {
     }
 
     public String createToken(Authentication authentication, long expirationTime) {
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + expirationTime);
 
-        return Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("auth", authorities)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+        return Jwts.builder().subject(authentication.getName()).claim("auth", authorities).issuedAt(now).expiration(validity).signWith(key).compact();
     }
 
     public String createAccessToken(Authentication authentication) {
@@ -59,38 +55,33 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser() // Changed from Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get("auth").toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
         User principal = new User(claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
+    public String getUsernameFromJWT(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        return claims.getSubject();
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parser() // Changed from Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            // Invalid JWT signature/format
-            // Log this for debugging, but don't expose too much detail to the client
+            log.error("Invalid JWT signature/format.", e);
         } catch (ExpiredJwtException e) {
-            // Expired JWT token
+            log.error("Expired JWT token.", e);
         } catch (UnsupportedJwtException e) {
-            // Unsupported JWT token
+            log.error("Unsupported JWT token.", e);
         } catch (IllegalArgumentException e) {
-            // JWT claims string is empty
+            log.error("JWT claims string is empty.", e);
         }
         return false;
     }

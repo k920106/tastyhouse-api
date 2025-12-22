@@ -8,6 +8,6 @@ spring:
     import: classpath:application-core.yml
 
 jwt:
-  secret: L2Vtc2VjcmV0S2V5Zm9ySE1BQ1NIQTUxMkFsZ29yaXRobS5pbw0KMXNlY3JldEtleWZvckhNQUNDU0hBNTEyQWxnLg==
+  secret: Z1JUbfzFqiQ9RSX1Bh8s0B5Jsugvk3CV6YpD3RcLa/zqGxBdghHApgQ/0uct6Nw7DQh6kTnMgSdZRrnrXg1uCw==
   accessTokenExpiration: 3600000 # 1 hour in milliseconds
   refreshTokenExpiration: 604800000 # 7 days in milliseconds
