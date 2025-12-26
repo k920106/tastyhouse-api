@@ -85,4 +85,20 @@ public class JwtTokenProvider {
         }
         return false;
     }
+
+    public String createAccessTokenFromRefreshToken(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            throw new JwtException("Invalid refresh token");
+        }
+        Authentication authentication = getAuthentication(refreshToken);
+        return createAccessToken(authentication);
+    }
+
+    public String createRefreshTokenFromRefreshToken(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            throw new JwtException("Invalid refresh token");
+        }
+        Authentication authentication = getAuthentication(refreshToken);
+        return createRefreshToken(authentication);
+    }
 }

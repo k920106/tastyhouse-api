@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.auth;
 
 import com.tastyhouse.webapi.auth.request.LoginRequest;
+import com.tastyhouse.webapi.auth.request.RefreshTokenRequest;
 import com.tastyhouse.webapi.auth.response.JwtResponse;
 import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,5 +63,32 @@ public class AuthController {
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
         return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken, "Bearer"));
+    }
+
+    @Operation(
+        summary = "토큰 갱신",
+        description = "Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급합니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "토큰 갱신 성공",
+            content = @Content(schema = @Schema(implementation = JwtResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "유효하지 않은 Refresh Token",
+            content = @Content(schema = @Schema(hidden = true))
+        )
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refreshToken(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Refresh Token", required = true, content = @Content(schema = @Schema(implementation = RefreshTokenRequest.class)))
+        @RequestBody RefreshTokenRequest request) {
+
+        String newAccessToken = jwtTokenProvider.createAccessTokenFromRefreshToken(request.getRefreshToken());
+        String newRefreshToken = jwtTokenProvider.createRefreshTokenFromRefreshToken(request.getRefreshToken());
+
+        return ResponseEntity.ok(new JwtResponse(newAccessToken, newRefreshToken, "Bearer"));
     }
 }
