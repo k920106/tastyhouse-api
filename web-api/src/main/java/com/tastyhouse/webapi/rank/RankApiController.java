@@ -12,8 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,15 +63,14 @@ public class RankApiController {
             content = @Content(schema = @Schema(implementation = ApiResponse.class))
         )
     })
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/v1/members/me")
     public ResponseEntity<ApiResponse<MyRankResponse>> getMyMemberRank(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "랭킹 타입 (ALL, MONTHLY, WEEKLY)", example = "MONTHLY")
         @RequestParam(defaultValue = "ALL") String type
     ) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long currentMemberId = ((CustomUserDetails) authentication.getPrincipal()).getMemberId();
-
-        MyRankResponse myRank = rankService.getMyMemberRank(currentMemberId, type);
+        MyRankResponse myRank = rankService.getMyMemberRank(userDetails.getMemberId(), type);
         ApiResponse<MyRankResponse> response = ApiResponse.success(myRank);
         return ResponseEntity.ok(response);
     }
