@@ -18,4 +18,12 @@ public class ReviewLike extends BaseEntity {
 
     @Column(name = "member_id", nullable = false)
     private Long memberId;
+
+    protected ReviewLike() {
+    }
+
+    public ReviewLike(Long reviewId, Long memberId) {
+        this.reviewId = reviewId;
+        this.memberId = memberId;
+    }
 }
