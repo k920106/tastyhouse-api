@@ -13,7 +13,6 @@ public class LatestReviewListItem {
     private final List<String> imageUrls;
     private final String stationName;
     private final Double totalRating;
-    private final String title;
     private final String content;
     private final Long memberId;
     private final String memberNickname;

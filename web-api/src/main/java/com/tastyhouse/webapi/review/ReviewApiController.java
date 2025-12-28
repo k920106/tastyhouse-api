@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.review;
 
+import com.tastyhouse.core.common.ApiResponse;
 import com.tastyhouse.core.common.PagedApiResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
@@ -7,12 +8,12 @@ import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
 import com.tastyhouse.webapi.review.response.LatestReviewListItem;
+import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class ReviewApiController {
         description = "평점이 높은 순으로 정렬된 베스트 리뷰 목록을 페이징하여 조회합니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = PagedApiResponse.class))
@@ -71,7 +72,7 @@ public class ReviewApiController {
         description = "최신 리뷰 목록을 페이징하여 조회합니다. type이 ALL이면 전체, FOLLOWING이면 팔로잉한 사용자의 리뷰만 조회합니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = PagedApiResponse.class))
@@ -104,5 +105,32 @@ public class ReviewApiController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "리뷰 상세 조회",
+        description = "리뷰 ID로 리뷰 상세 정보를 조회합니다. 리뷰 태그 정보도 함께 조회됩니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = ReviewDetailResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "리뷰를 찾을 수 없음"
+        )
+    })
+    @GetMapping("/v1/{reviewId}")
+    public ResponseEntity<ApiResponse<ReviewDetailResponse>> getReviewDetail(
+        @Parameter(description = "리뷰 ID", example = "1")
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails != null ? userDetails.getMemberId() : null;
+        return reviewService.findReviewDetail(reviewId, memberId)
+            .map(detail -> ResponseEntity.ok(ApiResponse.success(detail)))
+            .orElse(ResponseEntity.notFound().build());
     }
 }

@@ -3,15 +3,20 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.repository.follow.FollowJpaRepository;
+import com.tastyhouse.core.repository.place.TagJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
+import com.tastyhouse.core.repository.review.ReviewLikeJpaRepository;
+import com.tastyhouse.core.repository.review.ReviewTagJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,9 @@ public class ReviewCoreService {
     private final ReviewRepository reviewRepository;
     private final ReviewJpaRepository reviewJpaRepository;
     private final FollowJpaRepository followJpaRepository;
+    private final ReviewTagJpaRepository reviewTagJpaRepository;
+    private final TagJpaRepository tagJpaRepository;
+    private final ReviewLikeJpaRepository reviewLikeJpaRepository;
 
     public ReviewPageResult findBestReviewsWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -38,6 +46,27 @@ public class ReviewCoreService {
 
     public Review findById(Long id) {
         return reviewJpaRepository.findById(id).orElse(null);
+    }
+
+    public Optional<ReviewDetailDto> findReviewDetail(Long reviewId, Long memberId) {
+        Optional<ReviewDetailDto> result = reviewRepository.findReviewDetail(reviewId);
+
+        result.ifPresent(dto -> {
+            List<Long> tagIds = reviewTagJpaRepository.findTagIdsByReviewId(reviewId);
+            if (!tagIds.isEmpty()) {
+                List<String> tagNames = tagJpaRepository.findTagNamesByIds(tagIds);
+                dto.setTagNames(tagNames);
+            }
+
+            if (memberId != null) {
+                boolean isLiked = reviewLikeJpaRepository.existsByReviewIdAndMemberId(reviewId, memberId);
+                dto.setIsLiked(isLiked);
+            } else {
+                dto.setIsLiked(false);
+            }
+        });
+
+        return result;
     }
 
     public LatestReviewPageResult findLatestReviewsWithPagination(int page, int size) {

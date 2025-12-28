@@ -83,7 +83,6 @@ CREATE TABLE REVIEW (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     place_id BIGINT NOT NULL,
     member_id BIGINT NOT NULL,
-    title VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     total_rating DOUBLE NOT NULL,
     taste_rating DOUBLE,
@@ -167,4 +166,23 @@ CREATE TABLE PLACE_CHOICE (
     content TEXT,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
+);
+
+CREATE TABLE REVIEW_TAG (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    review_id BIGINT NOT NULL,
+    tag_id BIGINT NOT NULL,
+    INDEX idx_review_tag_review_id (review_id),
+    INDEX idx_review_tag_tag_id (tag_id)
+);
+
+CREATE TABLE REVIEW_LIKE (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    review_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY uk_review_like (review_id, member_id),
+    INDEX idx_review_like_review_id (review_id),
+    INDEX idx_review_like_member_id (member_id)
 );
