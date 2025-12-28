@@ -9,6 +9,7 @@ import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
 import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
+import com.tastyhouse.webapi.review.response.ReviewLikeResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -128,9 +129,38 @@ public class ReviewApiController {
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails != null ? userDetails.getMemberId() : null;
+       Long memberId = userDetails != null ? userDetails.getMemberId() : null;
         return reviewService.findReviewDetail(reviewId, memberId)
             .map(detail -> ResponseEntity.ok(ApiResponse.success(detail)))
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(
+        summary = "리뷰 좋아요 토글",
+        description = "리뷰에 좋아요를 토글합니다. 이미 좋아요한 경우 취소되고, 아닌 경우 좋아요가 추가됩니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "좋아요 토글 성공",
+            content = @Content(schema = @Schema(implementation = ReviewLikeResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "인증되지 않은 사용자"
+        )
+    })
+    @PostMapping("/v1/{reviewId}/like")
+    public ResponseEntity<ApiResponse<ReviewLikeResponse>> toggleReviewLike(
+        @Parameter(description = "리뷰 ID", example = "1")
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        boolean liked = reviewService.toggleReviewLike(reviewId, userDetails.getMemberId());
+        return ResponseEntity.ok(ApiResponse.success(new ReviewLikeResponse(liked)));
     }
 }

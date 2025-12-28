@@ -126,4 +126,8 @@ public class ReviewService {
             .isLiked(dto.getIsLiked())
             .build();
     }
+
+    public boolean toggleReviewLike(Long reviewId, Long memberId) {
+        return reviewCoreService.toggleReviewLike(reviewId, memberId);
+    }
 }

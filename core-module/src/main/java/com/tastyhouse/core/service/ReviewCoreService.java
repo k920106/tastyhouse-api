@@ -10,10 +10,12 @@ import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import com.tastyhouse.core.repository.review.ReviewLikeJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewTagJpaRepository;
+import com.tastyhouse.core.entity.review.ReviewLike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -108,6 +110,20 @@ public class ReviewCoreService {
             reviewPage.getNumber(),
             reviewPage.getSize()
         );
+    }
+
+    @Transactional
+    public boolean toggleReviewLike(Long reviewId, Long memberId) {
+        boolean alreadyLiked = reviewLikeJpaRepository.existsByReviewIdAndMemberId(reviewId, memberId);
+
+        if (alreadyLiked) {
+            reviewLikeJpaRepository.deleteByReviewIdAndMemberId(reviewId, memberId);
+            return false;
+        } else {
+            ReviewLike reviewLike = new ReviewLike(reviewId, memberId);
+            reviewLikeJpaRepository.save(reviewLike);
+            return true;
+        }
     }
 
     public static class LatestReviewPageResult {
