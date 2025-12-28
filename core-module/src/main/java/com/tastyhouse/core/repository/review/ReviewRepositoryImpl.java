@@ -10,7 +10,10 @@ import com.tastyhouse.core.entity.rank.dto.QMemberReviewCountDto;
 import com.tastyhouse.core.entity.review.QReview;
 import com.tastyhouse.core.entity.review.QReviewImage;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QBestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.QLatestReviewListItemDto;
+import com.tastyhouse.core.entity.user.QMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -63,6 +68,107 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
+    @Override
+    public Page<LatestReviewListItemDto> findLatestReviews(Pageable pageable) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+        QMember member = QMember.member;
+
+        JPAQuery<LatestReviewListItemDto> query = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.title,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .orderBy(review.createdAt.desc());
+
+        long total = query.fetch().size();
+
+        List<LatestReviewListItemDto> reviews = query
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
+    private Map<Long, List<String>> findImageUrlsByReviewIds(List<Long> reviewIds) {
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+
+        List<com.querydsl.core.Tuple> results = queryFactory
+            .select(reviewImage.reviewId, reviewImage.imageUrl)
+            .from(reviewImage)
+            .where(reviewImage.reviewId.in(reviewIds))
+            .orderBy(reviewImage.sort.asc())
+            .fetch();
+
+        return results.stream()
+            .collect(Collectors.groupingBy(
+                tuple -> tuple.get(reviewImage.reviewId),
+                Collectors.mapping(tuple -> tuple.get(reviewImage.imageUrl), Collectors.toList())
+            ));
+    }
+
+    @Override
+    public Page<LatestReviewListItemDto> findLatestReviewsByFollowing(List<Long> followingMemberIds, Pageable pageable) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QMember member = QMember.member;
+
+        JPAQuery<LatestReviewListItemDto> query = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.title,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .where(review.memberId.in(followingMemberIds))
+            .orderBy(review.createdAt.desc());
+
+        long total = query.fetch().size();
+
+        List<LatestReviewListItemDto> reviews = query
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
 
         return new PageImpl<>(reviews, pageable, total);
     }

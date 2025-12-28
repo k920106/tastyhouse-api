@@ -41,6 +41,17 @@ CREATE TABLE EVENT (
     INDEX idx_event_period (start_at, end_at)
 );
 
+CREATE TABLE FOLLOW (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    follower_id  BIGINT   NOT NULL,
+    following_id BIGINT   NOT NULL,
+    created_at   DATETIME NOT NULL,
+    updated_at   DATETIME NOT NULL,
+    UNIQUE KEY uk_follow_follower_following (follower_id, following_id),
+    INDEX idx_follow_follower_id (follower_id),
+    INDEX idx_follow_following_id (following_id)
+);
+
 CREATE TABLE MEMBER_REVIEW_RANK (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     member_id BIGINT NOT NULL,

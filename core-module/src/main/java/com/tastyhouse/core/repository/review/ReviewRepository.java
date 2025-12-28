@@ -2,6 +2,7 @@ package com.tastyhouse.core.repository.review;
 
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,6 +12,10 @@ import java.util.List;
 public interface ReviewRepository {
 
     Page<BestReviewListItemDto> findBestReviews(Pageable pageable);
+
+    Page<LatestReviewListItemDto> findLatestReviews(Pageable pageable);
+
+    Page<LatestReviewListItemDto> findLatestReviewsByFollowing(List<Long> followingMemberIds, Pageable pageable);
 
     List<MemberReviewCountDto> countReviewsByMemberWithPeriod(
         LocalDateTime startDate,
