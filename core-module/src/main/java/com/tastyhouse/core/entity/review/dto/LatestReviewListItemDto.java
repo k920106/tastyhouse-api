@@ -13,7 +13,6 @@ public class LatestReviewListItemDto {
     private List<String> imageUrls;
     private final String stationName;
     private final Double totalRating;
-    private final String title;
     private final String content;
     private final Long memberId;
     private final String memberNickname;
@@ -22,14 +21,13 @@ public class LatestReviewListItemDto {
 
     @QueryProjection
     public LatestReviewListItemDto(Long id, String stationName,
-                                   Double totalRating, String title, String content,
+                                   Double totalRating, String content,
                                    Long memberId, String memberNickname, String memberProfileImageUrl,
                                    LocalDateTime createdAt) {
         this.id = id;
         this.imageUrls = new ArrayList<>();
         this.stationName = stationName;
         this.totalRating = totalRating;
-        this.title = title;
         this.content = content;
         this.memberId = memberId;
         this.memberNickname = memberNickname;

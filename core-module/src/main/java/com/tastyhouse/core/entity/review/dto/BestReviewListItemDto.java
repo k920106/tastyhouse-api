@@ -9,17 +9,15 @@ public class BestReviewListItemDto {
     private final String imageUrl;
     private final String stationName;
     private final Double totalRating;
-    private final String title;
     private final String content;
 
     @QueryProjection
     public BestReviewListItemDto(Long id, String imageUrl, String stationName,
-                                 Double totalRating, String title, String content) {
+                                 Double totalRating, String content) {
         this.id = id;
         this.imageUrl = imageUrl;
         this.stationName = stationName;
         this.totalRating = totalRating;
-        this.title = title;
         this.content = content;
     }
 }

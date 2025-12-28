@@ -13,6 +13,8 @@ import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QBestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QLatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
+import com.tastyhouse.core.entity.review.dto.QReviewDetailDto;
 import com.tastyhouse.core.entity.user.QMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -45,7 +48,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 reviewImage.imageUrl,
                 placeStation.stationName,
                 review.totalRating,
-                review.title,
                 review.content
             ))
             .from(review)
@@ -85,7 +87,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.id,
                 placeStation.stationName,
                 review.totalRating,
-                review.title,
                 review.content,
                 member.id,
                 member.nickname,
@@ -143,7 +144,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.id,
                 placeStation.stationName,
                 review.totalRating,
-                review.title,
                 review.content,
                 member.id,
                 member.nickname,
@@ -197,6 +197,59 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.createdAt.max().asc(),
                 review.memberId.asc()
             )
+            .fetch();
+    }
+
+    @Override
+    public Optional<ReviewDetailDto> findReviewDetail(Long reviewId) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QMember member = QMember.member;
+
+        ReviewDetailDto result = queryFactory
+            .select(new QReviewDetailDto(
+                review.id,
+                place.id,
+                place.placeName,
+                placeStation.stationName,
+                review.content,
+                review.totalRating,
+                review.tasteRating,
+                review.amountRating,
+                review.priceRating,
+                review.atmosphereRating,
+                review.kindnessRating,
+                review.hygieneRating,
+                review.willRevisit,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .where(review.id.eq(reviewId))
+            .fetchOne();
+
+        if (result != null) {
+            List<String> imageUrls = findImageUrlsByReviewId(reviewId);
+            result.setImageUrls(imageUrls);
+        }
+
+        return Optional.ofNullable(result);
+    }
+
+    private List<String> findImageUrlsByReviewId(Long reviewId) {
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+
+        return queryFactory
+            .select(reviewImage.imageUrl)
+            .from(reviewImage)
+            .where(reviewImage.reviewId.eq(reviewId))
+            .orderBy(reviewImage.sort.asc())
             .fetch();
     }
 }

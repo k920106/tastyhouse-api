@@ -19,9 +19,6 @@ public class Review extends BaseEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "title", length = 100, nullable = false)
-    private String title; // 제목
-
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content; // 내용
 

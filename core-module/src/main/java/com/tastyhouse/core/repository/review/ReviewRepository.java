@@ -3,11 +3,13 @@ package com.tastyhouse.core.repository.review;
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReviewRepository {
 
@@ -21,4 +23,6 @@ public interface ReviewRepository {
         LocalDateTime startDate,
         LocalDateTime endDate
     );
+
+    Optional<ReviewDetailDto> findReviewDetail(Long reviewId);
 }
