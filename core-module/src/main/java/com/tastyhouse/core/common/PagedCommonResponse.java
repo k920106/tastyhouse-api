@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PagedApiResponse<T> {
+public class PagedCommonResponse<T> {
     private boolean success;
     private List<T> data;
     private PageInfo pagination;
@@ -25,19 +25,19 @@ public class PagedApiResponse<T> {
         private int totalPages;
     }
 
-    public static <T> PagedApiResponse<T> success(List<T> data, int page, int size, long totalElements) {
+    public static <T> PagedCommonResponse<T> success(List<T> data, int page, int size, long totalElements) {
         int totalPages = (int) Math.ceil((double) totalElements / size);
         PageInfo pageInfo = new PageInfo(page, size, totalElements, totalPages);
-        return new PagedApiResponse<>(true, data, pageInfo, null);
+        return new PagedCommonResponse<>(true, data, pageInfo, null);
     }
 
-    public static <T> PagedApiResponse<T> success(List<T> data, int page, int size, long totalElements, String message) {
+    public static <T> PagedCommonResponse<T> success(List<T> data, int page, int size, long totalElements, String message) {
         int totalPages = (int) Math.ceil((double) totalElements / size);
         PageInfo pageInfo = new PageInfo(page, size, totalElements, totalPages);
-        return new PagedApiResponse<>(true, data, pageInfo, message);
+        return new PagedCommonResponse<>(true, data, pageInfo, message);
     }
 
-    public static <T> PagedApiResponse<T> error(String message) {
-        return new PagedApiResponse<>(false, null, null, message);
+    public static <T> PagedCommonResponse<T> error(String message) {
+        return new PagedCommonResponse<>(false, null, null, message);
     }
 }
