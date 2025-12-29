@@ -3,6 +3,7 @@ package com.tastyhouse.webapi.place;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
+import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
@@ -10,6 +11,7 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceProductItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
+import com.tastyhouse.webapi.place.response.LatestPlaceListItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,78 +29,48 @@ public class PlaceService {
     }
 
     public PageResult<BestPlaceListItem> findBestPlaces(PageRequest pageRequest) {
-        PlaceCoreService.BestPlacePageResult coreResult = placeCoreService.findBestPlaces(
-            pageRequest.getPage(), pageRequest.getSize()
-        );
+        PlaceCoreService.BestPlacePageResult coreResult = placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
 
-        List<BestPlaceListItem> bestPlaceListItems = coreResult.getContent().stream()
-            .map(this::convertToBestPlaceListItem)
-            .toList();
+        List<BestPlaceListItem> bestPlaceListItems = coreResult.getContent().stream().map(this::convertToBestPlaceListItem).toList();
 
-        return new PageResult<>(
-            bestPlaceListItems,
-            coreResult.getTotalElements(),
-            coreResult.getTotalPages(),
-            coreResult.getCurrentPage(),
-            coreResult.getPageSize()
-        );
+        return new PageResult<>(bestPlaceListItems, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
+    }
+
+    public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest) {
+        PlaceCoreService.LatestPlacePageResult coreResult = placeCoreService.findLatestPlaces(pageRequest.getPage(), pageRequest.getSize());
+
+        List<LatestPlaceListItem> latestPlaceListItems = coreResult.getContent().stream().map(this::convertToLatestPlaceListItem).toList();
+
+        return new PageResult<>(latestPlaceListItems, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
     }
 
     public List<EditorChoiceResponse> findEditorChoices() {
         List<EditorChoiceDto> editorChoices = placeCoreService.findEditorChoices();
 
-        return editorChoices.stream()
-            .map(this::convertToEditorChoiceResponse)
-            .toList();
+        return editorChoices.stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     public List<EditorChoiceResponse> findEditorChoices(PageRequest pageRequest) {
-        PlaceCoreService.EditorChoicePageResult coreResult = placeCoreService.findEditorChoices(
-            pageRequest.getPage(), pageRequest.getSize()
-        );
+        PlaceCoreService.EditorChoicePageResult coreResult = placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize());
 
-        return coreResult.getContent().stream()
-            .map(this::convertToEditorChoiceResponse)
-            .toList();
+        return coreResult.getContent().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
-        List<EditorChoiceProductItem> productItems = dto.getProducts() != null
-            ? dto.getProducts().stream()
-                .map(this::convertToEditorChoiceProductItem)
-                .toList()
-            : new ArrayList<>();
+        List<EditorChoiceProductItem> productItems = dto.getProducts() != null ? dto.getProducts().stream().map(this::convertToEditorChoiceProductItem).toList() : new ArrayList<>();
 
-        return EditorChoiceResponse.builder()
-            .id(dto.getId())
-            .name(dto.getPlaceName())
-            .imageUrl(dto.getPlaceImageUrl())
-            .title(dto.getTitle())
-            .content(dto.getContent())
-            .products(productItems)
-            .build();
+        return EditorChoiceResponse.builder().id(dto.getId()).name(dto.getPlaceName()).imageUrl(dto.getPlaceImageUrl()).title(dto.getTitle()).content(dto.getContent()).products(productItems).build();
     }
 
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
-        return BestPlaceListItem.builder()
-            .id(dto.getId())
-            .name(dto.getPlaceName())
-            .stationName(dto.getStationName())
-            .rating(dto.getRating())
-            .imageUrl(dto.getImageUrl())
-            .tags(dto.getTags())
-            .build();
+        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).build();
+    }
+
+    private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
+        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).createdAt(dto.getCreatedAt()).build();
     }
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
-        return EditorChoiceProductItem.builder()
-            .id(dto.getId())
-            .placeName(dto.getPlaceName())
-            .name(dto.getName())
-            .imageUrl(dto.getImageUrl())
-            .originalPrice(dto.getOriginalPrice())
-            .discountPrice(dto.getDiscountPrice())
-            .discountRate(dto.getDiscountRate())
-            .build();
+        return EditorChoiceProductItem.builder().id(dto.getId()).placeName(dto.getPlaceName()).name(dto.getName()).imageUrl(dto.getImageUrl()).originalPrice(dto.getOriginalPrice()).discountPrice(dto.getDiscountPrice()).discountRate(dto.getDiscountRate()).build();
     }
 }
