@@ -66,12 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        log.info("Authorization header = [{}]", bearerToken);
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7).trim();
-            log.info("Extracted JWT = [{}]", token);
-            return token;
+            return bearerToken.substring(7).trim();
         }
         return null;
     }
