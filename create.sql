@@ -92,6 +92,7 @@ CREATE TABLE REVIEW (
     kindness_rating DOUBLE,
     hygiene_rating DOUBLE,
     will_revisit TINYINT(1),
+    is_hidden TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
 );
@@ -185,4 +186,29 @@ CREATE TABLE REVIEW_LIKE (
     UNIQUE KEY uk_review_like (review_id, member_id),
     INDEX idx_review_like_review_id (review_id),
     INDEX idx_review_like_member_id (member_id)
+);
+
+CREATE TABLE REVIEW_COMMENT (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    review_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    is_hidden TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_review_comment_review_id (review_id),
+    INDEX idx_review_comment_member_id (member_id)
+);
+
+CREATE TABLE REVIEW_REPLY (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    comment_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
+    reply_to_member_id BIGINT,
+    content TEXT NOT NULL,
+    is_hidden TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_review_reply_comment_id (comment_id),
+    INDEX idx_review_reply_member_id (member_id)
 );

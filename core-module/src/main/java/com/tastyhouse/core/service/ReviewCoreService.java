@@ -1,6 +1,8 @@
 package com.tastyhouse.core.service;
 
 import com.tastyhouse.core.entity.review.Review;
+import com.tastyhouse.core.entity.review.ReviewComment;
+import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
@@ -10,6 +12,8 @@ import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import com.tastyhouse.core.repository.review.ReviewLikeJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewTagJpaRepository;
+import com.tastyhouse.core.repository.review.ReviewCommentJpaRepository;
+import com.tastyhouse.core.repository.review.ReviewReplyJpaRepository;
 import com.tastyhouse.core.entity.review.ReviewLike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +34,8 @@ public class ReviewCoreService {
     private final ReviewTagJpaRepository reviewTagJpaRepository;
     private final TagJpaRepository tagJpaRepository;
     private final ReviewLikeJpaRepository reviewLikeJpaRepository;
+    private final ReviewCommentJpaRepository reviewCommentJpaRepository;
+    private final ReviewReplyJpaRepository reviewReplyJpaRepository;
 
     public ReviewPageResult findBestReviewsWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -124,6 +130,29 @@ public class ReviewCoreService {
             reviewLikeJpaRepository.save(reviewLike);
             return true;
         }
+    }
+
+    @Transactional
+    public ReviewComment createComment(Long reviewId, Long memberId, String content) {
+        ReviewComment comment = new ReviewComment(reviewId, memberId, content);
+        return reviewCommentJpaRepository.save(comment);
+    }
+
+    @Transactional
+    public ReviewReply createReply(Long commentId, Long memberId, Long replyToMemberId, String content) {
+        ReviewReply reply = new ReviewReply(commentId, memberId, replyToMemberId, content);
+        return reviewReplyJpaRepository.save(reply);
+    }
+
+    public List<ReviewComment> findCommentsByReviewId(Long reviewId) {
+        return reviewCommentJpaRepository.findByReviewIdAndIsHiddenFalseOrderByCreatedAtDesc(reviewId);
+    }
+
+    public List<ReviewReply> findRepliesByCommentIds(List<Long> commentIds) {
+        if (commentIds.isEmpty()) {
+            return List.of();
+        }
+        return reviewReplyJpaRepository.findByCommentIdInAndIsHiddenFalseOrderByCreatedAtAsc(commentIds);
     }
 
     public static class LatestReviewPageResult {

@@ -62,6 +62,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                         .where(subReviewImage.reviewId.eq(review.id))
                 ))
             )
+            .where(review.isHidden.eq(false))
             .orderBy(review.totalRating.desc(), review.createdAt.desc());
 
         long total = query.fetch().size();
@@ -97,6 +98,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .where(review.isHidden.eq(false))
             .orderBy(review.createdAt.desc());
 
         long total = query.fetch().size();
@@ -154,7 +156,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
-            .where(review.memberId.in(followingMemberIds))
+            .where(
+                review.memberId.in(followingMemberIds),
+                review.isHidden.eq(false)
+            )
             .orderBy(review.createdAt.desc());
 
         long total = query.fetch().size();
@@ -231,7 +236,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
-            .where(review.id.eq(reviewId))
+            .where(
+                review.id.eq(reviewId),
+                review.isHidden.eq(false)
+            )
             .fetchOne();
 
         if (result != null) {

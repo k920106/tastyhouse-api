@@ -1,26 +1,37 @@
 package com.tastyhouse.webapi.review;
 
+import com.tastyhouse.core.entity.review.ReviewComment;
+import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
+import com.tastyhouse.core.entity.user.Member;
+import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
+import com.tastyhouse.webapi.review.response.CommentListResponse;
+import com.tastyhouse.webapi.review.response.CommentResponse;
 import com.tastyhouse.webapi.review.response.LatestReviewListItem;
+import com.tastyhouse.webapi.review.response.ReplyResponse;
 import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
     private final ReviewCoreService reviewCoreService;
+    private final MemberJpaRepository memberJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
         ReviewCoreService.ReviewPageResult coreResult = reviewCoreService.findBestReviewsWithPagination(
@@ -129,5 +140,92 @@ public class ReviewService {
 
     public boolean toggleReviewLike(Long reviewId, Long memberId) {
         return reviewCoreService.toggleReviewLike(reviewId, memberId);
+    }
+
+    public CommentResponse createComment(Long reviewId, Long memberId, String content) {
+        ReviewComment comment = reviewCoreService.createComment(reviewId, memberId, content);
+        Member member = memberJpaRepository.findById(memberId).orElse(null);
+        return convertToCommentResponse(comment, member, List.of());
+    }
+
+    public ReplyResponse createReply(Long commentId, Long memberId, Long replyToMemberId, String content) {
+        ReviewReply reply = reviewCoreService.createReply(commentId, memberId, replyToMemberId, content);
+        Member member = memberJpaRepository.findById(memberId).orElse(null);
+        Member replyToMember = replyToMemberId != null ? memberJpaRepository.findById(replyToMemberId).orElse(null) : null;
+        return convertToReplyResponse(reply, member, replyToMember);
+    }
+
+    public CommentListResponse findCommentsWithReplies(Long reviewId) {
+        List<ReviewComment> comments = reviewCoreService.findCommentsByReviewId(reviewId);
+
+        if (comments.isEmpty()) {
+            return new CommentListResponse(List.of(), 0);
+        }
+
+        List<Long> commentIds = comments.stream()
+            .map(ReviewComment::getId)
+            .toList();
+
+        List<ReviewReply> allReplies = reviewCoreService.findRepliesByCommentIds(commentIds);
+
+        Map<Long, List<ReviewReply>> repliesByCommentId = allReplies.stream()
+            .collect(Collectors.groupingBy(ReviewReply::getCommentId));
+
+        List<Long> memberIds = new ArrayList<>();
+        comments.forEach(c -> memberIds.add(c.getMemberId()));
+        allReplies.forEach(r -> {
+            memberIds.add(r.getMemberId());
+            if (r.getReplyToMemberId() != null) {
+                memberIds.add(r.getReplyToMemberId());
+            }
+        });
+
+        Map<Long, Member> memberMap = memberJpaRepository.findAllById(memberIds).stream()
+            .collect(Collectors.toMap(Member::getId, m -> m));
+
+        List<CommentResponse> commentResponses = comments.stream()
+            .map(comment -> {
+                Member member = memberMap.get(comment.getMemberId());
+                List<ReviewReply> replies = repliesByCommentId.getOrDefault(comment.getId(), List.of());
+                List<ReplyResponse> replyResponses = replies.stream()
+                    .map(reply -> convertToReplyResponse(
+                        reply,
+                        memberMap.get(reply.getMemberId()),
+                        reply.getReplyToMemberId() != null ? memberMap.get(reply.getReplyToMemberId()) : null
+                    ))
+                    .toList();
+                return convertToCommentResponse(comment, member, replyResponses);
+            })
+            .toList();
+
+        int totalCount = comments.size() + allReplies.size();
+        return new CommentListResponse(commentResponses, totalCount);
+    }
+
+    private CommentResponse convertToCommentResponse(ReviewComment comment, Member member, List<ReplyResponse> replies) {
+        return CommentResponse.builder()
+            .id(comment.getId())
+            .reviewId(comment.getReviewId())
+            .memberId(comment.getMemberId())
+            .memberNickname(member != null ? member.getNickname() : null)
+            .memberProfileImageUrl(member != null ? member.getProfileImageUrl() : null)
+            .content(comment.getContent())
+            .createdAt(comment.getCreatedAt())
+            .replies(replies)
+            .build();
+    }
+
+    private ReplyResponse convertToReplyResponse(ReviewReply reply, Member member, Member replyToMember) {
+        return ReplyResponse.builder()
+            .id(reply.getId())
+            .commentId(reply.getCommentId())
+            .memberId(reply.getMemberId())
+            .memberNickname(member != null ? member.getNickname() : null)
+            .memberProfileImageUrl(member != null ? member.getProfileImageUrl() : null)
+            .replyToMemberId(reply.getReplyToMemberId())
+            .replyToMemberNickname(replyToMember != null ? replyToMember.getNickname() : null)
+            .content(reply.getContent())
+            .createdAt(reply.getCreatedAt())
+            .build();
     }
 }

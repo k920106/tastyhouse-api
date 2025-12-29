@@ -45,4 +45,7 @@ public class Review extends BaseEntity {
 
     @Column(name = "will_revisit")
     private Boolean willRevisit; // 재방문 의사
+
+    @Column(name = "is_hidden", nullable = false)
+    private Boolean isHidden = false; // 관리자 미노출 여부
 }

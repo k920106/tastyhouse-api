@@ -4,13 +4,19 @@ import com.tastyhouse.core.common.ApiResponse;
 import com.tastyhouse.core.common.PagedApiResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.review.request.CommentCreateRequest;
+import com.tastyhouse.webapi.review.request.ReplyCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
+import com.tastyhouse.webapi.review.response.CommentListResponse;
+import com.tastyhouse.webapi.review.response.CommentResponse;
 import com.tastyhouse.webapi.review.response.LatestReviewListItem;
+import com.tastyhouse.webapi.review.response.ReplyResponse;
 import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
 import com.tastyhouse.webapi.review.response.ReviewLikeResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -162,5 +168,94 @@ public class ReviewApiController {
 
         boolean liked = reviewService.toggleReviewLike(reviewId, userDetails.getMemberId());
         return ResponseEntity.ok(ApiResponse.success(new ReviewLikeResponse(liked)));
+    }
+
+    @Operation(
+        summary = "댓글 등록",
+        description = "리뷰에 댓글을 등록합니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "댓글 등록 성공",
+            content = @Content(schema = @Schema(implementation = CommentResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "인증되지 않은 사용자"
+        )
+    })
+    @PostMapping("/v1/{reviewId}/comments")
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(
+        @Parameter(description = "리뷰 ID", example = "1")
+        @PathVariable Long reviewId,
+        @Valid @RequestBody CommentCreateRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        CommentResponse response = reviewService.createComment(
+            reviewId,
+            userDetails.getMemberId(),
+            request.getContent()
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(
+        summary = "답글 등록",
+        description = "댓글에 답글을 등록합니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "답글 등록 성공",
+            content = @Content(schema = @Schema(implementation = ReplyResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "인증되지 않은 사용자"
+        )
+    })
+    @PostMapping("/v1/comments/{commentId}/replies")
+    public ResponseEntity<ApiResponse<ReplyResponse>> createReply(
+        @Parameter(description = "댓글 ID", example = "1")
+        @PathVariable Long commentId,
+        @Valid @RequestBody ReplyCreateRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        ReplyResponse response = reviewService.createReply(
+            commentId,
+            userDetails.getMemberId(),
+            request.getReplyToMemberId(),
+            request.getContent()
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(
+        summary = "댓글 및 답글 조회",
+        description = "리뷰의 모든 댓글과 답글을 조회합니다."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = CommentListResponse.class))
+        )
+    })
+    @GetMapping("/v1/{reviewId}/comments")
+    public ResponseEntity<ApiResponse<CommentListResponse>> getComments(
+        @Parameter(description = "리뷰 ID", example = "1")
+        @PathVariable Long reviewId
+    ) {
+        CommentListResponse response = reviewService.findCommentsWithReplies(reviewId);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
