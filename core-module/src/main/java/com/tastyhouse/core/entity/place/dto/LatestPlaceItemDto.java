@@ -15,9 +15,11 @@ public class LatestPlaceItemDto {
     private final String imageUrl;
     private final List<String> tags;
     private final LocalDateTime createdAt;
+    private final Long reviewCount;
+    private final Long bookmarkCount;
 
     @QueryProjection
-    public LatestPlaceItemDto(Long id, String placeName, String stationName, Double rating, String imageUrl, List<String> tags, LocalDateTime createdAt) {
+    public LatestPlaceItemDto(Long id, String placeName, String stationName, Double rating, String imageUrl, List<String> tags, LocalDateTime createdAt, Long reviewCount, Long bookmarkCount) {
         this.id = id;
         this.placeName = placeName;
         this.stationName = stationName;
@@ -25,5 +27,7 @@ public class LatestPlaceItemDto {
         this.imageUrl = imageUrl;
         this.tags = tags;
         this.createdAt = createdAt;
+        this.reviewCount = reviewCount;
+        this.bookmarkCount = bookmarkCount;
     }
 }

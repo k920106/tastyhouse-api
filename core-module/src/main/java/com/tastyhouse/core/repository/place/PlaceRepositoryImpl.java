@@ -15,16 +15,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.tastyhouse.core.entity.place.QPlace.place;
-import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
+import static com.tastyhouse.core.entity.place.QPlaceBookmark.placeBookmark;
 import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
+import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
 import static com.tastyhouse.core.entity.place.QPlaceTag.placeTag;
 import static com.tastyhouse.core.entity.place.QTag.tag;
+import static com.tastyhouse.core.entity.review.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
 public class PlaceRepositoryImpl implements PlaceRepository {
 
-    private final PlaceJpaRepository placeJpaRepository;
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -99,8 +100,14 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 5. Place별 태그 조회
         var tagsMap = queryFactory.select(placeTag.placeId, tag.tagName).from(placeTag).join(tag).on(tag.id.eq(placeTag.tagId)).where(placeTag.placeId.in(placeIds)).fetch().stream().collect(Collectors.groupingBy(tuple -> tuple.get(placeTag.placeId), Collectors.mapping(tuple -> tuple.get(tag.tagName), Collectors.toList())));
 
-        // 6. 결과 조합
-        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> new LatestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), tagsMap.getOrDefault(p.getId(), List.of()), p.getCreatedAt())).collect(Collectors.toList());
+        // 6. Place별 리뷰 개수 조회
+        var reviewCountMap = queryFactory.select(review.placeId, review.count()).from(review).where(review.placeId.in(placeIds).and(review.isHidden.eq(false))).groupBy(review.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(review.placeId), tuple -> tuple.get(review.count())));
+
+        // 7. Place별 찜 개수 조회
+        var bookmarkCountMap = queryFactory.select(placeBookmark.placeId, placeBookmark.count()).from(placeBookmark).where(placeBookmark.placeId.in(placeIds)).groupBy(placeBookmark.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeBookmark.placeId), tuple -> tuple.get(placeBookmark.count())));
+
+        // 8. 결과 조합
+        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> new LatestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), tagsMap.getOrDefault(p.getId(), List.of()), p.getCreatedAt(), reviewCountMap.getOrDefault(p.getId(), 0L), bookmarkCountMap.getOrDefault(p.getId(), 0L))).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }
