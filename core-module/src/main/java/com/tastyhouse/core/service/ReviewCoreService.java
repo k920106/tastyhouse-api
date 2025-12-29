@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,8 +83,13 @@ public class ReviewCoreService {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<LatestReviewListItemDto> reviewPage = reviewRepository.findLatestReviews(pageRequest);
 
+        List<LatestReviewListItemDto> content = reviewPage.getContent();
+        if (!content.isEmpty()) {
+            populateLikeAndCommentCounts(content);
+        }
+
         return new LatestReviewPageResult(
-            reviewPage.getContent(),
+            content,
             reviewPage.getTotalElements(),
             reviewPage.getTotalPages(),
             reviewPage.getNumber(),
@@ -109,13 +116,41 @@ public class ReviewCoreService {
             pageRequest
         );
 
+        List<LatestReviewListItemDto> content = reviewPage.getContent();
+        if (!content.isEmpty()) {
+            populateLikeAndCommentCounts(content);
+        }
+
         return new LatestReviewPageResult(
-            reviewPage.getContent(),
+            content,
             reviewPage.getTotalElements(),
             reviewPage.getTotalPages(),
             reviewPage.getNumber(),
             reviewPage.getSize()
         );
+    }
+
+    private void populateLikeAndCommentCounts(List<LatestReviewListItemDto> reviews) {
+        List<Long> reviewIds = reviews.stream()
+            .map(LatestReviewListItemDto::getId)
+            .toList();
+
+        Map<Long, Long> likeCountMap = reviewLikeJpaRepository.countByReviewIdIn(reviewIds).stream()
+            .collect(Collectors.toMap(
+                arr -> (Long) arr[0],
+                arr -> (Long) arr[1]
+            ));
+
+        Map<Long, Long> commentCountMap = reviewCommentJpaRepository.countByReviewIdIn(reviewIds).stream()
+            .collect(Collectors.toMap(
+                arr -> (Long) arr[0],
+                arr -> (Long) arr[1]
+            ));
+
+        reviews.forEach(review -> {
+            review.setLikeCount(likeCountMap.getOrDefault(review.getId(), 0L));
+            review.setCommentCount(commentCountMap.getOrDefault(review.getId(), 0L));
+        });
     }
 
     @Transactional
