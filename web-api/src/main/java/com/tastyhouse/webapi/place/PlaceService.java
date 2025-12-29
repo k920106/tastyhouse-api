@@ -52,6 +52,16 @@ public class PlaceService {
             .toList();
     }
 
+    public List<EditorChoiceResponse> findEditorChoices(PageRequest pageRequest) {
+        PlaceCoreService.EditorChoicePageResult coreResult = placeCoreService.findEditorChoices(
+            pageRequest.getPage(), pageRequest.getSize()
+        );
+
+        return coreResult.getContent().stream()
+            .map(this::convertToEditorChoiceResponse)
+            .toList();
+    }
+
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
         List<EditorChoiceProductItem> productItems = dto.getProducts() != null
             ? dto.getProducts().stream()
