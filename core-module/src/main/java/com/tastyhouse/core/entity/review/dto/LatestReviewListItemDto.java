@@ -18,6 +18,8 @@ public class LatestReviewListItemDto {
     private final String memberNickname;
     private final String memberProfileImageUrl;
     private final LocalDateTime createdAt;
+    private Long likeCount;
+    private Long commentCount;
 
     @QueryProjection
     public LatestReviewListItemDto(Long id, String stationName,
@@ -33,9 +35,19 @@ public class LatestReviewListItemDto {
         this.memberNickname = memberNickname;
         this.memberProfileImageUrl = memberProfileImageUrl;
         this.createdAt = createdAt;
+        this.likeCount = 0L;
+        this.commentCount = 0L;
     }
 
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public void setLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public void setCommentCount(Long commentCount) {
+        this.commentCount = commentCount;
     }
 }

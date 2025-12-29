@@ -18,4 +18,6 @@ public class LatestReviewListItem {
     private final String memberNickname;
     private final String memberProfileImageUrl;
     private final LocalDateTime createdAt;
+    private final Long likeCount;
+    private final Long commentCount;
 }

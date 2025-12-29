@@ -105,6 +105,8 @@ public class ReviewService {
             .memberNickname(dto.getMemberNickname())
             .memberProfileImageUrl(dto.getMemberProfileImageUrl())
             .createdAt(dto.getCreatedAt())
+            .likeCount(dto.getLikeCount())
+            .commentCount(dto.getCommentCount())
             .build();
     }
 
