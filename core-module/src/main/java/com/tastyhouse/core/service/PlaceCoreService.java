@@ -47,6 +47,19 @@ public class PlaceCoreService {
         return placeChoiceRepository.findEditorChoice();
     }
 
+    public EditorChoicePageResult findEditorChoices(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<EditorChoiceDto> editorChoicePage = placeChoiceRepository.findEditorChoice(pageRequest);
+
+        return new EditorChoicePageResult(
+            editorChoicePage.getContent(),
+            editorChoicePage.getTotalElements(),
+            editorChoicePage.getTotalPages(),
+            editorChoicePage.getNumber(),
+            editorChoicePage.getSize()
+        );
+    }
+
     public static class BestPlacePageResult {
         private final List<BestPlaceItemDto> content;
         private final long totalElements;
@@ -63,6 +76,28 @@ public class PlaceCoreService {
         }
 
         public List<BestPlaceItemDto> getContent() { return content; }
+        public long getTotalElements() { return totalElements; }
+        public int getTotalPages() { return totalPages; }
+        public int getCurrentPage() { return currentPage; }
+        public int getPageSize() { return pageSize; }
+    }
+
+    public static class EditorChoicePageResult {
+        private final List<EditorChoiceDto> content;
+        private final long totalElements;
+        private final int totalPages;
+        private final int currentPage;
+        private final int pageSize;
+
+        public EditorChoicePageResult(List<EditorChoiceDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
+            this.content = content;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.pageSize = pageSize;
+        }
+
+        public List<EditorChoiceDto> getContent() { return content; }
         public long getTotalElements() { return totalElements; }
         public int getTotalPages() { return totalPages; }
         public int getCurrentPage() { return currentPage; }

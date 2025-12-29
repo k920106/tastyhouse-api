@@ -34,50 +34,22 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-        summary = "베스트 플레이스 목록 조회",
-        description = "평점 기준 베스트 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그 정보를 포함합니다."
-    )
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = PagedApiResponse.class))
-        )
-    })
+    @Operation(summary = "베스트 플레이스 목록 조회", description = "평점 기준 베스트 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그 정보를 포함합니다.")
+    @ApiResponses({@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedApiResponse.class)))})
     @GetMapping("/v1/best")
-    public ResponseEntity<PagedApiResponse<BestPlaceListItem>> getBestPlaces(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size
-    ) {
+    public ResponseEntity<PagedApiResponse<BestPlaceListItem>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-
         PageResult<BestPlaceListItem> pageResult = placeService.findBestPlaces(pageRequest);
-
-        PagedApiResponse<BestPlaceListItem> response = PagedApiResponse.success(
-            pageResult.getContent(),
-            page,
-            size,
-            pageResult.getTotalElements()
-        );
-
+        PagedApiResponse<BestPlaceListItem> response = PagedApiResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-        summary = "에디터 초이스 조회",
-        description = "특정 에디터 초이스의 가게 이미지, 제목, 내용, 관련 상품 목록을 조회합니다."
-    )
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ApiResponse.class))
-        )
-    })
+    @Operation(summary = "에디터 초이스 조회", description = "특정 에디터 초이스의 가게 이미지, 제목, 내용, 관련 상품 목록을 조회합니다.")
+    @ApiResponses({@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = ApiResponse.class)))})
     @GetMapping("/v1/editor-choice")
-    public ResponseEntity<ApiResponse<List<EditorChoiceResponse>>> getEditorChoices() {
-        List<EditorChoiceResponse> editorChoiceResponses = placeService.findEditorChoices();
+    public ResponseEntity<ApiResponse<List<EditorChoiceResponse>>> getEditorChoices(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = new PageRequest(page, size);
+        List<EditorChoiceResponse> editorChoiceResponses = placeService.findEditorChoices(pageRequest);
         ApiResponse<List<EditorChoiceResponse>> response = ApiResponse.success(editorChoiceResponses);
         return ResponseEntity.ok(response);
     }
