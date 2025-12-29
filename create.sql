@@ -126,6 +126,28 @@ CREATE TABLE MEMBER (
     updated_at DATETIME NOT NULL
 );
 
+CREATE TABLE PLACE (
+   id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+   station_id BIGINT        NOT NULL,
+   place_name VARCHAR(255)  NOT NULL UNIQUE,
+   latitude   DECIMAL(9, 6) NOT NULL,
+   longitude  DECIMAL(9, 6) NOT NULL,
+   rating     DOUBLE,
+   created_at DATETIME      NOT NULL,
+   updated_at DATETIME      NOT NULL
+);
+
+CREATE TABLE PLACE_BOOKMARK (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id   BIGINT   NOT NULL,
+    member_id  BIGINT   NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY uk_place_bookmark (place_id, member_id),
+    INDEX idx_place_bookmark_place_id (place_id),
+    INDEX idx_place_bookmark_member_id (member_id)
+);
+
 CREATE TABLE PLACE_IMAGE (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     place_id BIGINT NOT NULL,
@@ -142,17 +164,6 @@ CREATE TABLE PLACE_TAG (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     place_id BIGINT NOT NULL,
     tag_id BIGINT NOT NULL
-);
-
-CREATE TABLE PLACE (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    station_id BIGINT NOT NULL,
-    place_name VARCHAR(255) NOT NULL UNIQUE,
-    latitude DECIMAL(9, 6) NOT NULL,
-    longitude DECIMAL(9, 6) NOT NULL,
-    rating DOUBLE,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
 );
 
 CREATE TABLE TAG (

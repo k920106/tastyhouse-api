@@ -16,4 +16,6 @@ public class LatestPlaceListItem {
     private final String imageUrl;
     private final List<String> tags;
     private final LocalDateTime createdAt;
+    private final Long reviewCount;
+    private final Long bookmarkCount;
 }

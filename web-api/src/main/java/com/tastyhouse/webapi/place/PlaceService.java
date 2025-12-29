@@ -67,7 +67,7 @@ public class PlaceService {
     }
 
     private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
-        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).createdAt(dto.getCreatedAt()).build();
+        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).build();
     }
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
