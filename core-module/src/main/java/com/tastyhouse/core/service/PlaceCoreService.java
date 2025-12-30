@@ -3,11 +3,13 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.entity.place.Amenity;
 import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
+import com.tastyhouse.core.entity.place.PlaceStation;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
 import com.tastyhouse.core.repository.place.PlaceChoiceRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
+import com.tastyhouse.core.repository.place.PlaceStationJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ public class PlaceCoreService {
 
     private final PlaceRepository placeRepository;
     private final PlaceChoiceRepository placeChoiceRepository;
+    private final PlaceStationJpaRepository placeStationJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         BigDecimal lat = BigDecimal.valueOf(latitude);
@@ -52,6 +55,10 @@ public class PlaceCoreService {
         Page<EditorChoiceDto> editorChoicePage = placeChoiceRepository.findEditorChoice(pageRequest);
 
         return new EditorChoicePageResult(editorChoicePage.getContent(), editorChoicePage.getTotalElements(), editorChoicePage.getTotalPages(), editorChoicePage.getNumber(), editorChoicePage.getSize());
+    }
+
+    public List<PlaceStation> findAllStations() {
+        return placeStationJpaRepository.findAllByOrderByStationNameAsc();
     }
 
     public static class BestPlacePageResult {
