@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.entity.place.Place;
+import com.tastyhouse.core.entity.place.PlaceStation;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
@@ -13,6 +14,7 @@ import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.response.EditorChoiceProductItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
 import com.tastyhouse.webapi.place.response.LatestPlaceListItem;
+import com.tastyhouse.webapi.place.response.StationListItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -79,5 +81,14 @@ public class PlaceService {
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
         return EditorChoiceProductItem.builder().id(dto.getId()).placeName(dto.getPlaceName()).name(dto.getName()).imageUrl(dto.getImageUrl()).originalPrice(dto.getOriginalPrice()).discountPrice(dto.getDiscountPrice()).discountRate(dto.getDiscountRate()).build();
+    }
+
+    public List<StationListItem> findAllStations() {
+        List<PlaceStation> stations = placeCoreService.findAllStations();
+        return stations.stream().map(this::convertToStationListItem).toList();
+    }
+
+    private StationListItem convertToStationListItem(PlaceStation station) {
+        return StationListItem.builder().id(station.getId()).name(station.getStationName()).build();
     }
 }

@@ -12,6 +12,7 @@ import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
 import com.tastyhouse.webapi.place.response.LatestPlaceListItem;
+import com.tastyhouse.webapi.place.response.StationListItem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -72,6 +73,15 @@ public class PlaceApiController {
         LatestPlaceFilterRequest filterRequest = new LatestPlaceFilterRequest(stationId, foodTypes, amenities);
         PageResult<LatestPlaceListItem> pageResult = placeService.findLatestPlaces(pageRequest, filterRequest);
         PagedCommonResponse<LatestPlaceListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "전철역 목록 조회", description = "전철역 목록을 가나다라 순으로 조회합니다. ID와 전철역명을 반환합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/stations")
+    public ResponseEntity<CommonResponse<List<StationListItem>>> getStations() {
+        List<StationListItem> stations = placeService.findAllStations();
+        CommonResponse<List<StationListItem>> response = CommonResponse.success(stations);
         return ResponseEntity.ok(response);
     }
 }
