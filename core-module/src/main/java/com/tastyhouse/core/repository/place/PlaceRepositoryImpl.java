@@ -71,8 +71,21 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 4. Place별 썸네일 이미지 조회
         var imageMap = queryFactory.select(placeImage.placeId, placeImage.imageUrl).from(placeImage).where(placeImage.placeId.in(placeIds).and(placeImage.isThumbnail.eq(true))).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeImage.placeId), tuple -> tuple.get(placeImage.imageUrl)));
 
-        // 5. 결과 조합
-        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()))).collect(Collectors.toList());
+        // 5. Place별 음식종류 목록 조회
+        var foodTypeMap = queryFactory
+            .select(placeFoodType.placeId, placeFoodTypeCategory.foodType)
+            .from(placeFoodType)
+            .join(placeFoodTypeCategory).on(placeFoodType.placeFoodTypeCategoryId.eq(placeFoodTypeCategory.id))
+            .where(placeFoodType.placeId.in(placeIds))
+            .fetch()
+            .stream()
+            .collect(Collectors.groupingBy(
+                tuple -> tuple.get(placeFoodType.placeId),
+                Collectors.mapping(tuple -> tuple.get(placeFoodTypeCategory.foodType), Collectors.toList())
+            ));
+
+        // 6. 결과 조합
+        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), foodTypeMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }
