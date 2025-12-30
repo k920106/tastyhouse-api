@@ -1,6 +1,8 @@
 package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.entity.place.Place;
+import com.tastyhouse.core.entity.place.PlaceAmenityCategory;
+import com.tastyhouse.core.entity.place.PlaceFoodTypeCategory;
 import com.tastyhouse.core.entity.place.PlaceStation;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
@@ -9,10 +11,12 @@ import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.place.response.AmenityListItem;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.response.EditorChoiceProductItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
+import com.tastyhouse.webapi.place.response.FoodTypeListItem;
 import com.tastyhouse.webapi.place.response.LatestPlaceListItem;
 import com.tastyhouse.webapi.place.response.StationListItem;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +92,38 @@ public class PlaceService {
         return stations.stream().map(this::convertToStationListItem).toList();
     }
 
+    public List<FoodTypeListItem> findAllFoodTypes() {
+        List<PlaceFoodTypeCategory> categories = placeCoreService.findAllFoodTypeCategories();
+        return categories.stream()
+                .map(this::convertToFoodTypeListItem)
+                .toList();
+    }
+
+    public List<AmenityListItem> findAllAmenities() {
+        List<PlaceAmenityCategory> categories = placeCoreService.findAllAmenityCategories();
+        return categories.stream()
+                .map(this::convertToAmenityListItem)
+                .toList();
+    }
+
     private StationListItem convertToStationListItem(PlaceStation station) {
         return StationListItem.builder().id(station.getId()).name(station.getStationName()).build();
+    }
+
+    private FoodTypeListItem convertToFoodTypeListItem(PlaceFoodTypeCategory category) {
+        return FoodTypeListItem.builder()
+                .code(category.getFoodType().name())
+                .name(category.getDisplayName())
+                .imageUrl(category.getImageUrl())
+                .build();
+    }
+
+    private AmenityListItem convertToAmenityListItem(PlaceAmenityCategory category) {
+        return AmenityListItem.builder()
+                .code(category.getAmenity().name())
+                .name(category.getDisplayName())
+                .imageUrlOn(category.getImageUrlOn())
+                .imageUrlOff(category.getImageUrlOff())
+                .build();
     }
 }
