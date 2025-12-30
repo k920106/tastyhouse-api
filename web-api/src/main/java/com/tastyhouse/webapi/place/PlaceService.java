@@ -9,6 +9,7 @@ import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
+import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.response.EditorChoiceProductItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
 import com.tastyhouse.webapi.place.response.LatestPlaceListItem;
@@ -36,8 +37,14 @@ public class PlaceService {
         return new PageResult<>(bestPlaceListItems, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
     }
 
-    public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest) {
-        PlaceCoreService.LatestPlacePageResult coreResult = placeCoreService.findLatestPlaces(pageRequest.getPage(), pageRequest.getSize());
+    public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
+        PlaceCoreService.LatestPlacePageResult coreResult = placeCoreService.findLatestPlaces(
+                pageRequest.getPage(),
+                pageRequest.getSize(),
+                filterRequest.stationId(),
+                filterRequest.foodTypes(),
+                filterRequest.amenities()
+        );
 
         List<LatestPlaceListItem> latestPlaceListItems = coreResult.getContent().stream().map(this::convertToLatestPlaceListItem).toList();
 
@@ -63,11 +70,11 @@ public class PlaceService {
     }
 
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
-        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).build();
+        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).build();
     }
 
     private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
-        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).tags(dto.getTags()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).build();
+        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).foodTypes(dto.getFoodTypes()).build();
     }
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {

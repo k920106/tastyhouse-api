@@ -1,5 +1,7 @@
 package com.tastyhouse.core.service;
 
+import com.tastyhouse.core.entity.place.Amenity;
+import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
@@ -34,9 +36,9 @@ public class PlaceCoreService {
         return new BestPlacePageResult(bestPlacePage.getContent(), bestPlacePage.getTotalElements(), bestPlacePage.getTotalPages(), bestPlacePage.getNumber(), bestPlacePage.getSize());
     }
 
-    public LatestPlacePageResult findLatestPlaces(int page, int size) {
+    public LatestPlacePageResult findLatestPlaces(int page, int size, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<LatestPlaceItemDto> latestPlacePage = placeRepository.findLatestPlaces(pageRequest);
+        Page<LatestPlaceItemDto> latestPlacePage = placeRepository.findLatestPlaces(pageRequest, stationId, foodTypes, amenities);
 
         return new LatestPlacePageResult(latestPlacePage.getContent(), latestPlacePage.getTotalElements(), latestPlacePage.getTotalPages(), latestPlacePage.getNumber(), latestPlacePage.getSize());
     }

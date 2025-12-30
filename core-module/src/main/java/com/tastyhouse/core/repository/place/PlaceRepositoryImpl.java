@@ -1,6 +1,9 @@
 package com.tastyhouse.core.repository.place;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tastyhouse.core.entity.place.Amenity;
+import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
@@ -11,15 +14,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.tastyhouse.core.entity.place.QPlace.place;
+import static com.tastyhouse.core.entity.place.QPlaceAmenity.placeAmenity;
 import static com.tastyhouse.core.entity.place.QPlaceBookmark.placeBookmark;
+import static com.tastyhouse.core.entity.place.QPlaceFoodType.placeFoodType;
 import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
 import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
-import static com.tastyhouse.core.entity.place.QPlaceTag.placeTag;
-import static com.tastyhouse.core.entity.place.QTag.tag;
 import static com.tastyhouse.core.entity.review.QReview.review;
 
 @Repository
@@ -64,26 +69,89 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 4. Place별 썸네일 이미지 조회
         var imageMap = queryFactory.select(placeImage.placeId, placeImage.imageUrl).from(placeImage).where(placeImage.placeId.in(placeIds).and(placeImage.isThumbnail.eq(true))).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeImage.placeId), tuple -> tuple.get(placeImage.imageUrl)));
 
-        // 5. Place별 태그 조회
-        var tagsMap = queryFactory.select(placeTag.placeId, tag.tagName).from(placeTag).join(tag).on(tag.id.eq(placeTag.tagId)).where(placeTag.placeId.in(placeIds)).fetch().stream().collect(Collectors.groupingBy(tuple -> tuple.get(placeTag.placeId), Collectors.mapping(tuple -> tuple.get(tag.tagName), Collectors.toList())));
-
-        // 6. 결과 조합
-        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), tagsMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
+        // 5. 결과 조합
+        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()))).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public Page<LatestPlaceItemDto> findLatestPlaces(Pageable pageable) {
+    public Page<LatestPlaceItemDto> findLatestPlaces(Pageable pageable, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities) {
+        // 필터 조건 생성
+        BooleanBuilder whereClause = new BooleanBuilder();
+
+        // 전철역 필터
+        if (stationId != null) {
+            whereClause.and(place.stationId.eq(stationId));
+        }
+
+        // 음식종류 필터
+        Set<Long> foodTypePlaceIds = null;
+        if (foodTypes != null && !foodTypes.isEmpty()) {
+            foodTypePlaceIds = new HashSet<>(queryFactory
+                    .select(placeFoodType.placeId)
+                    .from(placeFoodType)
+                    .where(placeFoodType.foodType.in(foodTypes))
+                    .fetch());
+
+            if (foodTypePlaceIds.isEmpty()) {
+                return new PageImpl<>(List.of(), pageable, 0);
+            }
+        }
+
+        // 편의시설 필터
+        Set<Long> amenityPlaceIds = null;
+        if (amenities != null && !amenities.isEmpty()) {
+            amenityPlaceIds = new HashSet<>(queryFactory
+                    .select(placeAmenity.placeId)
+                    .from(placeAmenity)
+                    .where(placeAmenity.amenity.in(amenities))
+                    .groupBy(placeAmenity.placeId)
+                    .having(placeAmenity.placeId.count().goe((long) amenities.size()))
+                    .fetch());
+
+            if (amenityPlaceIds.isEmpty()) {
+                return new PageImpl<>(List.of(), pageable, 0);
+            }
+        }
+
+        // 필터 결과 교집합 처리
+        Set<Long> filteredPlaceIds = null;
+        if (foodTypePlaceIds != null && amenityPlaceIds != null) {
+            filteredPlaceIds = new HashSet<>(foodTypePlaceIds);
+            filteredPlaceIds.retainAll(amenityPlaceIds);
+            if (filteredPlaceIds.isEmpty()) {
+                return new PageImpl<>(List.of(), pageable, 0);
+            }
+        } else if (foodTypePlaceIds != null) {
+            filteredPlaceIds = foodTypePlaceIds;
+        } else if (amenityPlaceIds != null) {
+            filteredPlaceIds = amenityPlaceIds;
+        }
+
+        if (filteredPlaceIds != null) {
+            whereClause.and(place.id.in(filteredPlaceIds));
+        }
+
         // 1. 전체 개수 조회
-        Long total = queryFactory.select(place.count()).from(place).fetchOne();
+        Long total = queryFactory
+                .select(place.count())
+                .from(place)
+                .where(whereClause)
+                .fetchOne();
 
         if (total == null || total == 0) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
         // 2. 최신순 페이징 처리된 Place 조회
-        List<Place> pagedPlaces = queryFactory.selectFrom(place).orderBy(place.createdAt.desc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
+        List<Place> pagedPlaces = queryFactory
+                .selectFrom(place)
+                .where(whereClause)
+                .orderBy(place.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
         if (pagedPlaces.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, total);
@@ -97,17 +165,36 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 4. Place별 썸네일 이미지 조회
         var imageMap = queryFactory.select(placeImage.placeId, placeImage.imageUrl).from(placeImage).where(placeImage.placeId.in(placeIds).and(placeImage.isThumbnail.eq(true))).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeImage.placeId), tuple -> tuple.get(placeImage.imageUrl)));
 
-        // 5. Place별 태그 조회
-        var tagsMap = queryFactory.select(placeTag.placeId, tag.tagName).from(placeTag).join(tag).on(tag.id.eq(placeTag.tagId)).where(placeTag.placeId.in(placeIds)).fetch().stream().collect(Collectors.groupingBy(tuple -> tuple.get(placeTag.placeId), Collectors.mapping(tuple -> tuple.get(tag.tagName), Collectors.toList())));
-
-        // 6. Place별 리뷰 개수 조회
+        // 5. Place별 리뷰 개수 조회
         var reviewCountMap = queryFactory.select(review.placeId, review.count()).from(review).where(review.placeId.in(placeIds).and(review.isHidden.eq(false))).groupBy(review.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(review.placeId), tuple -> tuple.get(review.count())));
 
-        // 7. Place별 찜 개수 조회
+        // 6. Place별 찜 개수 조회
         var bookmarkCountMap = queryFactory.select(placeBookmark.placeId, placeBookmark.count()).from(placeBookmark).where(placeBookmark.placeId.in(placeIds)).groupBy(placeBookmark.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeBookmark.placeId), tuple -> tuple.get(placeBookmark.count())));
 
+        // 7. Place별 음식종류 목록 조회
+        var foodTypeMap = queryFactory
+                .select(placeFoodType.placeId, placeFoodType.foodType)
+                .from(placeFoodType)
+                .where(placeFoodType.placeId.in(placeIds))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> tuple.get(placeFoodType.placeId),
+                        Collectors.mapping(tuple -> tuple.get(placeFoodType.foodType), Collectors.toList())
+                ));
+
         // 8. 결과 조합
-        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> new LatestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), tagsMap.getOrDefault(p.getId(), List.of()), p.getCreatedAt(), reviewCountMap.getOrDefault(p.getId(), 0L), bookmarkCountMap.getOrDefault(p.getId(), 0L))).collect(Collectors.toList());
+        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> LatestPlaceItemDto.builder()
+                .id(p.getId())
+                .placeName(p.getPlaceName())
+                .stationName(stationMap.get(p.getId()))
+                .rating(p.getRating())
+                .imageUrl(imageMap.get(p.getId()))
+                .createdAt(p.getCreatedAt())
+                .reviewCount(reviewCountMap.getOrDefault(p.getId(), 0L))
+                .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))
+                .foodTypes(foodTypeMap.getOrDefault(p.getId(), List.of()))
+                .build()).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }

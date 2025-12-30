@@ -2,9 +2,12 @@ package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.common.PagedCommonResponse;
+import com.tastyhouse.core.entity.place.Amenity;
+import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.BestPlaceListItem;
 import com.tastyhouse.webapi.place.response.EditorChoiceResponse;
@@ -56,12 +59,18 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "최신 플레이스 목록 조회", description = "최근 등록된 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그, 등록일 정보를 포함합니다.")
+    @Operation(summary = "최신 플레이스 목록 조회", description = "최근 등록된 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그, 등록일 정보를 포함합니다. 전철역, 음식종류, 편의시설 필터를 적용할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/latest")
-    public ResponseEntity<PagedCommonResponse<LatestPlaceListItem>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PagedCommonResponse<LatestPlaceListItem>> getLatestPlaces(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long stationId,
+            @RequestParam(required = false) List<FoodType> foodTypes,
+            @RequestParam(required = false) List<Amenity> amenities) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<LatestPlaceListItem> pageResult = placeService.findLatestPlaces(pageRequest);
+        LatestPlaceFilterRequest filterRequest = new LatestPlaceFilterRequest(stationId, foodTypes, amenities);
+        PageResult<LatestPlaceListItem> pageResult = placeService.findLatestPlaces(pageRequest, filterRequest);
         PagedCommonResponse<LatestPlaceListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }

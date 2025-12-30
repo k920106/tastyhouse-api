@@ -1,5 +1,7 @@
 package com.tastyhouse.core.repository.place;
 
+import com.tastyhouse.core.entity.place.Amenity;
+import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
@@ -15,5 +17,5 @@ public interface PlaceRepository {
 
     Page<BestPlaceItemDto> findBestPlaces(Pageable pageable);
 
-    Page<LatestPlaceItemDto> findLatestPlaces(Pageable pageable);
+    Page<LatestPlaceItemDto> findLatestPlaces(Pageable pageable, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities);
 }
