@@ -32,4 +32,13 @@ public class Product extends BaseEntity {
 
     @Column(name = "discount_rate")
     private BigDecimal discountRate;
+
+    @Column(name = "rating")
+    private Double rating; // 메뉴 평점
+
+    @Column(name = "review_count")
+    private Integer reviewCount; // 리뷰 수
+
+    @Column(name = "is_representative")
+    private Boolean isRepresentative; // 대표 메뉴 여부
 }

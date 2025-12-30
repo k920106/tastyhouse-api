@@ -22,6 +22,9 @@ public class PlaceCoreService {
     private final PlaceStationJpaRepository placeStationJpaRepository;
     private final PlaceFoodTypeCategoryJpaRepository placeFoodTypeCategoryJpaRepository;
     private final PlaceAmenityCategoryJpaRepository placeAmenityCategoryJpaRepository;
+    private final PlaceJpaRepository placeJpaRepository;
+    private final PlaceImageJpaRepository placeImageJpaRepository;
+    private final PlaceBusinessHourJpaRepository placeBusinessHourJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         BigDecimal lat = BigDecimal.valueOf(latitude);
@@ -64,6 +67,32 @@ public class PlaceCoreService {
 
     public List<PlaceAmenityCategory> findAllAmenityCategories() {
         return placeAmenityCategoryJpaRepository.findAllByIsActiveTrueOrderBySortAsc();
+    }
+
+    public Place findPlaceById(Long placeId) {
+        return placeJpaRepository.findById(placeId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 플레이스입니다. ID: " + placeId));
+    }
+
+    public PlaceStation findStationById(Long stationId) {
+        return placeStationJpaRepository.findById(stationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전철역입니다. ID: " + stationId));
+    }
+
+    public List<PlaceBusinessHour> findPlaceBusinessHours(Long placeId) {
+        return placeBusinessHourJpaRepository.findByPlaceIdOrderByDayType(placeId);
+    }
+
+    public List<PlaceImage> findPlaceThumbnails(Long placeId) {
+        return placeImageJpaRepository.findByPlaceIdAndIsThumbnailTrueOrderBySortAsc(placeId);
+    }
+
+    public org.springframework.data.domain.Page<PlaceImage> findPlacePhotos(Long placeId, PlaceImageCategory category, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        if (category != null) {
+            return placeImageJpaRepository.findByPlaceIdAndImageCategoryOrderBySortAsc(placeId, category, pageRequest);
+        }
+        return placeImageJpaRepository.findByPlaceIdOrderBySortAsc(placeId, pageRequest);
     }
 
     public static class BestPlacePageResult {

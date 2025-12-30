@@ -29,4 +29,19 @@ public class Place extends BaseEntity {
 
     @Column(name = "rating")
     private Double rating;
+
+    @Column(name = "road_address")
+    private String roadAddress; // 도로명 주소
+
+    @Column(name = "lot_address")
+    private String lotAddress; // 지번 주소
+
+    @Column(name = "phone_number")
+    private String phoneNumber; // 전화번호
+
+    @Column(name = "owner_message", columnDefinition = "TEXT")
+    private String ownerMessage; // 사장님 한마디
+
+    @Column(name = "closed_days")
+    private String closedDays; // 휴무일 (예: "연중무휴", "매주 월요일")
 }
