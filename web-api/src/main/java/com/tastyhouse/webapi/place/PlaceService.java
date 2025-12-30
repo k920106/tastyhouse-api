@@ -76,7 +76,7 @@ public class PlaceService {
     }
 
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
-        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).build();
+        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).foodTypes(dto.getFoodTypes()).build();
     }
 
     private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
