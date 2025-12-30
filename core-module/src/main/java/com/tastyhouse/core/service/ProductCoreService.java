@@ -1,6 +1,8 @@
 package com.tastyhouse.core.service;
 
+import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
+import com.tastyhouse.core.repository.product.ProductJpaRepository;
 import com.tastyhouse.core.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import java.util.List;
 public class ProductCoreService {
 
     private final ProductRepository productRepository;
+    private final ProductJpaRepository productJpaRepository;
 
     public TodayDiscountProductPageResult findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -26,6 +29,10 @@ public class ProductCoreService {
             productPage.getNumber(),
             productPage.getSize()
         );
+    }
+
+    public List<Product> findProductsByPlaceId(Long placeId) {
+        return productJpaRepository.findByPlaceIdOrderByIsRepresentativeDescRatingDescIdAsc(placeId);
     }
 
     public static class TodayDiscountProductPageResult {

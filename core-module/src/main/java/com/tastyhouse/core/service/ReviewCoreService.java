@@ -2,12 +2,16 @@ package com.tastyhouse.core.service;
 
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewComment;
+import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
+import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.follow.FollowJpaRepository;
+import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.place.TagJpaRepository;
+import com.tastyhouse.core.repository.review.ReviewImageJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import com.tastyhouse.core.repository.review.ReviewLikeJpaRepository;
@@ -21,9 +25,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +41,8 @@ public class ReviewCoreService {
     private final ReviewLikeJpaRepository reviewLikeJpaRepository;
     private final ReviewCommentJpaRepository reviewCommentJpaRepository;
     private final ReviewReplyJpaRepository reviewReplyJpaRepository;
+    private final ReviewImageJpaRepository reviewImageJpaRepository;
+    private final MemberJpaRepository memberJpaRepository;
 
     public ReviewPageResult findBestReviewsWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -188,6 +193,90 @@ public class ReviewCoreService {
             return List.of();
         }
         return reviewReplyJpaRepository.findByCommentIdInAndIsHiddenFalseOrderByCreatedAtAsc(commentIds);
+    }
+
+    public PlaceReviewPageResult findPlaceReviews(Long placeId, Integer rating, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Review> reviewPage;
+
+        if (rating != null) {
+            reviewPage = reviewJpaRepository.findByPlaceIdAndTotalRatingAndIsHiddenFalseOrderByCreatedAtDesc(
+                    placeId, rating.doubleValue(), pageRequest
+            );
+        } else {
+            reviewPage = reviewJpaRepository.findByPlaceIdAndIsHiddenFalseOrderByCreatedAtDesc(placeId, pageRequest);
+        }
+
+        return new PlaceReviewPageResult(
+                reviewPage.getContent(),
+                reviewPage.getTotalElements(),
+                reviewPage.getTotalPages(),
+                reviewPage.getNumber(),
+                reviewPage.getSize()
+        );
+    }
+
+    public List<ReviewImage> findReviewImages(List<Long> reviewIds) {
+        return reviewImageJpaRepository.findByReviewIdInOrderBySortAsc(reviewIds);
+    }
+
+    public Map<String, Object> getPlaceReviewStatistics(Long placeId) {
+        Map<String, Object> statistics = new HashMap<>();
+
+        Long totalCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
+        statistics.put("totalReviewCount", totalCount);
+
+        if (totalCount > 0) {
+            statistics.put("averageTasteRating", reviewJpaRepository.getAverageTasteRating(placeId));
+            statistics.put("averageAmountRating", reviewJpaRepository.getAverageAmountRating(placeId));
+            statistics.put("averagePriceRating", reviewJpaRepository.getAveragePriceRating(placeId));
+            statistics.put("averageAtmosphereRating", reviewJpaRepository.getAverageAtmosphereRating(placeId));
+            statistics.put("averageKindnessRating", reviewJpaRepository.getAverageKindnessRating(placeId));
+            statistics.put("averageHygieneRating", reviewJpaRepository.getAverageHygieneRating(placeId));
+
+            Long willRevisitCount = reviewJpaRepository.countWillRevisit(placeId);
+            double willRevisitPercentage = (willRevisitCount * 100.0) / totalCount;
+            statistics.put("willRevisitPercentage", willRevisitPercentage);
+
+            int currentYear = LocalDateTime.now().getYear();
+            Object[][] monthlyData = reviewJpaRepository.getMonthlyReviewCounts(placeId, currentYear);
+            Map<Integer, Long> monthlyMap = new HashMap<>();
+            for (Object[] row : monthlyData) {
+                monthlyMap.put((Integer) row[0], (Long) row[1]);
+            }
+            statistics.put("monthlyReviewCounts", monthlyMap);
+
+            Object[][] ratingData = reviewJpaRepository.getRatingCounts(placeId);
+            Map<Integer, Long> ratingMap = new HashMap<>();
+            for (Object[] row : ratingData) {
+                ratingMap.put(((Number) row[0]).intValue(), (Long) row[1]);
+            }
+            statistics.put("ratingCounts", ratingMap);
+        }
+
+        return statistics;
+    }
+
+    public static class PlaceReviewPageResult {
+        private final List<Review> content;
+        private final long totalElements;
+        private final int totalPages;
+        private final int currentPage;
+        private final int pageSize;
+
+        public PlaceReviewPageResult(List<Review> content, long totalElements, int totalPages, int currentPage, int pageSize) {
+            this.content = content;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.pageSize = pageSize;
+        }
+
+        public List<Review> getContent() { return content; }
+        public long getTotalElements() { return totalElements; }
+        public int getTotalPages() { return totalPages; }
+        public int getCurrentPage() { return currentPage; }
+        public int getPageSize() { return pageSize; }
     }
 
     public static class LatestReviewPageResult {

@@ -20,4 +20,11 @@ public class PlaceImage {
 
     @Column(name = "is_thumbnail")
     private Boolean isThumbnail;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "image_category", length = 20, columnDefinition = "VARCHAR(20)")
+    private PlaceImageCategory imageCategory; // 이미지 카테고리 (외관, 내부, 음식 등)
+
+    @Column(name = "sort")
+    private Integer sort; // 정렬 순서
 }
