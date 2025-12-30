@@ -21,8 +21,10 @@ import java.util.stream.Collectors;
 
 import static com.tastyhouse.core.entity.place.QPlace.place;
 import static com.tastyhouse.core.entity.place.QPlaceAmenity.placeAmenity;
+import static com.tastyhouse.core.entity.place.QPlaceAmenityCategory.placeAmenityCategory;
 import static com.tastyhouse.core.entity.place.QPlaceBookmark.placeBookmark;
 import static com.tastyhouse.core.entity.place.QPlaceFoodType.placeFoodType;
+import static com.tastyhouse.core.entity.place.QPlaceFoodTypeCategory.placeFoodTypeCategory;
 import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
 import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
 import static com.tastyhouse.core.entity.review.QReview.review;
@@ -89,10 +91,11 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         Set<Long> foodTypePlaceIds = null;
         if (foodTypes != null && !foodTypes.isEmpty()) {
             foodTypePlaceIds = new HashSet<>(queryFactory
-                    .select(placeFoodType.placeId)
-                    .from(placeFoodType)
-                    .where(placeFoodType.foodType.in(foodTypes))
-                    .fetch());
+                .select(placeFoodType.placeId)
+                .from(placeFoodType)
+                .join(placeFoodTypeCategory).on(placeFoodType.placeFoodTypeCategoryId.eq(placeFoodTypeCategory.id))
+                .where(placeFoodTypeCategory.foodType.in(foodTypes))
+                .fetch());
 
             if (foodTypePlaceIds.isEmpty()) {
                 return new PageImpl<>(List.of(), pageable, 0);
@@ -103,12 +106,13 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         Set<Long> amenityPlaceIds = null;
         if (amenities != null && !amenities.isEmpty()) {
             amenityPlaceIds = new HashSet<>(queryFactory
-                    .select(placeAmenity.placeId)
-                    .from(placeAmenity)
-                    .where(placeAmenity.amenity.in(amenities))
-                    .groupBy(placeAmenity.placeId)
-                    .having(placeAmenity.placeId.count().goe((long) amenities.size()))
-                    .fetch());
+                .select(placeAmenity.placeId)
+                .from(placeAmenity)
+                .join(placeAmenityCategory).on(placeAmenity.placeAmenityCategoryId.eq(placeAmenityCategory.id))
+                .where(placeAmenityCategory.amenity.in(amenities))
+                .groupBy(placeAmenity.placeId)
+                .having(placeAmenity.placeId.count().goe((long) amenities.size()))
+                .fetch());
 
             if (amenityPlaceIds.isEmpty()) {
                 return new PageImpl<>(List.of(), pageable, 0);
@@ -135,10 +139,10 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         // 1. 전체 개수 조회
         Long total = queryFactory
-                .select(place.count())
-                .from(place)
-                .where(whereClause)
-                .fetchOne();
+            .select(place.count())
+            .from(place)
+            .where(whereClause)
+            .fetchOne();
 
         if (total == null || total == 0) {
             return new PageImpl<>(List.of(), pageable, 0);
@@ -146,12 +150,12 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         // 2. 최신순 페이징 처리된 Place 조회
         List<Place> pagedPlaces = queryFactory
-                .selectFrom(place)
-                .where(whereClause)
-                .orderBy(place.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+            .selectFrom(place)
+            .where(whereClause)
+            .orderBy(place.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
 
         if (pagedPlaces.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, total);
@@ -173,28 +177,29 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         // 7. Place별 음식종류 목록 조회
         var foodTypeMap = queryFactory
-                .select(placeFoodType.placeId, placeFoodType.foodType)
-                .from(placeFoodType)
-                .where(placeFoodType.placeId.in(placeIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(placeFoodType.placeId),
-                        Collectors.mapping(tuple -> tuple.get(placeFoodType.foodType), Collectors.toList())
-                ));
+            .select(placeFoodType.placeId, placeFoodTypeCategory.foodType)
+            .from(placeFoodType)
+            .join(placeFoodTypeCategory).on(placeFoodType.placeFoodTypeCategoryId.eq(placeFoodTypeCategory.id))
+            .where(placeFoodType.placeId.in(placeIds))
+            .fetch()
+            .stream()
+            .collect(Collectors.groupingBy(
+                tuple -> tuple.get(placeFoodType.placeId),
+                Collectors.mapping(tuple -> tuple.get(placeFoodTypeCategory.foodType), Collectors.toList())
+            ));
 
         // 8. 결과 조합
         List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> LatestPlaceItemDto.builder()
-                .id(p.getId())
-                .placeName(p.getPlaceName())
-                .stationName(stationMap.get(p.getId()))
-                .rating(p.getRating())
-                .imageUrl(imageMap.get(p.getId()))
-                .createdAt(p.getCreatedAt())
-                .reviewCount(reviewCountMap.getOrDefault(p.getId(), 0L))
-                .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))
-                .foodTypes(foodTypeMap.getOrDefault(p.getId(), List.of()))
-                .build()).collect(Collectors.toList());
+            .id(p.getId())
+            .placeName(p.getPlaceName())
+            .stationName(stationMap.get(p.getId()))
+            .rating(p.getRating())
+            .imageUrl(imageMap.get(p.getId()))
+            .createdAt(p.getCreatedAt())
+            .reviewCount(reviewCountMap.getOrDefault(p.getId(), 0L))
+            .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))
+            .foodTypes(foodTypeMap.getOrDefault(p.getId(), List.of()))
+            .build()).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }

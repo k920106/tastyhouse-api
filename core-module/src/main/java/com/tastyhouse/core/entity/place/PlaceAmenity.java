@@ -1,18 +1,17 @@
 package com.tastyhouse.core.entity.place;
 
+import com.tastyhouse.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(name = "PLACE_AMENITY", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"place_id", "amenity"})
-})
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PlaceAmenity {
+@Table(name = "PLACE_AMENITY", uniqueConstraints = {@UniqueConstraint(columnNames = {"place_id", "place_amenity_category_id"})})
+public class PlaceAmenity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,13 +20,12 @@ public class PlaceAmenity {
     @Column(name = "place_id", nullable = false)
     private Long placeId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "amenity", nullable = false, columnDefinition = "VARCHAR(50)")
-    private Amenity amenity;
+    @Column(name = "place_amenity_category_id", nullable = false)
+    private Long placeAmenityCategoryId;
 
     @Builder
-    public PlaceAmenity(Long placeId, Amenity amenity) {
+    public PlaceAmenity(Long placeId, Long placeAmenityCategoryId) {
         this.placeId = placeId;
-        this.amenity = amenity;
+        this.placeAmenityCategoryId = placeAmenityCategoryId;
     }
 }
