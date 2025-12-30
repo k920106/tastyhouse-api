@@ -137,6 +137,14 @@ CREATE TABLE PLACE (
    updated_at DATETIME      NOT NULL
 );
 
+CREATE TABLE PLACE_AMENITY (
+    id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id BIGINT      NOT NULL,
+    amenity  VARCHAR(50) NOT NULL,
+    UNIQUE KEY uk_place_amenity (place_id, amenity),
+    INDEX idx_place_amenity_place_id (place_id)
+);
+
 CREATE TABLE PLACE_BOOKMARK (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     place_id   BIGINT   NOT NULL,
@@ -146,6 +154,14 @@ CREATE TABLE PLACE_BOOKMARK (
     UNIQUE KEY uk_place_bookmark (place_id, member_id),
     INDEX idx_place_bookmark_place_id (place_id),
     INDEX idx_place_bookmark_member_id (member_id)
+);
+
+CREATE TABLE PLACE_FOOD_TYPE (
+    id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id  BIGINT      NOT NULL,
+    food_type VARCHAR(50) NOT NULL,
+    UNIQUE KEY uk_place_food_type (place_id, food_type),
+    INDEX idx_place_food_type_place_id (place_id)
 );
 
 CREATE TABLE PLACE_IMAGE (
@@ -158,17 +174,6 @@ CREATE TABLE PLACE_IMAGE (
 CREATE TABLE PLACE_STATION (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     station_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE PLACE_TAG (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    place_id BIGINT NOT NULL,
-    tag_id BIGINT NOT NULL
-);
-
-CREATE TABLE TAG (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tag_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE PLACE_CHOICE (
@@ -222,4 +227,9 @@ CREATE TABLE REVIEW_REPLY (
     updated_at DATETIME NOT NULL,
     INDEX idx_review_reply_comment_id (comment_id),
     INDEX idx_review_reply_member_id (member_id)
+);
+
+CREATE TABLE TAG (
+    id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tag_name VARCHAR(255) NOT NULL
 );

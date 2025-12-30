@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.place.response;
 
+import com.tastyhouse.core.entity.place.FoodType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,8 +15,8 @@ public class LatestPlaceListItem {
     private final String stationName;
     private final Double rating;
     private final String imageUrl;
-    private final List<String> tags;
     private final LocalDateTime createdAt;
     private final Long reviewCount;
     private final Long bookmarkCount;
+    private final List<FoodType> foodTypes;
 }
