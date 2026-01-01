@@ -96,7 +96,16 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "플레이스 기본 정보 조회", description = "플레이스의 기본 정보를 조회합니다. 상호명, 주소, 운영시간, 전화번호 등을 포함합니다.")
+    @Operation(summary = "플레이스 요약 정보 조회", description = "플레이스의 요약 정보를 조회합니다. 상호명, 도로명 주소, 지번 주소, 총 평점을 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{placeId}/summary")
+    public ResponseEntity<CommonResponse<PlaceSummaryResponse>> getPlaceSummary(@PathVariable Long placeId) {
+        PlaceSummaryResponse placeSummary = placeService.getPlaceSummary(placeId);
+        CommonResponse<PlaceSummaryResponse> response = CommonResponse.success(placeSummary);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "플레이스 기본 정보 조회", description = "플레이스의 기본 정보를 조회합니다. 운영시간, 전화번호 등을 포함합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/info")
     public ResponseEntity<CommonResponse<PlaceInfoResponse>> getPlaceInfo(@PathVariable Long placeId) {
