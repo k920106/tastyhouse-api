@@ -1,15 +1,15 @@
 package com.tastyhouse.core.service;
 
-import com.tastyhouse.core.entity.product.Product;
+import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
-import com.tastyhouse.core.repository.product.ProductJpaRepository;
-import com.tastyhouse.core.repository.product.ProductRepository;
+import com.tastyhouse.core.repository.product.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +17,12 @@ public class ProductCoreService {
 
     private final ProductRepository productRepository;
     private final ProductJpaRepository productJpaRepository;
+    private final ProductCategoryJpaRepository productCategoryJpaRepository;
+    private final ProductOptionGroupJpaRepository productOptionGroupJpaRepository;
+    private final ProductOptionJpaRepository productOptionJpaRepository;
+    private final CommonOptionGroupJpaRepository commonOptionGroupJpaRepository;
+    private final CommonOptionJpaRepository commonOptionJpaRepository;
+    private final ProductCommonOptionGroupJpaRepository productCommonOptionGroupJpaRepository;
 
     public TodayDiscountProductPageResult findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -33,6 +39,42 @@ public class ProductCoreService {
 
     public List<Product> findProductsByPlaceId(Long placeId) {
         return productJpaRepository.findByPlaceIdOrderByIsRepresentativeDescRatingDescIdAsc(placeId);
+    }
+
+    public List<Product> findActiveProductsByPlaceId(Long placeId) {
+        return productJpaRepository.findByPlaceIdAndIsActiveTrueOrderBySortAsc(placeId);
+    }
+
+    public Optional<Product> findProductById(Long productId) {
+        return productJpaRepository.findById(productId);
+    }
+
+    public Optional<ProductCategory> findProductCategoryById(Long categoryId) {
+        return productCategoryJpaRepository.findById(categoryId);
+    }
+
+    public List<ProductCategory> findProductCategoriesByPlaceId(Long placeId) {
+        return productCategoryJpaRepository.findByPlaceIdAndIsActiveTrueOrderBySortAsc(placeId);
+    }
+
+    public List<ProductOptionGroup> findProductOptionGroupsByProductId(Long productId) {
+        return productOptionGroupJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId);
+    }
+
+    public List<ProductOption> findProductOptionsByOptionGroupIds(List<Long> optionGroupIds) {
+        return productOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
+    }
+
+    public List<ProductCommonOptionGroup> findProductCommonOptionGroupsByProductId(Long productId) {
+        return productCommonOptionGroupJpaRepository.findByProductIdOrderBySortAsc(productId);
+    }
+
+    public List<CommonOptionGroup> findCommonOptionGroupsByIds(List<Long> ids) {
+        return commonOptionGroupJpaRepository.findByIdInAndIsActiveTrueOrderBySortAsc(ids);
+    }
+
+    public List<CommonOption> findCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
+        return commonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
     }
 
     public static class TodayDiscountProductPageResult {

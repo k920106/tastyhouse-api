@@ -1,8 +1,12 @@
 package com.tastyhouse.webapi.product;
 
+import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.common.PagedCommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.product.response.ProductCategoryListItem;
+import com.tastyhouse.webapi.product.response.ProductDetailResponse;
+import com.tastyhouse.webapi.product.response.ProductListItem;
 import com.tastyhouse.webapi.product.response.TodayDiscountProductItem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,10 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Product", description = "상품 관리 API")
 @RestController
@@ -33,5 +36,35 @@ public class ProductApiController {
         PageResult<TodayDiscountProductItem> pageResult = productService.findTodayDiscountProducts(pageRequest);
         PagedCommonResponse<TodayDiscountProductItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "플레이스별 상품 목록 조회", description = "특정 플레이스의 상품 목록을 조회합니다. 상품명, 이미지, 가격, 할인 정보, 평점, 리뷰 수 등을 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/places/{placeId}")
+    public ResponseEntity<CommonResponse<List<ProductListItem>>> getProductsByPlaceId(@PathVariable Long placeId) {
+        List<ProductListItem> products = productService.findProductsByPlaceId(placeId);
+        CommonResponse<List<ProductListItem>> response = CommonResponse.success(products);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "플레이스별 상품 카테고리 목록 조회", description = "특정 플레이스의 상품 카테고리 목록을 조회합니다. 카테고리 타입, 표시명, 정렬 순서를 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/places/{placeId}/categories")
+    public ResponseEntity<CommonResponse<List<ProductCategoryListItem>>> getProductCategoriesByPlaceId(@PathVariable Long placeId) {
+        List<ProductCategoryListItem> categories = productService.findProductCategoriesByPlaceId(placeId);
+        CommonResponse<List<ProductCategoryListItem>> response = CommonResponse.success(categories);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "상품 상세 조회", description = "상품의 상세 정보를 조회합니다. 기본 정보와 함께 옵션 그룹 및 옵션 목록을 포함합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
+    })
+    @GetMapping("/v1/{productId}")
+    public ResponseEntity<CommonResponse<ProductDetailResponse>> getProductById(@PathVariable Long productId) {
+        return productService.findProductById(productId)
+            .map(product -> ResponseEntity.ok(CommonResponse.success(product)))
+            .orElse(ResponseEntity.notFound().build());
     }
 }

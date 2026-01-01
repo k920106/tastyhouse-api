@@ -14,6 +14,39 @@ CREATE TABLE BANNER
     updated_at DATETIME     NOT NULL
 );
 
+CREATE TABLE COMMON_OPTION
+(
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    option_group_id  BIGINT       NOT NULL,
+    name             VARCHAR(100) NOT NULL,
+    additional_price INT          NOT NULL DEFAULT 0,
+    sort             INT          NOT NULL,
+    is_sold_out      TINYINT(1)   NOT NULL DEFAULT 0,
+    is_active        TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at       DATETIME     NOT NULL,
+    updated_at       DATETIME     NOT NULL,
+    INDEX idx_common_option_group_id (option_group_id),
+    INDEX idx_common_option_active (option_group_id, is_active, sort)
+);
+
+CREATE TABLE COMMON_OPTION_GROUP
+(
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id           BIGINT       NOT NULL,
+    name               VARCHAR(100) NOT NULL,
+    description        VARCHAR(500),
+    is_required        TINYINT(1)   NOT NULL DEFAULT 0,
+    is_multiple_select TINYINT(1)   NOT NULL DEFAULT 0,
+    min_select         INT,
+    max_select         INT,
+    sort               INT          NOT NULL,
+    is_active          TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at         DATETIME     NOT NULL,
+    updated_at         DATETIME     NOT NULL,
+    INDEX idx_common_option_group_place_id (place_id),
+    INDEX idx_common_option_group_active (place_id, is_active, sort)
+);
+
 CREATE TABLE EVENT_PRIZE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -96,20 +129,85 @@ CREATE TABLE MEMBER_REVIEW_RANK
 
 CREATE TABLE PRODUCT
 (
-    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
-    place_id          BIGINT       NOT NULL,
-    name              VARCHAR(255) NOT NULL,
-    image_url         VARCHAR(255),
-    price             INT          NOT NULL,
-    discount_price    INT,
-    discount_rate     DECIMAL(19, 2),
-    rating            DOUBLE,
-    review_count      INT,
-    is_representative TINYINT(1),
-    created_at        DATETIME     NOT NULL,
-    updated_at        DATETIME     NOT NULL,
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id            BIGINT        NOT NULL,
+    product_category_id BIGINT,
+    name                VARCHAR(255)  NOT NULL,
+    description         VARCHAR(1000),
+    image_url           VARCHAR(255),
+    price               INT           NOT NULL,
+    discount_price      INT,
+    discount_rate       DECIMAL(19, 2),
+    rating              DOUBLE,
+    review_count        INT           DEFAULT 0,
+    is_representative   TINYINT(1)    DEFAULT 0,
+    is_sold_out         TINYINT(1)    NOT NULL DEFAULT 0,
+    is_active           TINYINT(1)    NOT NULL DEFAULT 1,
+    sort                INT           NOT NULL,
+    created_at          DATETIME      NOT NULL,
+    updated_at          DATETIME      NOT NULL,
     INDEX idx_product_place_id (place_id),
-    INDEX idx_product_representative (place_id, is_representative)
+    INDEX idx_product_category (place_id, product_category_id),
+    INDEX idx_product_representative (place_id, is_representative),
+    INDEX idx_product_active (place_id, is_active, sort)
+);
+
+CREATE TABLE PRODUCT_CATEGORY
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id      BIGINT       NOT NULL,
+    category_type VARCHAR(50)  NOT NULL,
+    display_name  VARCHAR(100) NOT NULL,
+    sort          INT          NOT NULL,
+    is_active     TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at    DATETIME     NOT NULL,
+    updated_at    DATETIME     NOT NULL,
+    INDEX idx_product_category_place_id (place_id),
+    INDEX idx_product_category_active (place_id, is_active, sort)
+);
+
+CREATE TABLE PRODUCT_COMMON_OPTION_GROUP
+(
+    id                     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id             BIGINT NOT NULL,
+    common_option_group_id BIGINT NOT NULL,
+    sort                   INT    NOT NULL,
+    UNIQUE KEY uk_product_common_option_group (product_id, common_option_group_id),
+    INDEX idx_product_common_option_group_product_id (product_id),
+    INDEX idx_product_common_option_group_common_id (common_option_group_id)
+);
+
+CREATE TABLE PRODUCT_OPTION
+(
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    option_group_id  BIGINT       NOT NULL,
+    name             VARCHAR(100) NOT NULL,
+    additional_price INT          NOT NULL DEFAULT 0,
+    sort             INT          NOT NULL,
+    is_sold_out      TINYINT(1)   NOT NULL DEFAULT 0,
+    is_active        TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at       DATETIME     NOT NULL,
+    updated_at       DATETIME     NOT NULL,
+    INDEX idx_product_option_group_id (option_group_id),
+    INDEX idx_product_option_active (option_group_id, is_active, sort)
+);
+
+CREATE TABLE PRODUCT_OPTION_GROUP
+(
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id         BIGINT       NOT NULL,
+    name               VARCHAR(100) NOT NULL,
+    description        VARCHAR(500),
+    is_required        TINYINT(1)   NOT NULL DEFAULT 0,
+    is_multiple_select TINYINT(1)   NOT NULL DEFAULT 0,
+    min_select         INT,
+    max_select         INT,
+    sort               INT          NOT NULL,
+    is_active          TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at         DATETIME     NOT NULL,
+    updated_at         DATETIME     NOT NULL,
+    INDEX idx_product_option_group_product_id (product_id),
+    INDEX idx_product_option_group_active (product_id, is_active, sort)
 );
 
 CREATE TABLE PLACE
