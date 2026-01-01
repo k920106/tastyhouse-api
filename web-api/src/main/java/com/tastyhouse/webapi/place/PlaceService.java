@@ -15,9 +15,12 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
+import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
+import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -30,6 +33,7 @@ public class PlaceService {
     private final PlaceCoreService placeCoreService;
     private final ProductCoreService productCoreService;
     private final ReviewCoreService reviewCoreService;
+    private final PlaceBookmarkJpaRepository placeBookmarkJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude);
@@ -298,5 +302,23 @@ public class PlaceService {
                 .images(imageItems)
                 .createdAt(review.getCreatedAt())
                 .build();
+    }
+
+    public PlaceBookmarkResponse isBookmarked(Long placeId, Long memberId) {
+        boolean isBookmarked = placeBookmarkJpaRepository.existsByPlaceIdAndMemberId(placeId, memberId);
+        return new PlaceBookmarkResponse(isBookmarked);
+    }
+
+    @Transactional
+    public boolean toggleBookmark(Long placeId, Long memberId) {
+        if (placeBookmarkJpaRepository.existsByPlaceIdAndMemberId(placeId, memberId)) {
+            placeBookmarkJpaRepository.deleteByPlaceIdAndMemberId(placeId, memberId);
+            return false;
+        } else {
+            placeCoreService.findPlaceById(placeId); // Ensure place exists
+            PlaceBookmark bookmark = new PlaceBookmark(placeId, memberId);
+            placeBookmarkJpaRepository.save(bookmark);
+            return true;
+        }
     }
 }

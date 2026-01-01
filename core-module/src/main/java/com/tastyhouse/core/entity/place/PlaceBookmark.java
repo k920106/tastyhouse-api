@@ -18,4 +18,12 @@ public class PlaceBookmark extends BaseEntity {
 
     @Column(name = "member_id", nullable = false)
     private Long memberId;
+
+    protected PlaceBookmark() {
+    }
+
+    public PlaceBookmark(Long placeId, Long memberId) {
+        this.placeId = placeId;
+        this.memberId = memberId;
+    }
 }
