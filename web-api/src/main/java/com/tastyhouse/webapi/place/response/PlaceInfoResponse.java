@@ -15,18 +15,6 @@ public class PlaceInfoResponse {
     @Schema(description = "플레이스 ID", example = "1")
     private Long id;
 
-    @Schema(description = "플레이스명", example = "리틀넥 청담")
-    private String placeName;
-
-    @Schema(description = "평점", example = "4.8")
-    private Double rating;
-
-    @Schema(description = "도로명 주소", example = "서울 강남구 도산대로51길 17")
-    private String roadAddress;
-
-    @Schema(description = "지번 주소", example = "서울 강남구 신사동 653-7")
-    private String lotAddress;
-
     @Schema(description = "위도", example = "37.5234")
     private BigDecimal latitude;
 

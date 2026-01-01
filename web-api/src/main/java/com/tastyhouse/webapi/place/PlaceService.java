@@ -8,7 +8,6 @@ import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewImage;
-import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
@@ -128,6 +127,18 @@ public class PlaceService {
                 .build();
     }
 
+    public PlaceSummaryResponse getPlaceSummary(Long placeId) {
+        Place place = placeCoreService.findPlaceById(placeId);
+
+        return PlaceSummaryResponse.builder()
+                .id(place.getId())
+                .name(place.getPlaceName())
+                .roadAddress(place.getRoadAddress())
+                .lotAddress(place.getLotAddress())
+                .rating(place.getRating())
+                .build();
+    }
+
     public PlaceInfoResponse getPlaceInfo(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
         PlaceStation station = placeCoreService.findStationById(place.getStationId());
@@ -139,10 +150,6 @@ public class PlaceService {
 
         return PlaceInfoResponse.builder()
                 .id(place.getId())
-                .placeName(place.getPlaceName())
-                .rating(place.getRating())
-                .roadAddress(place.getRoadAddress())
-                .lotAddress(place.getLotAddress())
                 .latitude(place.getLatitude())
                 .longitude(place.getLongitude())
                 .stationName(station.getStationName())
