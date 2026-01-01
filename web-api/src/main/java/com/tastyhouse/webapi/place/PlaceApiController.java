@@ -11,6 +11,7 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.*;
+import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -169,5 +171,34 @@ public class PlaceApiController {
         PlaceReviewStatisticsResponse statistics = placeService.getPlaceReviewStatistics(placeId);
         CommonResponse<PlaceReviewStatisticsResponse> response = CommonResponse.success(statistics);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "플레이스 북마크 여부 조회", description = "플레이스가 현재 사용자에 의해 북마크되었는지 여부를 조회합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공")})
+    @GetMapping("/v1/{placeId}/bookmark")
+    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> isBookmarked(
+            @PathVariable Long placeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        PlaceBookmarkResponse bookmarked;
+        if (userDetails == null) {
+            bookmarked = new PlaceBookmarkResponse(false);
+        } else {
+            Long memberId = userDetails.getMemberId();
+            bookmarked = placeService.isBookmarked(placeId, memberId);
+        }
+        return ResponseEntity.ok(CommonResponse.success(bookmarked));
+    }
+
+    @Operation(summary = "플레이스 북마크 토글", description = "플레이스에 대한 북마크를 추가하거나 제거합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "처리 성공")})
+    @PostMapping("/v1/{placeId}/bookmark")
+    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> toggleBookmark(
+            @PathVariable Long placeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        boolean bookmarked = placeService.toggleBookmark(placeId, userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(new PlaceBookmarkResponse(bookmarked)));
     }
 }
