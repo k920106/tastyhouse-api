@@ -137,30 +137,20 @@ public class PlaceApiController {
     @Operation(summary = "플레이스 사진 목록 조회", description = "플레이스의 사진 목록을 조회합니다. 카테고리별로 필터링할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/{placeId}/photos")
-    public ResponseEntity<PagedCommonResponse<PlacePhotoResponse>> getPlacePhotos(
-            @PathVariable Long placeId,
-            @RequestParam(required = false) PlaceImageCategory category,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PagedCommonResponse<PlacePhotoResponse>> getPlacePhotos(@PathVariable Long placeId, @RequestParam(required = false) PlaceImageCategory category, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<PlacePhotoResponse> pageResult = placeService.getPlacePhotos(placeId, category, pageRequest);
-        PagedCommonResponse<PlacePhotoResponse> response = PagedCommonResponse.success(
-                pageResult.getContent(), page, size, pageResult.getTotalElements());
+        PagedCommonResponse<PlacePhotoResponse> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "플레이스 리뷰 목록 조회", description = "플레이스의 리뷰 목록을 조회합니다. 평점별로 필터링할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/{placeId}/reviews")
-    public ResponseEntity<PagedCommonResponse<PlaceReviewResponse>> getPlaceReviews(
-            @PathVariable Long placeId,
-            @RequestParam(required = false) Integer rating,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PagedCommonResponse<PlaceReviewResponse>> getPlaceReviews(@PathVariable Long placeId, @RequestParam(required = false) Integer rating, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<PlaceReviewResponse> pageResult = placeService.getPlaceReviews(placeId, rating, pageRequest);
-        PagedCommonResponse<PlaceReviewResponse> response = PagedCommonResponse.success(
-                pageResult.getContent(), page, size, pageResult.getTotalElements());
+        PagedCommonResponse<PlaceReviewResponse> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
@@ -176,9 +166,7 @@ public class PlaceApiController {
     @Operation(summary = "플레이스 북마크 여부 조회", description = "플레이스가 현재 사용자에 의해 북마크되었는지 여부를 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공")})
     @GetMapping("/v1/{placeId}/bookmark")
-    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> isBookmarked(
-            @PathVariable Long placeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> isBookmarked(@PathVariable Long placeId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         PlaceBookmarkResponse bookmarked;
         if (userDetails == null) {
             bookmarked = new PlaceBookmarkResponse(false);
@@ -192,9 +180,7 @@ public class PlaceApiController {
     @Operation(summary = "플레이스 북마크 토글", description = "플레이스에 대한 북마크를 추가하거나 제거합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "처리 성공")})
     @PostMapping("/v1/{placeId}/bookmark")
-    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> toggleBookmark(
-            @PathVariable Long placeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<CommonResponse<PlaceBookmarkResponse>> toggleBookmark(@PathVariable Long placeId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(401).build();
         }
