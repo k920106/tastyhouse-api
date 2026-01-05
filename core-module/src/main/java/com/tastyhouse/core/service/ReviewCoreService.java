@@ -63,7 +63,7 @@ public class ReviewCoreService {
         return reviewJpaRepository.findById(id).orElse(null);
     }
 
-    public Optional<ReviewDetailDto> findReviewDetail(Long reviewId, Long memberId) {
+    public Optional<ReviewDetailDto> findReviewDetail(Long reviewId) {
         Optional<ReviewDetailDto> result = reviewRepository.findReviewDetail(reviewId);
 
         result.ifPresent(dto -> {
@@ -72,16 +72,13 @@ public class ReviewCoreService {
                 List<String> tagNames = tagJpaRepository.findTagNamesByIds(tagIds);
                 dto.setTagNames(tagNames);
             }
-
-            if (memberId != null) {
-                boolean isLiked = reviewLikeJpaRepository.existsByReviewIdAndMemberId(reviewId, memberId);
-                dto.setIsLiked(isLiked);
-            } else {
-                dto.setIsLiked(false);
-            }
         });
 
         return result;
+    }
+
+    public boolean isLikedByMember(Long reviewId, Long memberId) {
+        return reviewLikeJpaRepository.existsByReviewIdAndMemberId(reviewId, memberId);
     }
 
     public LatestReviewPageResult findLatestReviewsWithPagination(int page, int size) {
