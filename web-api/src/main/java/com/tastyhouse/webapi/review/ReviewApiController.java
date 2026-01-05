@@ -61,9 +61,24 @@ public class ReviewApiController {
     @Operation(summary = "리뷰 상세 조회", description = "리뷰 ID로 리뷰 상세 정보를 조회합니다. 리뷰 태그 정보도 함께 조회됩니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = ReviewDetailResponse.class))), @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음")})
     @GetMapping("/v1/{reviewId}")
-    public ResponseEntity<CommonResponse<ReviewDetailResponse>> getReviewDetail(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long memberId = userDetails != null ? userDetails.getMemberId() : null;
-        return reviewService.findReviewDetail(reviewId, memberId).map(detail -> ResponseEntity.ok(CommonResponse.success(detail))).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CommonResponse<ReviewDetailResponse>> getReviewDetail(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId) {
+        return reviewService.findReviewDetail(reviewId)
+                .map(detail -> ResponseEntity.ok(CommonResponse.success(detail)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "리뷰 좋아요 여부 조회", description = "리뷰가 현재 사용자에 의해 좋아요되었는지 여부를 조회합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공")})
+    @GetMapping("/v1/{reviewId}/like")
+    public ResponseEntity<CommonResponse<ReviewLikeStatusResponse>> isLiked(@PathVariable Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        ReviewLikeStatusResponse liked;
+        if (userDetails == null) {
+            liked = new ReviewLikeStatusResponse(false);
+        } else {
+            Long memberId = userDetails.getMemberId();
+            liked = reviewService.isLiked(reviewId, memberId);
+        }
+        return ResponseEntity.ok(CommonResponse.success(liked));
     }
 
     @Operation(summary = "리뷰 좋아요 토글", description = "리뷰에 좋아요를 토글합니다. 이미 좋아요한 경우 취소되고, 아닌 경우 좋아요가 추가됩니다.")

@@ -28,7 +28,6 @@ public class ReviewDetailDto {
     private final LocalDateTime createdAt;
     private List<String> imageUrls;
     private List<String> tagNames;
-    private Boolean isLiked;
 
     @QueryProjection
     public ReviewDetailDto(Long id, Long placeId, String placeName, String stationName, String content, Double totalRating, Double tasteRating, Double amountRating, Double priceRating, Double atmosphereRating, Double kindnessRating, Double hygieneRating, Boolean willRevisit, Long memberId, String memberNickname, String memberProfileImageUrl, LocalDateTime createdAt) {
@@ -59,9 +58,5 @@ public class ReviewDetailDto {
 
     public void setTagNames(List<String> tagNames) {
         this.tagNames = tagNames;
-    }
-
-    public void setIsLiked(Boolean isLiked) {
-        this.isLiked = isLiked;
     }
 }

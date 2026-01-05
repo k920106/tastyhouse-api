@@ -28,5 +28,4 @@ public class ReviewDetailResponse {
     private final LocalDateTime createdAt;
     private final List<String> imageUrls;
     private final List<String> tagNames;
-    private final Boolean isLiked;
 }

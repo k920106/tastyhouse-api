@@ -17,6 +17,7 @@ import com.tastyhouse.webapi.review.response.CommentResponse;
 import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.webapi.review.response.ReplyResponse;
 import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
+import com.tastyhouse.webapi.review.response.ReviewLikeStatusResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -110,8 +111,8 @@ public class ReviewService {
             .build();
     }
 
-    public Optional<ReviewDetailResponse> findReviewDetail(Long reviewId, Long memberId) {
-        return reviewCoreService.findReviewDetail(reviewId, memberId)
+    public Optional<ReviewDetailResponse> findReviewDetail(Long reviewId) {
+        return reviewCoreService.findReviewDetail(reviewId)
             .map(this::convertToReviewDetailResponse);
     }
 
@@ -136,8 +137,12 @@ public class ReviewService {
             .createdAt(dto.getCreatedAt())
             .imageUrls(dto.getImageUrls())
             .tagNames(dto.getTagNames())
-            .isLiked(dto.getIsLiked())
             .build();
+    }
+
+    public ReviewLikeStatusResponse isLiked(Long reviewId, Long memberId) {
+        boolean isLiked = reviewCoreService.isLikedByMember(reviewId, memberId);
+        return new ReviewLikeStatusResponse(isLiked);
     }
 
     public boolean toggleReviewLike(Long reviewId, Long memberId) {
