@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @Tag(name = "Member", description = "회원 관리 API")
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class MemberApiController {
             return ResponseEntity.status(401).build();
         }
 
-        return memberService.findMemberInfo(userDetails.getMemberId()).map(info -> ResponseEntity.ok(CommonResponse.success(info))).orElse(ResponseEntity.notFound().build());
+        Optional<MemberInfoResponse> memberInfo = memberService.findMemberInfo(userDetails.getMemberId());
+        return memberInfo.map(memberInfoResponse -> ResponseEntity.ok(CommonResponse.success(memberInfoResponse))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
