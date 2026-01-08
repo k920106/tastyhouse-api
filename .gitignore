@@ -31,3 +31,6 @@ application-prod.yml
 
 # Claude
 .claude/settings.local.json
+
+# Cursor
+.vscode/
