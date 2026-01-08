@@ -221,10 +221,19 @@ CREATE TABLE PLACE
     road_address  VARCHAR(500),
     lot_address   VARCHAR(500),
     phone_number  VARCHAR(20),
-    owner_message TEXT,
     closed_days   VARCHAR(100),
     created_at    DATETIME      NOT NULL,
     updated_at    DATETIME      NOT NULL
+);
+
+CREATE TABLE PLACE_OWNER_MESSAGE_HISTORY
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id      BIGINT   NOT NULL,
+    message       TEXT,
+    created_at    DATETIME NOT NULL,
+    updated_at    DATETIME NOT NULL,
+    INDEX idx_place_owner_message_history_place_id (place_id)
 );
 
 CREATE TABLE PLACE_AMENITY_CATEGORY
