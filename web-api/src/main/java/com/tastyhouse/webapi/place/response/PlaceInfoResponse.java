@@ -27,9 +27,6 @@ public class PlaceInfoResponse {
     @Schema(description = "전화번호", example = "02-1234-5678")
     private String phoneNumber;
 
-    @Schema(description = "사장님 한마디", example = "사장님의 한마디는 환영의 노래입니다...")
-    private String ownerMessage;
-
     @Schema(description = "휴무일", example = "연중무휴")
     private String closedDays;
 
