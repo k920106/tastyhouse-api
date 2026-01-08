@@ -16,6 +16,7 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
+import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ public class PlaceService {
     private final ProductCoreService productCoreService;
     private final ReviewCoreService reviewCoreService;
     private final PlaceBookmarkJpaRepository placeBookmarkJpaRepository;
+    private final PlaceOwnerMessageHistoryJpaRepository placeOwnerMessageHistoryJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude);
@@ -158,7 +160,6 @@ public class PlaceService {
                 .longitude(place.getLongitude())
                 .stationName(station.getStationName())
                 .phoneNumber(place.getPhoneNumber())
-                .ownerMessage(place.getOwnerMessage())
                 .closedDays(place.getClosedDays())
                 .businessHours(businessHourItems)
                 .build();
@@ -320,5 +321,19 @@ public class PlaceService {
             placeBookmarkJpaRepository.save(bookmark);
             return true;
         }
+    }
+
+    public PlaceOwnerMessageHistoryResponse getPlaceOwnerMessageHistory(Long placeId) {
+        placeCoreService.findPlaceById(placeId); // Ensure place exists
+        
+        return placeOwnerMessageHistoryJpaRepository.findFirstByPlaceIdOrderByCreatedAtDesc(placeId)
+                .map(history -> PlaceOwnerMessageHistoryResponse.builder()
+                        .message(history.getMessage())
+                        .createdAt(history.getCreatedAt())
+                        .build())
+                .orElse(PlaceOwnerMessageHistoryResponse.builder()
+                        .message(null)
+                        .createdAt(null)
+                        .build());
     }
 }
