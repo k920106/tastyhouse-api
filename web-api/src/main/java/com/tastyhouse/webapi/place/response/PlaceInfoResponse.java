@@ -27,8 +27,8 @@ public class PlaceInfoResponse {
     @Schema(description = "전화번호", example = "02-1234-5678")
     private String phoneNumber;
 
-    @Schema(description = "휴무일", example = "연중무휴")
-    private String closedDays;
+    @Schema(description = "휴무일 목록")
+    private List<ClosedDayItem> closedDays;
 
     @Schema(description = "운영시간 목록")
     private List<BusinessHourItem> businessHours;
@@ -72,5 +72,16 @@ public class PlaceInfoResponse {
 
         @Schema(description = "브레이크타임 종료", example = "17:00")
         private String endTime;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "휴무일 정보")
+    public static class ClosedDayItem {
+        @Schema(description = "휴무일 타입", example = "EVERY_WEEK_MONDAY")
+        private String closedDayType;
+
+        @Schema(description = "휴무일 설명", example = "매주 월요일")
+        private String description;
     }
 }

@@ -150,6 +150,7 @@ public class PlaceService {
         PlaceStation station = placeCoreService.findStationById(place.getStationId());
         List<PlaceBusinessHour> businessHours = placeCoreService.findPlaceBusinessHours(placeId);
         List<PlaceBreakTime> breakTimes = placeCoreService.findPlaceBreakTimes(placeId);
+        List<PlaceClosedDay> closedDays = placeCoreService.findPlaceClosedDays(placeId);
 
         List<PlaceInfoResponse.BusinessHourItem> businessHourItems = businessHours.stream()
                 .map(this::convertToBusinessHourItem)
@@ -158,7 +159,10 @@ public class PlaceService {
         List<PlaceInfoResponse.BreakTimeItem> breakTimeItems = breakTimes.stream()
                 .map(this::convertToBreakTimeItem)
                 .toList();
-        
+
+        List<PlaceInfoResponse.ClosedDayItem> closedDayItems = closedDays.stream()
+                .map(this::convertToClosedDayItem)
+                .toList();
 
         return PlaceInfoResponse.builder()
                 .id(place.getId())
@@ -166,7 +170,7 @@ public class PlaceService {
                 .longitude(place.getLongitude())
                 .stationName(station.getStationName())
                 .phoneNumber(place.getPhoneNumber())
-                .closedDays(place.getClosedDays())
+                .closedDays(closedDayItems)
                 .businessHours(businessHourItems)
                 .breakTimes(breakTimeItems)
                 .build();
@@ -259,6 +263,13 @@ public class PlaceService {
                 .dayTypeDescription(breakTime.getDayType().getDescription())
                 .startTime(breakTime.getStartTime() != null ? breakTime.getStartTime().format(formatter) : null)
                 .endTime(breakTime.getEndTime() != null ? breakTime.getEndTime().format(formatter) : null)
+                .build();
+    }
+
+    private PlaceInfoResponse.ClosedDayItem convertToClosedDayItem(PlaceClosedDay closedDay) {
+        return PlaceInfoResponse.ClosedDayItem.builder()
+                .closedDayType(closedDay.getClosedDayType().name())
+                .description(closedDay.getClosedDayType().getDescription())
                 .build();
     }
 
