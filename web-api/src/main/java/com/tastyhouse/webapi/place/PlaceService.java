@@ -151,6 +151,7 @@ public class PlaceService {
         List<PlaceBusinessHour> businessHours = placeCoreService.findPlaceBusinessHours(placeId);
         List<PlaceBreakTime> breakTimes = placeCoreService.findPlaceBreakTimes(placeId);
         List<PlaceClosedDay> closedDays = placeCoreService.findPlaceClosedDays(placeId);
+        List<PlaceAmenity> placeAmenities = placeCoreService.findPlaceAmenities(placeId);
 
         List<PlaceInfoResponse.BusinessHourItem> businessHourItems = businessHours.stream()
                 .map(this::convertToBusinessHourItem)
@@ -164,6 +165,10 @@ public class PlaceService {
                 .map(this::convertToClosedDayItem)
                 .toList();
 
+        List<PlaceInfoResponse.AmenityItem> amenityItems = placeAmenities.stream()
+                .map(this::convertToAmenityItem)
+                .toList();
+
         return PlaceInfoResponse.builder()
                 .id(place.getId())
                 .latitude(place.getLatitude())
@@ -173,6 +178,7 @@ public class PlaceService {
                 .closedDays(closedDayItems)
                 .businessHours(businessHourItems)
                 .breakTimes(breakTimeItems)
+                .amenities(amenityItems)
                 .build();
     }
 
@@ -270,6 +276,16 @@ public class PlaceService {
         return PlaceInfoResponse.ClosedDayItem.builder()
                 .closedDayType(closedDay.getClosedDayType().name())
                 .description(closedDay.getClosedDayType().getDescription())
+                .build();
+    }
+
+    private PlaceInfoResponse.AmenityItem convertToAmenityItem(PlaceAmenity placeAmenity) {
+        PlaceAmenityCategory category = placeCoreService.findPlaceAmenityCategoryById(placeAmenity.getPlaceAmenityCategoryId());
+        return PlaceInfoResponse.AmenityItem.builder()
+                .code(category.getAmenity().name())
+                .name(category.getDisplayName())
+                .imageUrlOn(category.getImageUrlOn())
+                .imageUrlOff(category.getImageUrlOff())
                 .build();
     }
 

@@ -27,6 +27,7 @@ public class PlaceCoreService {
     private final PlaceBusinessHourJpaRepository placeBusinessHourJpaRepository;
     private final PlaceBreakTimeJpaRepository placeBreakTimeJpaRepository;
     private final PlaceClosedDayJpaRepository placeClosedDayJpaRepository;
+    private final PlaceAmenityJpaRepository placeAmenityJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         BigDecimal lat = BigDecimal.valueOf(latitude);
@@ -81,6 +82,11 @@ public class PlaceCoreService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전철역입니다. ID: " + stationId));
     }
 
+    public PlaceAmenityCategory findPlaceAmenityCategoryById(Long categoryId) {
+        return placeAmenityCategoryJpaRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편의시설 카테고리입니다. ID: " + categoryId));
+    }
+
     public List<PlaceBusinessHour> findPlaceBusinessHours(Long placeId) {
         return placeBusinessHourJpaRepository.findByPlaceIdOrderByDayType(placeId);
     }
@@ -91,6 +97,10 @@ public class PlaceCoreService {
 
     public List<PlaceClosedDay> findPlaceClosedDays(Long placeId) {
         return placeClosedDayJpaRepository.findByPlaceId(placeId);
+    }
+
+    public List<PlaceAmenity> findPlaceAmenities(Long placeId) {
+        return placeAmenityJpaRepository.findByPlaceId(placeId);
     }
 
     public List<PlaceImage> findPlaceThumbnails(Long placeId) {

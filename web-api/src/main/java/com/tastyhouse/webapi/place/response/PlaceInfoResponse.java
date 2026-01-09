@@ -36,6 +36,9 @@ public class PlaceInfoResponse {
     @Schema(description = "브레이크타임 목록")
     private List<BreakTimeItem> breakTimes;
 
+    @Schema(description = "편의시설 목록")
+    private List<AmenityItem> amenities;
+
     @Getter
     @Builder
     @Schema(description = "운영시간 정보")
@@ -83,5 +86,22 @@ public class PlaceInfoResponse {
 
         @Schema(description = "휴무일 설명", example = "매주 월요일")
         private String description;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "편의시설 정보")
+    public static class AmenityItem {
+        @Schema(description = "편의시설 코드", example = "PARKING")
+        private String code;
+
+        @Schema(description = "편의시설 표시명", example = "주차 가능")
+        private String name;
+
+        @Schema(description = "편의시설 이미지 URL (ON)", example = "https://example.com/parking-on.png")
+        private String imageUrlOn;
+
+        @Schema(description = "편의시설 이미지 URL (OFF)", example = "https://example.com/parking-off.png")
+        private String imageUrlOff;
     }
 }
