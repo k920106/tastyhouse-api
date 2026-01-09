@@ -285,7 +285,6 @@ public class PlaceService {
                 .code(category.getAmenity().name())
                 .name(category.getDisplayName())
                 .imageUrlOn(category.getImageUrlOn())
-                .imageUrlOff(category.getImageUrlOff())
                 .build();
     }
 
