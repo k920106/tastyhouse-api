@@ -294,6 +294,14 @@ CREATE TABLE PLACE_BREAK_TIME
     UNIQUE KEY uk_place_break_time (place_id, day_type)
 );
 
+CREATE TABLE PLACE_CLOSED_DAY
+(
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id         BIGINT      NOT NULL,
+    closed_day_type  VARCHAR(50) NOT NULL,
+    INDEX idx_place_closed_day_place_id (place_id)
+);
+
 CREATE TABLE PLACE_CHOICE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
