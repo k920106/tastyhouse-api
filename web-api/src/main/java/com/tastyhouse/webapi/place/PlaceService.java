@@ -149,10 +149,16 @@ public class PlaceService {
         Place place = placeCoreService.findPlaceById(placeId);
         PlaceStation station = placeCoreService.findStationById(place.getStationId());
         List<PlaceBusinessHour> businessHours = placeCoreService.findPlaceBusinessHours(placeId);
+        List<PlaceBreakTime> breakTimes = placeCoreService.findPlaceBreakTimes(placeId);
 
         List<PlaceInfoResponse.BusinessHourItem> businessHourItems = businessHours.stream()
                 .map(this::convertToBusinessHourItem)
                 .toList();
+
+        List<PlaceInfoResponse.BreakTimeItem> breakTimeItems = breakTimes.stream()
+                .map(this::convertToBreakTimeItem)
+                .toList();
+        
 
         return PlaceInfoResponse.builder()
                 .id(place.getId())
@@ -162,6 +168,7 @@ public class PlaceService {
                 .phoneNumber(place.getPhoneNumber())
                 .closedDays(place.getClosedDays())
                 .businessHours(businessHourItems)
+                .breakTimes(breakTimeItems)
                 .build();
     }
 
@@ -240,9 +247,18 @@ public class PlaceService {
                 .dayTypeDescription(businessHour.getDayType().getDescription())
                 .openTime(businessHour.getOpenTime() != null ? businessHour.getOpenTime().format(formatter) : null)
                 .closeTime(businessHour.getCloseTime() != null ? businessHour.getCloseTime().format(formatter) : null)
-                .breakStartTime(businessHour.getBreakStartTime() != null ? businessHour.getBreakStartTime().format(formatter) : null)
-                .breakEndTime(businessHour.getBreakEndTime() != null ? businessHour.getBreakEndTime().format(formatter) : null)
                 .isClosed(businessHour.getIsClosed())
+                .build();
+    }
+
+    private PlaceInfoResponse.BreakTimeItem convertToBreakTimeItem(PlaceBreakTime breakTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        return PlaceInfoResponse.BreakTimeItem.builder()
+                .dayType(breakTime.getDayType().name())
+                .dayTypeDescription(breakTime.getDayType().getDescription())
+                .startTime(breakTime.getStartTime() != null ? breakTime.getStartTime().format(formatter) : null)
+                .endTime(breakTime.getEndTime() != null ? breakTime.getEndTime().format(formatter) : null)
                 .build();
     }
 
@@ -325,7 +341,7 @@ public class PlaceService {
 
     public PlaceOwnerMessageHistoryResponse getPlaceOwnerMessageHistory(Long placeId) {
         placeCoreService.findPlaceById(placeId); // Ensure place exists
-        
+
         return placeOwnerMessageHistoryJpaRepository.findFirstByPlaceIdOrderByCreatedAtDesc(placeId)
                 .map(history -> PlaceOwnerMessageHistoryResponse.builder()
                         .message(history.getMessage())

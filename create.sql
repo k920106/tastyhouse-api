@@ -278,11 +278,20 @@ CREATE TABLE PLACE_BUSINESS_HOUR
     day_type         VARCHAR(20) NOT NULL,
     open_time        TIME,
     close_time       TIME,
-    break_start_time TIME,
-    break_end_time   TIME,
     is_closed        TINYINT(1),
     INDEX idx_place_business_hour_place_id (place_id),
     UNIQUE KEY uk_place_business_hour (place_id, day_type)
+);
+
+CREATE TABLE PLACE_BREAK_TIME
+(
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id         BIGINT      NOT NULL,
+    day_type         VARCHAR(20) NOT NULL,
+    start_time TIME        NOT NULL,
+    end_time   TIME        NOT NULL,
+    INDEX idx_place_break_time_place_id (place_id),
+    UNIQUE KEY uk_place_break_time (place_id, day_type)
 );
 
 CREATE TABLE PLACE_CHOICE

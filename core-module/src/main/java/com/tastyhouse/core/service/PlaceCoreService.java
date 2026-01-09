@@ -25,6 +25,7 @@ public class PlaceCoreService {
     private final PlaceJpaRepository placeJpaRepository;
     private final PlaceImageJpaRepository placeImageJpaRepository;
     private final PlaceBusinessHourJpaRepository placeBusinessHourJpaRepository;
+    private final PlaceBreakTimeJpaRepository placeBreakTimeJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         BigDecimal lat = BigDecimal.valueOf(latitude);
@@ -81,6 +82,10 @@ public class PlaceCoreService {
 
     public List<PlaceBusinessHour> findPlaceBusinessHours(Long placeId) {
         return placeBusinessHourJpaRepository.findByPlaceIdOrderByDayType(placeId);
+    }
+
+    public List<PlaceBreakTime> findPlaceBreakTimes(Long placeId) {
+        return placeBreakTimeJpaRepository.findByPlaceIdOrderByDayType(placeId);
     }
 
     public List<PlaceImage> findPlaceThumbnails(Long placeId) {

@@ -33,6 +33,9 @@ public class PlaceInfoResponse {
     @Schema(description = "운영시간 목록")
     private List<BusinessHourItem> businessHours;
 
+    @Schema(description = "브레이크타임 목록")
+    private List<BreakTimeItem> breakTimes;
+
     @Getter
     @Builder
     @Schema(description = "운영시간 정보")
@@ -50,13 +53,24 @@ public class PlaceInfoResponse {
         @Schema(description = "마감 시간", example = "22:00")
         private String closeTime;
 
-        @Schema(description = "브레이크타임 시작", example = "15:00")
-        private String breakStartTime;
-
-        @Schema(description = "브레이크타임 종료", example = "17:00")
-        private String breakEndTime;
-
         @Schema(description = "휴무 여부", example = "false")
         private Boolean isClosed;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "브레이크타임 정보")
+    public static class BreakTimeItem {
+        @Schema(description = "요일 타입", example = "WEEKDAY")
+        private String dayType;
+
+        @Schema(description = "요일 타입 설명", example = "평일")
+        private String dayTypeDescription;
+
+        @Schema(description = "브레이크타임 시작", example = "15:00")
+        private String startTime;
+
+        @Schema(description = "브레이크타임 종료", example = "17:00")
+        private String endTime;
     }
 }
