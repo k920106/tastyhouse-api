@@ -100,8 +100,5 @@ public class PlaceInfoResponse {
 
         @Schema(description = "편의시설 이미지 URL (ON)", example = "https://example.com/parking-on.png")
         private String imageUrlOn;
-
-        @Schema(description = "편의시설 이미지 URL (OFF)", example = "https://example.com/parking-off.png")
-        private String imageUrlOff;
     }
 }
