@@ -196,4 +196,13 @@ public class PlaceApiController {
         CommonResponse<PlaceOwnerMessageHistoryResponse> response = CommonResponse.success(history);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "상호명 조회", description = "플레이스의 상호명을 조회합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{placeId}/name")
+    public ResponseEntity<CommonResponse<PlaceNameResponse>> getPlaceName(@PathVariable Long placeId) {
+        PlaceNameResponse placeName = placeService.getPlaceName(placeId);
+        CommonResponse<PlaceNameResponse> response = CommonResponse.success(placeName);
+        return ResponseEntity.ok(response);
+    }
 }

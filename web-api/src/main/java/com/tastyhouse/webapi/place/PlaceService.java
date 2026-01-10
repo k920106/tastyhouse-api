@@ -378,4 +378,12 @@ public class PlaceService {
                         .createdAt(null)
                         .build());
     }
+
+    public PlaceNameResponse getPlaceName(Long placeId) {
+        Place place = placeCoreService.findPlaceById(placeId);
+        return PlaceNameResponse.builder()
+                .id(place.getId())
+                .name(place.getName())
+                .build();
+    }
 }
