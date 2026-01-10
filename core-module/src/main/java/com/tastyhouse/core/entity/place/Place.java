@@ -18,8 +18,8 @@ public class Place extends BaseEntity {
     @Column(name = "station_id", nullable = false)
     private Long stationId;
 
-    @Column(name = "place_name", nullable = false, unique = true)
-    private String placeName;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name; // 상호명
 
     @Column(name = "latitude", nullable = false)
     private BigDecimal latitude;

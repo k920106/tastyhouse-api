@@ -35,7 +35,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             .select(
                 placeChoice.id,
                 placeChoice.placeId,
-                place.placeName,
+                place.name,
                 placeChoice.title,
                 placeChoice.content,
                 placeImage.imageUrl
@@ -58,7 +58,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 product.placeId,
                 new QProductSimpleDto(
                     product.id,
-                    place.placeName,
+                    place.name,
                     product.name,
                     product.imageUrl,
                     product.originalPrice,
@@ -96,7 +96,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 return new EditorChoiceDto(
                     tuple.get(placeChoice.id),
                     placeIdValue,
-                    tuple.get(place.placeName),
+                    tuple.get(place.name),
                     tuple.get(placeChoice.title),
                     tuple.get(placeChoice.content),
                     tuple.get(placeImage.imageUrl),
@@ -123,7 +123,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             .select(
                 placeChoice.id,
                 placeChoice.placeId,
-                place.placeName,
+                place.name,
                 placeChoice.title,
                 placeChoice.content,
                 placeImage.imageUrl
@@ -148,7 +148,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 product.placeId,
                 new QProductSimpleDto(
                     product.id,
-                    place.placeName,
+                    place.name,
                     product.name,
                     product.imageUrl,
                     product.originalPrice,
@@ -186,7 +186,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 return new EditorChoiceDto(
                     tuple.get(placeChoice.id),
                     placeIdValue,
-                    tuple.get(place.placeName),
+                    tuple.get(place.name),
                     tuple.get(placeChoice.title),
                     tuple.get(placeChoice.content),
                     tuple.get(placeImage.imageUrl),

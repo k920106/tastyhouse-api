@@ -30,7 +30,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         JPAQuery<TodayDiscountProductDto> query = queryFactory
             .select(new QTodayDiscountProductDto(
                 product.id,
-                place.placeName,
+                place.name,
                 product.name,
                 product.imageUrl,
                 product.originalPrice,
@@ -60,7 +60,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         return queryFactory
             .select(new QProductSimpleDto(
                 product.id,
-                place.placeName,
+                place.name,
                 product.name,
                 product.imageUrl,
                 product.originalPrice,
@@ -68,7 +68,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 product.discountRate
             ))
             .from(product)
-            .innerJoin(place).on(product.placeId.eq(place.id))
+            .innerJoin(place).on(place.id.eq(product.placeId))
             .where(product.placeId.eq(placeId))
             .fetch();
     }
