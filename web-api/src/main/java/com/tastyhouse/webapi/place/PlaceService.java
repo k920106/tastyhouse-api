@@ -78,15 +78,15 @@ public class PlaceService {
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
         List<EditorChoiceProductItem> productItems = dto.getProducts() != null ? dto.getProducts().stream().map(this::convertToEditorChoiceProductItem).toList() : new ArrayList<>();
 
-        return EditorChoiceResponse.builder().id(dto.getId()).name(dto.getPlaceName()).imageUrl(dto.getPlaceImageUrl()).title(dto.getTitle()).content(dto.getContent()).products(productItems).build();
+        return EditorChoiceResponse.builder().id(dto.getId()).name(dto.getName()).imageUrl(dto.getPlaceImageUrl()).title(dto.getTitle()).content(dto.getContent()).products(productItems).build();
     }
 
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
-        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).foodTypes(dto.getFoodTypes()).build();
+        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).foodTypes(dto.getFoodTypes()).build();
     }
 
     private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
-        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getPlaceName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).foodTypes(dto.getFoodTypes()).build();
+        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).foodTypes(dto.getFoodTypes()).build();
     }
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
@@ -138,7 +138,7 @@ public class PlaceService {
 
         return PlaceSummaryResponse.builder()
                 .id(place.getId())
-                .name(place.getPlaceName())
+                .name(place.getName())
                 .roadAddress(place.getRoadAddress())
                 .lotAddress(place.getLotAddress())
                 .rating(place.getRating())

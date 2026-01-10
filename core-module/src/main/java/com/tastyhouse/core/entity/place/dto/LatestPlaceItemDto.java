@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class LatestPlaceItemDto {
     private final Long id;
-    private final String placeName;
+    private final String name;
     private final String stationName;
     private final Double rating;
     private final String imageUrl;

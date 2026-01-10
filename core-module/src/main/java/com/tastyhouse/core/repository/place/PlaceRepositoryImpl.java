@@ -85,7 +85,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             ));
 
         // 6. 결과 조합
-        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getPlaceName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), foodTypeMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
+        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), foodTypeMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -204,7 +204,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 8. 결과 조합
         List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> LatestPlaceItemDto.builder()
             .id(p.getId())
-            .placeName(p.getPlaceName())
+            .name(p.getName())
             .stationName(stationMap.get(p.getId()))
             .rating(p.getRating())
             .imageUrl(imageMap.get(p.getId()))

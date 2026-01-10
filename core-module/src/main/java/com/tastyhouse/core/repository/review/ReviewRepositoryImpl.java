@@ -216,7 +216,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .select(new QReviewDetailDto(
                 review.id,
                 place.id,
-                place.placeName,
+                place.name,
                 placeStation.stationName,
                 review.content,
                 review.totalRating,

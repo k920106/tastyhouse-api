@@ -112,7 +112,7 @@ public class ProductService {
     }
 
     private ProductDetailResponse buildProductDetailResponse(Product product) {
-        String placeName = placeCoreService.findPlaceById(product.getPlaceId()).getPlaceName();
+        String placeName = placeCoreService.findPlaceById(product.getPlaceId()).getName();
 
         String categoryName = null;
         if (product.getProductCategoryId() != null) {
