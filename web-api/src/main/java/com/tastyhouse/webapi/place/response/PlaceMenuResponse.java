@@ -37,4 +37,7 @@ public class PlaceMenuResponse {
 
     @Schema(description = "대표 메뉴 여부", example = "true")
     private Boolean isRepresentative;
+
+    @Schema(description = "매운맛 정도 (0-5 또는 0-10)", example = "3")
+    private Integer spiciness;
 }
