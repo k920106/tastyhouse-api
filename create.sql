@@ -336,16 +336,32 @@ CREATE TABLE PLACE_FOOD_TYPE
     INDEX idx_place_food_type_place_id (place_id)
 );
 
-CREATE TABLE PLACE_IMAGE
+CREATE TABLE PLACE_PHOTO_CATEGORY
 (
-    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
-    place_id       BIGINT       NOT NULL,
-    image_url      VARCHAR(255) NOT NULL,
-    is_thumbnail   TINYINT(1),
-    image_category VARCHAR(20),
-    sort           INT,
-    INDEX idx_place_image_place_id (place_id),
-    INDEX idx_place_image_category (place_id, image_category)
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(100) NOT NULL,
+    created_at DATETIME     NOT NULL,
+    updated_at DATETIME     NOT NULL
+);
+
+CREATE TABLE PLACE_PHOTO_CATEGORY_IMAGE
+(
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_photo_category_id BIGINT       NOT NULL,
+    image_url               VARCHAR(255) NOT NULL,
+    sort                    INT          NOT NULL,
+    created_at              DATETIME     NOT NULL,
+    updated_at              DATETIME     NOT NULL,
+    INDEX idx_place_photo_category_image_category_id (place_photo_category_id)
+);
+
+CREATE TABLE PLACE_BANNER_IMAGE
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id   BIGINT       NOT NULL,
+    image_url  VARCHAR(255) NOT NULL,
+    sort       INT,
+    INDEX idx_place_banner_image_place_id (place_id)
 );
 
 CREATE TABLE PLACE_STATION

@@ -23,7 +23,8 @@ public class PlaceCoreService {
     private final PlaceFoodTypeCategoryJpaRepository placeFoodTypeCategoryJpaRepository;
     private final PlaceAmenityCategoryJpaRepository placeAmenityCategoryJpaRepository;
     private final PlaceJpaRepository placeJpaRepository;
-    private final PlaceImageJpaRepository placeImageJpaRepository;
+    private final PlaceBannerImageJpaRepository placeBannerImageJpaRepository;
+    private final PlaceImageCategoryJpaRepository placeImageCategoryJpaRepository;
     private final PlaceBusinessHourJpaRepository placeBusinessHourJpaRepository;
     private final PlaceBreakTimeJpaRepository placeBreakTimeJpaRepository;
     private final PlaceClosedDayJpaRepository placeClosedDayJpaRepository;
@@ -87,6 +88,11 @@ public class PlaceCoreService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편의시설 카테고리입니다. ID: " + categoryId));
     }
 
+    public PlacePhotoCategory findPlaceImageCategoryById(Long categoryId) {
+        return placeImageCategoryJpaRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이미지 카테고리입니다. ID: " + categoryId));
+    }
+
     public List<PlaceBusinessHour> findPlaceBusinessHours(Long placeId) {
         return placeBusinessHourJpaRepository.findByPlaceIdOrderByDayType(placeId);
     }
@@ -103,17 +109,6 @@ public class PlaceCoreService {
         return placeAmenityJpaRepository.findByPlaceId(placeId);
     }
 
-    public List<PlaceImage> findPlaceThumbnails(Long placeId) {
-        return placeImageJpaRepository.findByPlaceIdAndIsThumbnailTrueOrderBySortAsc(placeId);
-    }
-
-    public org.springframework.data.domain.Page<PlaceImage> findPlacePhotos(Long placeId, PlaceImageCategory category, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        if (category != null) {
-            return placeImageJpaRepository.findByPlaceIdAndImageCategoryOrderBySortAsc(placeId, category, pageRequest);
-        }
-        return placeImageJpaRepository.findByPlaceIdOrderBySortAsc(placeId, pageRequest);
-    }
 
     public static class BestPlacePageResult {
         private final List<BestPlaceItemDto> content;

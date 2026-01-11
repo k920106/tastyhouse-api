@@ -225,8 +225,8 @@ public class PlaceService {
                 .toList();
     }
 
-    public PageResult<PlacePhotoResponse> getPlacePhotos(Long placeId, PlaceImageCategory category, PageRequest pageRequest) {
-        Page<PlaceImage> photoPage = placeCoreService.findPlacePhotos(placeId, category, pageRequest.getPage(), pageRequest.getSize());
+    public PageResult<PlacePhotoResponse> getPlacePhotos(Long placeId, Long placeImageCategoryId, PageRequest pageRequest) {
+        Page<PlaceImage> photoPage = placeCoreService.findPlacePhotos(placeId, placeImageCategoryId, pageRequest.getPage(), pageRequest.getSize());
 
         List<PlacePhotoResponse> photos = photoPage.getContent().stream()
                 .map(this::convertToPlacePhotoResponse)
@@ -341,11 +341,16 @@ public class PlaceService {
     }
 
     private PlacePhotoResponse convertToPlacePhotoResponse(PlaceImage image) {
+        String categoryName = null;
+        if (image.getPlaceImageCategoryId() != null) {
+            PlacePhotoCategory category = placeCoreService.findPlaceImageCategoryById(image.getPlaceImageCategoryId());
+            categoryName = category.getName();
+        }
         return PlacePhotoResponse.builder()
                 .id(image.getId())
                 .imageUrl(image.getImageUrl())
-                .categoryCode(image.getImageCategory() != null ? image.getImageCategory().name() : null)
-                .categoryName(image.getImageCategory() != null ? image.getImageCategory().getDescription() : null)
+                .categoryCode(null) // Entity 기반으로 변경되어 code는 사용하지 않음
+                .categoryName(categoryName)
                 .sort(image.getSort())
                 .build();
     }
