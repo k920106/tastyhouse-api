@@ -5,7 +5,6 @@ import com.tastyhouse.core.common.PagedCommonResponse;
 import com.tastyhouse.core.entity.place.Amenity;
 import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
-import com.tastyhouse.core.entity.place.PlaceImageCategory;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
@@ -137,9 +136,9 @@ public class PlaceApiController {
     @Operation(summary = "사진 목록 조회", description = "플레이스의 사진 목록을 조회합니다. 카테고리별로 필터링할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/{placeId}/photos")
-    public ResponseEntity<PagedCommonResponse<PlacePhotoResponse>> getPlacePhotos(@PathVariable Long placeId, @RequestParam(required = false) PlaceImageCategory category, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PagedCommonResponse<PlacePhotoResponse>> getPlacePhotos(@PathVariable Long placeId, @RequestParam(required = false) Long placeImageCategoryId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PlacePhotoResponse> pageResult = placeService.getPlacePhotos(placeId, category, pageRequest);
+        PageResult<PlacePhotoResponse> pageResult = placeService.getPlacePhotos(placeId, placeImageCategoryId, pageRequest);
         PagedCommonResponse<PlacePhotoResponse> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
