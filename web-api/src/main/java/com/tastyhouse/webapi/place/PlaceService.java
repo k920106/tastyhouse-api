@@ -224,14 +224,28 @@ public class PlaceService {
                 .toList();
     }
 
-    public PageResult<PlacePhotoResponse> getPlacePhotos(Long placeId, Long placeImageCategoryId, PageRequest pageRequest) {
-        PlaceCoreService.PhotoCategoryImagePageResult photoPageResult = placeCoreService.findPlacePhotoCategoryImages(placeImageCategoryId, pageRequest.getPage(), pageRequest.getSize());
+    public List<PlacePhotoCategoryResponse> getPlacePhotos(Long placeId) {
+        List<PlacePhotoCategory> categories = placeCoreService.findAllPlacePhotoCategories();
+        List<PlacePhotoCategoryImage> images = placeCoreService.findAllPlacePhotoCategoryImages();
 
-        List<PlacePhotoResponse> photos = photoPageResult.getContent().stream()
-                .map(this::convertToPlacePhotoResponse)
+        // 카테고리 ID별로 이미지 그룹화
+        Map<Long, List<PlacePhotoCategoryImage>> imagesByCategory = images.stream()
+                .filter(image -> image.getPlacePhotoCategoryId() != null)
+                .collect(Collectors.groupingBy(PlacePhotoCategoryImage::getPlacePhotoCategoryId));
+
+        // 카테고리 순서대로 응답 생성
+        return categories.stream()
+                .map(category -> {
+                    List<PlacePhotoCategoryImage> categoryImages = imagesByCategory.getOrDefault(category.getId(), new ArrayList<>());
+                    List<String> imageUrls = categoryImages.stream()
+                            .map(PlacePhotoCategoryImage::getImageUrl)
+                            .toList();
+                    return PlacePhotoCategoryResponse.builder()
+                            .categoryName(category.getName())
+                            .imageUrls(imageUrls)
+                            .build();
+                })
                 .toList();
-
-        return new PageResult<>(photos, photoPageResult.getTotalElements(), photoPageResult.getTotalPages(), photoPageResult.getCurrentPage(), photoPageResult.getPageSize());
     }
 
     public PageResult<PlaceReviewResponse> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
