@@ -8,6 +8,7 @@ import com.tastyhouse.core.repository.place.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ public class PlaceCoreService {
     private final PlaceJpaRepository placeJpaRepository;
     private final PlaceBannerImageJpaRepository placeBannerImageJpaRepository;
     private final PlaceImageCategoryJpaRepository placeImageCategoryJpaRepository;
+    private final PlacePhotoCategoryImageJpaRepository placePhotoCategoryImageJpaRepository;
     private final PlaceBusinessHourJpaRepository placeBusinessHourJpaRepository;
     private final PlaceBreakTimeJpaRepository placeBreakTimeJpaRepository;
     private final PlaceClosedDayJpaRepository placeClosedDayJpaRepository;
@@ -111,6 +113,25 @@ public class PlaceCoreService {
 
     public List<PlaceBannerImage> findPlaceBannerImages(Long placeId) {
         return placeBannerImageJpaRepository.findByPlaceIdOrderBySortAsc(placeId);
+    }
+
+    public PhotoCategoryImagePageResult findPlacePhotoCategoryImages(Long placePhotoCategoryId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("sort").ascending());
+        Page<PlacePhotoCategoryImage> photoPage;
+        
+        if (placePhotoCategoryId != null) {
+            photoPage = placePhotoCategoryImageJpaRepository.findByPlacePhotoCategoryIdOrderBySortAsc(placePhotoCategoryId, pageRequest);
+        } else {
+            photoPage = placePhotoCategoryImageJpaRepository.findAll(pageRequest);
+        }
+        
+        return new PhotoCategoryImagePageResult(
+                photoPage.getContent(),
+                photoPage.getTotalElements(),
+                photoPage.getTotalPages(),
+                photoPage.getNumber(),
+                photoPage.getSize()
+        );
     }
 
 
@@ -202,6 +223,42 @@ public class PlaceCoreService {
         }
 
         public List<LatestPlaceItemDto> getContent() {
+            return content;
+        }
+
+        public long getTotalElements() {
+            return totalElements;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        public int getPageSize() {
+            return pageSize;
+        }
+    }
+
+    public static class PhotoCategoryImagePageResult {
+        private final List<PlacePhotoCategoryImage> content;
+        private final long totalElements;
+        private final int totalPages;
+        private final int currentPage;
+        private final int pageSize;
+
+        public PhotoCategoryImagePageResult(List<PlacePhotoCategoryImage> content, long totalElements, int totalPages, int currentPage, int pageSize) {
+            this.content = content;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.pageSize = pageSize;
+        }
+
+        public List<PlacePhotoCategoryImage> getContent() {
             return content;
         }
 
