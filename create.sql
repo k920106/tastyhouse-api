@@ -141,6 +141,7 @@ CREATE TABLE PRODUCT
     rating              DOUBLE,
     review_count        INT           DEFAULT 0,
     is_representative   TINYINT(1)    DEFAULT 0,
+    spiciness           INT,
     is_sold_out         TINYINT(1)    NOT NULL DEFAULT 0,
     is_active           TINYINT(1)    NOT NULL DEFAULT 1,
     sort                INT           NOT NULL,

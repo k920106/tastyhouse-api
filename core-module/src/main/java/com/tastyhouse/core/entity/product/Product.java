@@ -52,6 +52,9 @@ public class Product extends BaseEntity {
     @Column(name = "is_representative")
     private Boolean isRepresentative;
 
+    @Column(name = "spiciness")
+    private Integer spiciness;
+
     @Column(name = "is_sold_out", nullable = false)
     private Boolean isSoldOut;
 
@@ -65,7 +68,7 @@ public class Product extends BaseEntity {
     public Product(Long placeId, Long productCategoryId, String name, String description,
                    String imageUrl, Integer originalPrice, Integer discountPrice,
                    BigDecimal discountRate, Double rating, Integer reviewCount,
-                   Boolean isRepresentative, Boolean isSoldOut, Boolean isActive, Integer sort) {
+                   Boolean isRepresentative, Integer spiciness, Boolean isSoldOut, Boolean isActive, Integer sort) {
         this.placeId = placeId;
         this.productCategoryId = productCategoryId;
         this.name = name;
@@ -77,6 +80,7 @@ public class Product extends BaseEntity {
         this.rating = rating;
         this.reviewCount = reviewCount != null ? reviewCount : 0;
         this.isRepresentative = isRepresentative != null ? isRepresentative : false;
+        this.spiciness = spiciness;
         this.isSoldOut = isSoldOut != null ? isSoldOut : false;
         this.isActive = isActive != null ? isActive : true;
         this.sort = sort;
@@ -84,7 +88,7 @@ public class Product extends BaseEntity {
 
     public void update(Long productCategoryId, String name, String description,
                        String imageUrl, Integer originalPrice, Integer discountPrice,
-                       BigDecimal discountRate, Boolean isRepresentative,
+                       BigDecimal discountRate, Boolean isRepresentative, Integer spiciness,
                        Boolean isSoldOut, Boolean isActive, Integer sort) {
         this.productCategoryId = productCategoryId;
         this.name = name;
@@ -94,6 +98,7 @@ public class Product extends BaseEntity {
         this.discountPrice = discountPrice;
         this.discountRate = discountRate;
         this.isRepresentative = isRepresentative;
+        this.spiciness = spiciness;
         this.isSoldOut = isSoldOut;
         this.isActive = isActive;
         this.sort = sort;

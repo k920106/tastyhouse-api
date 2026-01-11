@@ -325,6 +325,7 @@ public class PlaceService {
                 .rating(product.getRating())
                 .reviewCount(product.getReviewCount())
                 .isRepresentative(product.getIsRepresentative())
+                .spiciness(product.getSpiciness())
                 .build();
     }
 
