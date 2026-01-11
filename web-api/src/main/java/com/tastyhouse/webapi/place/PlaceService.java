@@ -20,7 +20,6 @@ import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -226,13 +225,13 @@ public class PlaceService {
     }
 
     public PageResult<PlacePhotoResponse> getPlacePhotos(Long placeId, Long placeImageCategoryId, PageRequest pageRequest) {
-        Page<PlaceImage> photoPage = placeCoreService.findPlacePhotos(placeId, placeImageCategoryId, pageRequest.getPage(), pageRequest.getSize());
+        PlaceCoreService.PhotoCategoryImagePageResult photoPageResult = placeCoreService.findPlacePhotoCategoryImages(placeImageCategoryId, pageRequest.getPage(), pageRequest.getSize());
 
-        List<PlacePhotoResponse> photos = photoPage.getContent().stream()
+        List<PlacePhotoResponse> photos = photoPageResult.getContent().stream()
                 .map(this::convertToPlacePhotoResponse)
                 .toList();
 
-        return new PageResult<>(photos, photoPage.getTotalElements(), photoPage.getTotalPages(), photoPage.getNumber(), photoPage.getSize());
+        return new PageResult<>(photos, photoPageResult.getTotalElements(), photoPageResult.getTotalPages(), photoPageResult.getCurrentPage(), photoPageResult.getPageSize());
     }
 
     public PageResult<PlaceReviewResponse> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
@@ -340,10 +339,10 @@ public class PlaceService {
                 .build();
     }
 
-    private PlacePhotoResponse convertToPlacePhotoResponse(PlaceImage image) {
+    private PlacePhotoResponse convertToPlacePhotoResponse(PlacePhotoCategoryImage image) {
         String categoryName = null;
-        if (image.getPlaceImageCategoryId() != null) {
-            PlacePhotoCategory category = placeCoreService.findPlaceImageCategoryById(image.getPlaceImageCategoryId());
+        if (image.getPlacePhotoCategoryId() != null) {
+            PlacePhotoCategory category = placeCoreService.findPlaceImageCategoryById(image.getPlacePhotoCategoryId());
             categoryName = category.getName();
         }
         return PlacePhotoResponse.builder()
