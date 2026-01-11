@@ -170,6 +170,15 @@ public class PlaceService {
                 .map(this::convertToAmenityItem)
                 .toList();
 
+        // 사장님 한마디 히스토리 조회
+        String ownerMessage = null;
+        java.time.LocalDateTime ownerMessageCreatedAt = null;
+        var ownerMessageHistory = placeOwnerMessageHistoryJpaRepository.findFirstByPlaceIdOrderByCreatedAtDesc(placeId);
+        if (ownerMessageHistory.isPresent()) {
+            ownerMessage = ownerMessageHistory.get().getMessage();
+            ownerMessageCreatedAt = ownerMessageHistory.get().getCreatedAt();
+        }
+
         return PlaceInfoResponse.builder()
                 .id(place.getId())
                 .latitude(place.getLatitude())
@@ -180,6 +189,8 @@ public class PlaceService {
                 .businessHours(businessHourItems)
                 .breakTimes(breakTimeItems)
                 .amenities(amenityItems)
+                .ownerMessage(ownerMessage)
+                .ownerMessageCreatedAt(ownerMessageCreatedAt)
                 .build();
     }
 

@@ -188,15 +188,6 @@ public class PlaceApiController {
         return ResponseEntity.ok(CommonResponse.success(new PlaceBookmarkResponse(bookmarked)));
     }
 
-    @Operation(summary = "사장님 한마디", description = "플레이스의 가장 최근 사장님 한마디 히스토리를 조회합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
-    @GetMapping("/v1/{placeId}/owner-message-history")
-    public ResponseEntity<CommonResponse<PlaceOwnerMessageHistoryResponse>> getPlaceOwnerMessageHistory(@PathVariable Long placeId) {
-        PlaceOwnerMessageHistoryResponse history = placeService.getPlaceOwnerMessageHistory(placeId);
-        CommonResponse<PlaceOwnerMessageHistoryResponse> response = CommonResponse.success(history);
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "상호명 조회", description = "플레이스의 상호명을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/name")
