@@ -194,10 +194,10 @@ public class PlaceService {
                 .build();
     }
 
-    public List<PlaceThumbnailResponse> getPlaceThumbnails(Long placeId) {
-        List<PlaceImage> thumbnails = placeCoreService.findPlaceThumbnails(placeId);
-        return thumbnails.stream()
-                .map(this::convertToPlaceThumbnailResponse)
+    public List<PlaceBannerResponse> getPlaceBanners(Long placeId) {
+        List<PlaceBannerImage> banners = placeCoreService.findPlaceBannerImages(placeId);
+        return banners.stream()
+                .map(this::convertToPlaceBannerResponse)
                 .toList();
     }
 
@@ -317,8 +317,8 @@ public class PlaceService {
                 .build();
     }
 
-    private PlaceThumbnailResponse convertToPlaceThumbnailResponse(PlaceImage image) {
-        return PlaceThumbnailResponse.builder()
+    private PlaceBannerResponse convertToPlaceBannerResponse(PlaceBannerImage image) {
+        return PlaceBannerResponse.builder()
                 .id(image.getId())
                 .imageUrl(image.getImageUrl())
                 .sort(image.getSort())

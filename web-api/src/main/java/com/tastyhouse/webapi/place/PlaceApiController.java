@@ -115,12 +115,12 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "썸네일 이미지 조회", description = "플레이스의 썸네일 이미지 목록을 조회합니다.")
+    @Operation(summary = "배너 이미지 조회", description = "플레이스의 배너 이미지 목록을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
-    @GetMapping("/v1/{placeId}/thumbnails")
-    public ResponseEntity<CommonResponse<List<PlaceThumbnailResponse>>> getPlaceThumbnails(@PathVariable Long placeId) {
-        List<PlaceThumbnailResponse> thumbnails = placeService.getPlaceThumbnails(placeId);
-        CommonResponse<List<PlaceThumbnailResponse>> response = CommonResponse.success(thumbnails);
+    @GetMapping("/v1/{placeId}/banners")
+    public ResponseEntity<CommonResponse<List<PlaceBannerResponse>>> getPlaceBanners(@PathVariable Long placeId) {
+        List<PlaceBannerResponse> banners = placeService.getPlaceBanners(placeId);
+        CommonResponse<List<PlaceBannerResponse>> response = CommonResponse.success(banners);
         return ResponseEntity.ok(response);
     }
 
