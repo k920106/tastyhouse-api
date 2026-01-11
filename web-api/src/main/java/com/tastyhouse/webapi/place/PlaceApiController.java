@@ -125,12 +125,12 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "메뉴 목록 조회", description = "플레이스의 메뉴 목록을 조회합니다. 대표 메뉴가 우선 표시됩니다.")
+    @Operation(summary = "메뉴 목록 조회", description = "플레이스의 메뉴 목록을 조회합니다. 카테고리별로 그룹화되어 반환됩니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/menus")
-    public ResponseEntity<CommonResponse<List<PlaceMenuResponse>>> getPlaceMenus(@PathVariable Long placeId) {
-        List<PlaceMenuResponse> menus = placeService.getPlaceMenus(placeId);
-        CommonResponse<List<PlaceMenuResponse>> response = CommonResponse.success(menus);
+    public ResponseEntity<CommonResponse<List<PlaceMenuCategoryResponse>>> getPlaceMenus(@PathVariable Long placeId) {
+        List<PlaceMenuCategoryResponse> menus = placeService.getPlaceMenus(placeId);
+        CommonResponse<List<PlaceMenuCategoryResponse>> response = CommonResponse.success(menus);
         return ResponseEntity.ok(response);
     }
 

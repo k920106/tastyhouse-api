@@ -5,6 +5,7 @@ import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
 import com.tastyhouse.core.entity.product.Product;
+import com.tastyhouse.core.entity.product.ProductCategory;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewImage;
@@ -189,10 +190,27 @@ public class PlaceService {
                 .toList();
     }
 
-    public List<PlaceMenuResponse> getPlaceMenus(Long placeId) {
+    public List<PlaceMenuCategoryResponse> getPlaceMenus(Long placeId) {
+        List<ProductCategory> categories = productCoreService.findProductCategoriesByPlaceId(placeId);
         List<Product> products = productCoreService.findProductsByPlaceId(placeId);
-        return products.stream()
-                .map(this::convertToPlaceMenuResponse)
+
+        // 카테고리 ID별로 Product 그룹화
+        Map<Long, List<Product>> productsByCategory = products.stream()
+                .filter(product -> product.getProductCategoryId() != null)
+                .collect(Collectors.groupingBy(Product::getProductCategoryId));
+
+        // 카테고리 순서대로 응답 생성
+        return categories.stream()
+                .map(category -> {
+                    List<Product> categoryProducts = productsByCategory.getOrDefault(category.getId(), new ArrayList<>());
+                    List<PlaceMenuResponse> menuResponses = categoryProducts.stream()
+                            .map(this::convertToPlaceMenuResponse)
+                            .toList();
+                    return PlaceMenuCategoryResponse.builder()
+                            .categoryName(category.getDisplayName())
+                            .menus(menuResponses)
+                            .build();
+                })
                 .toList();
     }
 
