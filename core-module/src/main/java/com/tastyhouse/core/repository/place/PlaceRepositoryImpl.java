@@ -25,7 +25,6 @@ import static com.tastyhouse.core.entity.place.QPlaceAmenityCategory.placeAmenit
 import static com.tastyhouse.core.entity.place.QPlaceBookmark.placeBookmark;
 import static com.tastyhouse.core.entity.place.QPlaceFoodType.placeFoodType;
 import static com.tastyhouse.core.entity.place.QPlaceFoodTypeCategory.placeFoodTypeCategory;
-import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
 import static com.tastyhouse.core.entity.place.QPlaceStation.placeStation;
 import static com.tastyhouse.core.entity.review.QReview.review;
 
@@ -68,10 +67,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 3. Place별 Station 정보 조회
         var stationMap = queryFactory.select(place.id, placeStation.stationName).from(place).join(placeStation).on(placeStation.id.eq(place.stationId)).where(place.id.in(placeIds)).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(place.id), tuple -> tuple.get(placeStation.stationName)));
 
-        // 4. Place별 썸네일 이미지 조회
-        var imageMap = queryFactory.select(placeImage.placeId, placeImage.imageUrl).from(placeImage).where(placeImage.placeId.in(placeIds).and(placeImage.isThumbnail.eq(true))).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeImage.placeId), tuple -> tuple.get(placeImage.imageUrl)));
-
-        // 5. Place별 음식종류 목록 조회
+        // 4. Place별 음식종류 목록 조회
         var foodTypeMap = queryFactory
             .select(placeFoodType.placeId, placeFoodTypeCategory.foodType)
             .from(placeFoodType)
@@ -84,8 +80,8 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 Collectors.mapping(tuple -> tuple.get(placeFoodTypeCategory.foodType), Collectors.toList())
             ));
 
-        // 6. 결과 조합
-        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getName(), stationMap.get(p.getId()), p.getRating(), imageMap.get(p.getId()), foodTypeMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
+        // 5. 결과 조합
+        List<BestPlaceItemDto> content = pagedPlaces.stream().map(p -> new BestPlaceItemDto(p.getId(), p.getName(), stationMap.get(p.getId()), p.getRating(), p.getThumbnailImageUrl(), foodTypeMap.getOrDefault(p.getId(), List.of()))).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -179,16 +175,13 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         // 3. Place별 Station 정보 조회
         var stationMap = queryFactory.select(place.id, placeStation.stationName).from(place).join(placeStation).on(placeStation.id.eq(place.stationId)).where(place.id.in(placeIds)).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(place.id), tuple -> tuple.get(placeStation.stationName)));
 
-        // 4. Place별 썸네일 이미지 조회
-        var imageMap = queryFactory.select(placeImage.placeId, placeImage.imageUrl).from(placeImage).where(placeImage.placeId.in(placeIds).and(placeImage.isThumbnail.eq(true))).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeImage.placeId), tuple -> tuple.get(placeImage.imageUrl)));
-
-        // 5. Place별 리뷰 개수 조회
+        // 4. Place별 리뷰 개수 조회
         var reviewCountMap = queryFactory.select(review.placeId, review.count()).from(review).where(review.placeId.in(placeIds).and(review.isHidden.eq(false))).groupBy(review.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(review.placeId), tuple -> tuple.get(review.count())));
 
-        // 6. Place별 찜 개수 조회
+        // 5. Place별 찜 개수 조회
         var bookmarkCountMap = queryFactory.select(placeBookmark.placeId, placeBookmark.count()).from(placeBookmark).where(placeBookmark.placeId.in(placeIds)).groupBy(placeBookmark.placeId).fetch().stream().collect(Collectors.toMap(tuple -> tuple.get(placeBookmark.placeId), tuple -> tuple.get(placeBookmark.count())));
 
-        // 7. Place별 음식종류 목록 조회
+        // 6. Place별 음식종류 목록 조회
         var foodTypeMap = queryFactory
             .select(placeFoodType.placeId, placeFoodTypeCategory.foodType)
             .from(placeFoodType)
@@ -201,13 +194,13 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 Collectors.mapping(tuple -> tuple.get(placeFoodTypeCategory.foodType), Collectors.toList())
             ));
 
-        // 8. 결과 조합
+        // 7. 결과 조합
         List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> LatestPlaceItemDto.builder()
             .id(p.getId())
             .name(p.getName())
             .stationName(stationMap.get(p.getId()))
             .rating(p.getRating())
-            .imageUrl(imageMap.get(p.getId()))
+            .imageUrl(p.getThumbnailImageUrl())
             .createdAt(p.getCreatedAt())
             .reviewCount(reviewCountMap.getOrDefault(p.getId(), 0L))
             .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))

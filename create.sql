@@ -213,18 +213,19 @@ CREATE TABLE PRODUCT_OPTION_GROUP
 
 CREATE TABLE PLACE
 (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    station_id   BIGINT        NOT NULL,
-    name         VARCHAR(255)  NOT NULL UNIQUE,
-    latitude     DECIMAL(9, 6) NOT NULL,
-    longitude    DECIMAL(9, 6) NOT NULL,
-    rating       DOUBLE,
-    road_address VARCHAR(500),
-    lot_address  VARCHAR(500),
-    phone_number VARCHAR(20),
-    closed_days  VARCHAR(100),
-    created_at   DATETIME      NOT NULL,
-    updated_at   DATETIME      NOT NULL
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    station_id        BIGINT        NOT NULL,
+    name              VARCHAR(255)  NOT NULL UNIQUE,
+    latitude          DECIMAL(9, 6) NOT NULL,
+    longitude         DECIMAL(9, 6) NOT NULL,
+    rating            DOUBLE,
+    road_address      VARCHAR(500),
+    lot_address       VARCHAR(500),
+    phone_number      VARCHAR(20),
+    closed_days       VARCHAR(100),
+    thumbnailImageUrl VARCHAR(255),
+    created_at        DATETIME      NOT NULL,
+    updated_at        DATETIME      NOT NULL
 );
 
 CREATE TABLE PLACE_OWNER_MESSAGE_HISTORY
