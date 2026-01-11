@@ -109,6 +109,10 @@ public class PlaceCoreService {
         return placeAmenityJpaRepository.findByPlaceId(placeId);
     }
 
+    public List<PlaceBannerImage> findPlaceBannerImages(Long placeId) {
+        return placeBannerImageJpaRepository.findByPlaceIdOrderBySortAsc(placeId);
+    }
+
 
     public static class BestPlacePageResult {
         private final List<BestPlaceItemDto> content;
