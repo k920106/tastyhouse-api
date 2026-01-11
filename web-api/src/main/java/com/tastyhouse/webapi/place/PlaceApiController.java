@@ -133,13 +133,12 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "포토 목록 조회", description = "플레이스의 사진 목록을 조회합니다. 카테고리별로 필터링할 수 있습니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
+    @Operation(summary = "포토 목록 조회", description = "플레이스의 사진 목록을 조회합니다. 카테고리별로 그룹화되어 반환됩니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/photos")
-    public ResponseEntity<PagedCommonResponse<PlacePhotoResponse>> getPlacePhotos(@PathVariable Long placeId, @RequestParam(required = false) Long placeImageCategoryId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PlacePhotoResponse> pageResult = placeService.getPlacePhotos(placeId, placeImageCategoryId, pageRequest);
-        PagedCommonResponse<PlacePhotoResponse> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+    public ResponseEntity<CommonResponse<List<PlacePhotoCategoryResponse>>> getPlacePhotos(@PathVariable Long placeId) {
+        List<PlacePhotoCategoryResponse> photos = placeService.getPlacePhotos(placeId);
+        CommonResponse<List<PlacePhotoCategoryResponse>> response = CommonResponse.success(photos);
         return ResponseEntity.ok(response);
     }
 

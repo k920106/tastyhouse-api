@@ -115,6 +115,14 @@ public class PlaceCoreService {
         return placeBannerImageJpaRepository.findByPlaceIdOrderBySortAsc(placeId);
     }
 
+    public List<PlacePhotoCategory> findAllPlacePhotoCategories() {
+        return placeImageCategoryJpaRepository.findAll();
+    }
+
+    public List<PlacePhotoCategoryImage> findAllPlacePhotoCategoryImages() {
+        return placePhotoCategoryImageJpaRepository.findAll(Sort.by("sort").ascending());
+    }
+
     public PhotoCategoryImagePageResult findPlacePhotoCategoryImages(Long placePhotoCategoryId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("sort").ascending());
         Page<PlacePhotoCategoryImage> photoPage;
