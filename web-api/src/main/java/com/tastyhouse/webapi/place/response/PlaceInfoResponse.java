@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -38,6 +39,12 @@ public class PlaceInfoResponse {
 
     @Schema(description = "편의시설 목록")
     private List<AmenityItem> amenities;
+
+    @Schema(description = "사장님 한마디", example = "사장님의 한마디는 환영의 노래입니다...")
+    private String ownerMessage;
+
+    @Schema(description = "사장님 한마디 생성일시", example = "2024-01-01T12:00:00")
+    private LocalDateTime ownerMessageCreatedAt;
 
     @Getter
     @Builder
