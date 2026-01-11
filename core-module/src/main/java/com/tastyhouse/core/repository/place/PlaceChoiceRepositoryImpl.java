@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 import static com.tastyhouse.core.entity.place.dto.QPlaceChoice.placeChoice;
 import static com.tastyhouse.core.entity.place.QPlace.place;
-import static com.tastyhouse.core.entity.place.QPlaceImage.placeImage;
 import static com.tastyhouse.core.entity.product.QProduct.product;
 
 @Repository
@@ -38,12 +37,10 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 place.name,
                 placeChoice.title,
                 placeChoice.content,
-                placeImage.imageUrl
+                place.thumbnailImageUrl
             )
             .from(placeChoice)
             .innerJoin(place).on(place.id.eq(placeChoice.placeId))
-            .leftJoin(placeImage).on(placeImage.placeId.eq(placeChoice.placeId)
-                .and(placeImage.isThumbnail.eq(true)))
             .fetch();
 
         // 2. 모든 PlaceChoice의 placeId 추출
@@ -99,7 +96,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                     tuple.get(place.name),
                     tuple.get(placeChoice.title),
                     tuple.get(placeChoice.content),
-                    tuple.get(placeImage.imageUrl),
+                    tuple.get(place.thumbnailImageUrl),
                     products
                 );
             })
@@ -126,12 +123,10 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                 place.name,
                 placeChoice.title,
                 placeChoice.content,
-                placeImage.imageUrl
+                place.thumbnailImageUrl
             )
             .from(placeChoice)
             .innerJoin(place).on(place.id.eq(placeChoice.placeId))
-            .leftJoin(placeImage).on(placeImage.placeId.eq(placeChoice.placeId)
-                .and(placeImage.isThumbnail.eq(true)))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -189,7 +184,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                     tuple.get(place.name),
                     tuple.get(placeChoice.title),
                     tuple.get(placeChoice.content),
-                    tuple.get(placeImage.imageUrl),
+                    tuple.get(place.thumbnailImageUrl),
                     products
                 );
             })
