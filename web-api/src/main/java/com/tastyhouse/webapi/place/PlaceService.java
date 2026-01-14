@@ -17,7 +17,6 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
-import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
@@ -250,29 +249,25 @@ public class PlaceService {
                 .toList();
     }
 
-    public PageResult<LatestReviewListItem> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
+    public PageResult<PlaceReviewListItem> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
         ReviewCoreService.LatestReviewPageResult reviewPageResult = reviewCoreService.findLatestReviewsByPlaceIdWithPagination(placeId, rating, pageRequest.getPage(), pageRequest.getSize());
 
-        List<LatestReviewListItem> reviews = reviewPageResult.getContent().stream()
-                .map(this::convertToLatestReviewListItem)
+        List<PlaceReviewListItem> reviews = reviewPageResult.getContent().stream()
+                .map(this::convertToPlaceReviewListItem)
                 .toList();
 
         return new PageResult<>(reviews, reviewPageResult.getTotalElements(), reviewPageResult.getTotalPages(), reviewPageResult.getCurrentPage(), reviewPageResult.getPageSize());
     }
 
-    private LatestReviewListItem convertToLatestReviewListItem(LatestReviewListItemDto dto) {
-        return LatestReviewListItem.builder()
+    private PlaceReviewListItem convertToPlaceReviewListItem(LatestReviewListItemDto dto) {
+        return PlaceReviewListItem.builder()
                 .id(dto.getId())
                 .imageUrls(dto.getImageUrls())
-                .stationName(dto.getStationName())
                 .totalRating(dto.getTotalRating())
                 .content(dto.getContent())
-                .memberId(dto.getMemberId())
                 .memberNickname(dto.getMemberNickname())
                 .memberProfileImageUrl(dto.getMemberProfileImageUrl())
                 .createdAt(dto.getCreatedAt())
-                .likeCount(dto.getLikeCount())
-                .commentCount(dto.getCommentCount())
                 .build();
     }
 
