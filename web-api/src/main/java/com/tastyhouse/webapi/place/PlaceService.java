@@ -268,6 +268,8 @@ public class PlaceService {
                 .memberNickname(dto.getMemberNickname())
                 .memberProfileImageUrl(dto.getMemberProfileImageUrl())
                 .createdAt(dto.getCreatedAt())
+                .productId(dto.getProductId())
+                .productName(dto.getProductName())
                 .build();
     }
 

@@ -16,4 +16,6 @@ public class PlaceReviewListItem {
     private final String memberNickname;
     private final String memberProfileImageUrl;
     private final LocalDateTime createdAt;
+    private final Long productId;
+    private final String productName;
 }

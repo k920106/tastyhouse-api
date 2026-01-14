@@ -18,6 +18,8 @@ public class LatestReviewListItemDto {
     private final String memberNickname;
     private final String memberProfileImageUrl;
     private final LocalDateTime createdAt;
+    private final Long productId;
+    private final String productName;
     private Long likeCount;
     private Long commentCount;
 
@@ -25,7 +27,7 @@ public class LatestReviewListItemDto {
     public LatestReviewListItemDto(Long id, String stationName,
                                    Double totalRating, String content,
                                    Long memberId, String memberNickname, String memberProfileImageUrl,
-                                   LocalDateTime createdAt) {
+                                   LocalDateTime createdAt, Long productId, String productName) {
         this.id = id;
         this.imageUrls = new ArrayList<>();
         this.stationName = stationName;
@@ -35,6 +37,8 @@ public class LatestReviewListItemDto {
         this.memberNickname = memberNickname;
         this.memberProfileImageUrl = memberProfileImageUrl;
         this.createdAt = createdAt;
+        this.productId = productId;
+        this.productName = productName;
         this.likeCount = 0L;
         this.commentCount = 0L;
     }
