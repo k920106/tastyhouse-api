@@ -19,6 +19,8 @@ public interface ReviewRepository {
 
     Page<LatestReviewListItemDto> findLatestReviewsByFollowing(List<Long> followingMemberIds, Pageable pageable);
 
+    Page<LatestReviewListItemDto> findLatestReviewsByPlaceId(Long placeId, Integer rating, Pageable pageable);
+
     List<MemberReviewCountDto> countReviewsByMemberWithPeriod(
         LocalDateTime startDate,
         LocalDateTime endDate

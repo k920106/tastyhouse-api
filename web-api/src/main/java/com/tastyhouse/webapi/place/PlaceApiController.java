@@ -10,6 +10,7 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.*;
+import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -145,10 +146,10 @@ public class PlaceApiController {
     @Operation(summary = "플레이스 리뷰 목록 조회", description = "플레이스의 리뷰 목록을 조회합니다. 평점별로 필터링할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/{placeId}/reviews")
-    public ResponseEntity<PagedCommonResponse<PlaceReviewResponse>> getPlaceReviews(@PathVariable Long placeId, @RequestParam(required = false) Integer rating, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<PagedCommonResponse<LatestReviewListItem>> getPlaceReviews(@PathVariable Long placeId, @RequestParam(required = false) Integer rating, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PlaceReviewResponse> pageResult = placeService.getPlaceReviews(placeId, rating, pageRequest);
-        PagedCommonResponse<PlaceReviewResponse> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        PageResult<LatestReviewListItem> pageResult = placeService.getPlaceReviews(placeId, rating, pageRequest);
+        PagedCommonResponse<LatestReviewListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 

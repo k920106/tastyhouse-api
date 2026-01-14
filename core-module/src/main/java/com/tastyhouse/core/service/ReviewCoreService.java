@@ -132,6 +132,24 @@ public class ReviewCoreService {
         );
     }
 
+    public LatestReviewPageResult findLatestReviewsByPlaceIdWithPagination(Long placeId, Integer rating, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<LatestReviewListItemDto> reviewPage = reviewRepository.findLatestReviewsByPlaceId(placeId, rating, pageRequest);
+
+        List<LatestReviewListItemDto> content = reviewPage.getContent();
+        if (!content.isEmpty()) {
+            populateLikeAndCommentCounts(content);
+        }
+
+        return new LatestReviewPageResult(
+            content,
+            reviewPage.getTotalElements(),
+            reviewPage.getTotalPages(),
+            reviewPage.getNumber(),
+            reviewPage.getSize()
+        );
+    }
+
     private void populateLikeAndCommentCounts(List<LatestReviewListItemDto> reviews) {
         List<Long> reviewIds = reviews.stream()
             .map(LatestReviewListItemDto::getId)
