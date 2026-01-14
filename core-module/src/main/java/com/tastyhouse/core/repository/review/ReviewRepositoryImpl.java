@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.place.QPlace;
 import com.tastyhouse.core.entity.place.QPlaceStation;
+import com.tastyhouse.core.entity.product.QProduct;
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.rank.dto.QMemberReviewCountDto;
 import com.tastyhouse.core.entity.review.QReview;
@@ -82,6 +83,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QReviewImage reviewImage = QReviewImage.reviewImage;
         QMember member = QMember.member;
+        QProduct product = QProduct.product;
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -92,12 +94,15 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 member.id,
                 member.nickname,
                 member.profileImageUrl,
-                review.createdAt
+                review.createdAt,
+                product.id,
+                product.name
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
             .where(review.isHidden.eq(false))
             .orderBy(review.createdAt.desc());
 
@@ -140,6 +145,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
+        QProduct product = QProduct.product;
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -150,12 +156,15 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 member.id,
                 member.nickname,
                 member.profileImageUrl,
-                review.createdAt
+                review.createdAt,
+                product.id,
+                product.name
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
             .where(
                 review.memberId.in(followingMemberIds),
                 review.isHidden.eq(false)
@@ -184,6 +193,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
+        QProduct product = QProduct.product;
 
         var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
         if (rating != null) {
@@ -199,12 +209,15 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 member.id,
                 member.nickname,
                 member.profileImageUrl,
-                review.createdAt
+                review.createdAt,
+                product.id,
+                product.name
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
             .where(whereClause)
             .orderBy(review.createdAt.desc());
 
