@@ -179,6 +179,52 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
+    public Page<LatestReviewListItemDto> findLatestReviewsByPlaceId(Long placeId, Integer rating, Pageable pageable) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QMember member = QMember.member;
+
+        var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
+        if (rating != null) {
+            whereClause = whereClause.and(review.totalRating.eq(rating.doubleValue()));
+        }
+
+        JPAQuery<LatestReviewListItemDto> query = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .where(whereClause)
+            .orderBy(review.createdAt.desc());
+
+        long total = query.fetch().size();
+
+        List<LatestReviewListItemDto> reviews = query
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
+    @Override
     public List<MemberReviewCountDto> countReviewsByMemberWithPeriod(
         LocalDateTime startDate,
         LocalDateTime endDate

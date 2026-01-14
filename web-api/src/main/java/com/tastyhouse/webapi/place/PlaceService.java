@@ -16,6 +16,8 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
+import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
@@ -248,27 +250,30 @@ public class PlaceService {
                 .toList();
     }
 
-    public PageResult<PlaceReviewResponse> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
-        ReviewCoreService.PlaceReviewPageResult reviewPageResult = reviewCoreService.findPlaceReviews(placeId, rating, pageRequest.getPage(), pageRequest.getSize());
+    public PageResult<LatestReviewListItem> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
+        ReviewCoreService.LatestReviewPageResult reviewPageResult = reviewCoreService.findLatestReviewsByPlaceIdWithPagination(placeId, rating, pageRequest.getPage(), pageRequest.getSize());
 
-        List<Long> reviewIds = reviewPageResult.getContent().stream()
-                .map(Review::getId)
+        List<LatestReviewListItem> reviews = reviewPageResult.getContent().stream()
+                .map(this::convertToLatestReviewListItem)
                 .toList();
 
-        Map<Long, List<ReviewImage>> reviewImagesMap = new HashMap<>();
-        if (!reviewIds.isEmpty()) {
-            List<ReviewImage> allImages = reviewCoreService.findReviewImages(reviewIds);
-            reviewImagesMap = allImages.stream()
-                    .collect(Collectors.groupingBy(ReviewImage::getReviewId));
-        }
-
-        List<PlaceReviewResponse> reviews = new ArrayList<>();
-        for (Review review : reviewPageResult.getContent()) {
-            List<ReviewImage> images = reviewImagesMap.getOrDefault(review.getId(), new ArrayList<>());
-            reviews.add(convertToPlaceReviewResponse(review, images));
-        }
-
         return new PageResult<>(reviews, reviewPageResult.getTotalElements(), reviewPageResult.getTotalPages(), reviewPageResult.getCurrentPage(), reviewPageResult.getPageSize());
+    }
+
+    private LatestReviewListItem convertToLatestReviewListItem(LatestReviewListItemDto dto) {
+        return LatestReviewListItem.builder()
+                .id(dto.getId())
+                .imageUrls(dto.getImageUrls())
+                .stationName(dto.getStationName())
+                .totalRating(dto.getTotalRating())
+                .content(dto.getContent())
+                .memberId(dto.getMemberId())
+                .memberNickname(dto.getMemberNickname())
+                .memberProfileImageUrl(dto.getMemberProfileImageUrl())
+                .createdAt(dto.getCreatedAt())
+                .likeCount(dto.getLikeCount())
+                .commentCount(dto.getCommentCount())
+                .build();
     }
 
     public PlaceReviewStatisticsResponse getPlaceReviewStatistics(Long placeId) {
