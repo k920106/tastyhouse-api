@@ -67,6 +67,15 @@ public class ReviewApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "리뷰 상세 정보 조회 (상품 정보 포함)", description = "리뷰 ID로 리뷰 상세 정보와 연결된 상품 정보를 함께 조회합니다. 평점, 유저 정보, 작성일, 내용, 이미지, 태그 정보가 포함됩니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = ReviewProductResponse.class))), @ApiResponse(responseCode = "404", description = "리뷰 또는 상품을 찾을 수 없음")})
+    @GetMapping("/v1/{reviewId}/product")
+    public ResponseEntity<CommonResponse<ReviewProductResponse>> getReviewProduct(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId) {
+        return reviewService.findReviewProduct(reviewId)
+                .map(product -> ResponseEntity.ok(CommonResponse.success(product)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "리뷰 좋아요 여부 조회", description = "리뷰가 현재 사용자에 의해 좋아요되었는지 여부를 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공")})
     @GetMapping("/v1/{reviewId}/like")
