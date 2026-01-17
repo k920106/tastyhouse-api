@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.review;
 
+import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewComment;
 import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
@@ -7,6 +8,7 @@ import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
+import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
@@ -18,6 +20,7 @@ import com.tastyhouse.webapi.review.response.LatestReviewListItem;
 import com.tastyhouse.webapi.review.response.ReplyResponse;
 import com.tastyhouse.webapi.review.response.ReviewDetailResponse;
 import com.tastyhouse.webapi.review.response.ReviewLikeStatusResponse;
+import com.tastyhouse.webapi.review.response.ReviewProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 public class ReviewService {
 
     private final ReviewCoreService reviewCoreService;
+    private final ProductCoreService productCoreService;
     private final MemberJpaRepository memberJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
@@ -234,5 +238,48 @@ public class ReviewService {
             .content(reply.getContent())
             .createdAt(reply.getCreatedAt())
             .build();
+    }
+
+    public Optional<ReviewProductResponse> findReviewProduct(Long reviewId) {
+        Optional<ReviewDetailDto> reviewDetailOpt = reviewCoreService.findReviewDetail(reviewId);
+        if (reviewDetailOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ReviewDetailDto reviewDetail = reviewDetailOpt.get();
+        Review review = reviewCoreService.findById(reviewId);
+        if (review == null) {
+            return Optional.empty();
+        }
+
+        return productCoreService.findProductById(review.getProductId())
+            .map(product -> {
+                Integer price = product.getDiscountPrice() != null 
+                    ? product.getDiscountPrice() 
+                    : product.getOriginalPrice();
+                
+                return ReviewProductResponse.builder()
+                    .productId(product.getId())
+                    .productName(product.getName())
+                    .productImageUrl(product.getImageUrl())
+                    .productPrice(price)
+                    .reviewId(reviewDetail.getId())
+                    .content(reviewDetail.getContent())
+                    .totalRating(reviewDetail.getTotalRating())
+                    .tasteRating(reviewDetail.getTasteRating())
+                    .amountRating(reviewDetail.getAmountRating())
+                    .priceRating(reviewDetail.getPriceRating())
+                    .atmosphereRating(reviewDetail.getAtmosphereRating())
+                    .kindnessRating(reviewDetail.getKindnessRating())
+                    .hygieneRating(reviewDetail.getHygieneRating())
+                    .willRevisit(reviewDetail.getWillRevisit())
+                    .memberId(reviewDetail.getMemberId())
+                    .memberNickname(reviewDetail.getMemberNickname())
+                    .memberProfileImageUrl(reviewDetail.getMemberProfileImageUrl())
+                    .createdAt(reviewDetail.getCreatedAt())
+                    .imageUrls(reviewDetail.getImageUrls())
+                    .tagNames(reviewDetail.getTagNames())
+                    .build();
+            });
     }
 }
