@@ -78,7 +78,7 @@ public class PlaceService {
     }
 
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
-        List<EditorChoiceProductItem> productItems = dto.getProducts() != null ? dto.getProducts().stream().map(this::convertToEditorChoiceProductItem).toList() : new ArrayList<>();
+        List<EditorChoiceProductItem> productItems = dto.getProducts() != null ? dto.getProducts().stream().map(this::convertToEditorChoiceProductItem).toList() : new ArrayList<EditorChoiceProductItem>();
 
         return EditorChoiceResponse.builder().id(dto.getId()).name(dto.getName()).imageUrl(dto.getPlaceImageUrl()).title(dto.getTitle()).content(dto.getContent()).products(productItems).build();
     }
@@ -214,7 +214,7 @@ public class PlaceService {
         // 카테고리 순서대로 응답 생성
         return categories.stream()
                 .map(category -> {
-                    List<Product> categoryProducts = productsByCategory.getOrDefault(category.getId(), new ArrayList<>());
+                    List<Product> categoryProducts = productsByCategory.getOrDefault(category.getId(), new ArrayList<Product>());
                     List<PlaceMenuResponse> menuResponses = categoryProducts.stream()
                             .map(this::convertToPlaceMenuResponse)
                             .toList();
@@ -238,7 +238,7 @@ public class PlaceService {
         // 카테고리 순서대로 응답 생성
         return categories.stream()
                 .map(category -> {
-                    List<PlacePhotoCategoryImage> categoryImages = imagesByCategory.getOrDefault(category.getId(), new ArrayList<>());
+                    List<PlacePhotoCategoryImage> categoryImages = imagesByCategory.getOrDefault(category.getId(), new ArrayList<PlacePhotoCategoryImage>());
                     List<String> imageUrls = categoryImages.stream()
                             .map(PlacePhotoCategoryImage::getImageUrl)
                             .toList();
@@ -273,7 +273,7 @@ public class PlaceService {
 
         Map<Integer, List<PlaceReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,
+                        Map.Entry<Integer, List<LatestReviewListItemDto>>::getKey,
                         entry -> entry.getValue().stream()
                                 .map(this::convertToPlaceReviewListItem)
                                 .toList()
@@ -306,6 +306,7 @@ public class PlaceService {
                 .build();
     }
 
+    @SuppressWarnings("unchecked")
     public PlaceReviewStatisticsResponse getPlaceReviewStatistics(Long placeId) {
         Map<String, Object> statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
 
