@@ -280,6 +280,30 @@ public class ReviewService {
                     .imageUrls(reviewDetail.getImageUrls())
                     .tagNames(reviewDetail.getTagNames())
                     .build();
-            });
+            })
+            .or(() -> Optional.of(
+                ReviewProductResponse.builder()
+                    .productId(null)
+                    .productName(null)
+                    .productImageUrl(null)
+                    .productPrice(null)
+                    .reviewId(reviewDetail.getId())
+                    .content(reviewDetail.getContent())
+                    .totalRating(reviewDetail.getTotalRating())
+                    .tasteRating(reviewDetail.getTasteRating())
+                    .amountRating(reviewDetail.getAmountRating())
+                    .priceRating(reviewDetail.getPriceRating())
+                    .atmosphereRating(reviewDetail.getAtmosphereRating())
+                    .kindnessRating(reviewDetail.getKindnessRating())
+                    .hygieneRating(reviewDetail.getHygieneRating())
+                    .willRevisit(reviewDetail.getWillRevisit())
+                    .memberId(reviewDetail.getMemberId())
+                    .memberNickname(reviewDetail.getMemberNickname())
+                    .memberProfileImageUrl(reviewDetail.getMemberProfileImageUrl())
+                    .createdAt(reviewDetail.getCreatedAt())
+                    .imageUrls(reviewDetail.getImageUrls())
+                    .tagNames(reviewDetail.getTagNames())
+                    .build()
+            ));
     }
 }
