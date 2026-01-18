@@ -10,6 +10,7 @@ import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.rank.dto.QMemberReviewCountDto;
 import com.tastyhouse.core.entity.review.QReview;
 import com.tastyhouse.core.entity.review.QReviewImage;
+import com.tastyhouse.core.entity.review.QReviewLike;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QBestReviewListItemDto;
@@ -188,16 +189,51 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public Page<LatestReviewListItemDto> findLatestReviewsByPlaceId(Long placeId, Integer rating, Pageable pageable) {
+    public Page<LatestReviewListItemDto> findLatestReviewsByPlaceId(Long placeId, Integer rating, Pageable pageable, Boolean hasImage, String sortType) {
         QReview review = QReview.review;
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+        QReviewLike reviewLike = QReviewLike.reviewLike;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
 
         var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
         if (rating != null) {
-            whereClause = whereClause.and(review.totalRating.eq(rating.doubleValue()));
+            if (rating == 5) {
+                // rating이 5인 경우 정확히 5.0만
+                whereClause = whereClause.and(review.totalRating.eq(5.0));
+            } else {
+                // rating이 3, 4인 경우 해당 범위 (예: 4 -> 4.0 ~ 4.9)
+                whereClause = whereClause.and(
+                    review.totalRating.goe(rating.doubleValue())
+                        .and(review.totalRating.lt(rating.doubleValue() + 1.0))
+                );
+            }
+        }
+
+        // 이미지 필터링
+        if (hasImage != null) {
+            QReviewImage subReviewImage = new QReviewImage("subReviewImage");
+            if (hasImage) {
+                // 이미지가 있는 리뷰만
+                whereClause = whereClause.and(
+                    JPAExpressions
+                        .selectOne()
+                        .from(subReviewImage)
+                        .where(subReviewImage.reviewId.eq(review.id))
+                        .exists()
+                );
+            } else {
+                // 이미지가 없는 리뷰만
+                whereClause = whereClause.and(
+                    JPAExpressions
+                        .selectOne()
+                        .from(subReviewImage)
+                        .where(subReviewImage.reviewId.eq(review.id))
+                        .notExists()
+                );
+            }
         }
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
@@ -218,8 +254,25 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
             .leftJoin(product).on(review.productId.eq(product.id))
-            .where(whereClause)
-            .orderBy(review.createdAt.desc());
+            .where(whereClause);
+
+        // 정렬 로직
+        if ("RECOMMENDED".equals(sortType)) {
+            // 추천순: 좋아요 수 기준 (내림차순)
+            // 좋아요 수를 계산하기 위해 leftJoin 사용
+            QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+            query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
+                .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
+                    member.id, member.nickname, member.profileImageUrl, review.createdAt,
+                    product.id, product.name)
+                .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
+        } else if ("OLDEST".equals(sortType)) {
+            // 오래된순
+            query.orderBy(review.createdAt.asc());
+        } else {
+            // 최신순 (기본값)
+            query.orderBy(review.createdAt.desc());
+        }
 
         long total = query.fetch().size();
 
@@ -307,6 +360,59 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
 
         return Optional.ofNullable(result);
+    }
+
+    @Override
+    public List<LatestReviewListItemDto> findReviewsByPlaceIdAndRating(Long placeId, Integer rating, int limit) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QMember member = QMember.member;
+        QProduct product = QProduct.product;
+
+        var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
+
+        if (rating == 5) {
+            // rating이 5인 경우 정확히 5.0만
+            whereClause = whereClause.and(review.totalRating.eq(5.0));
+        } else {
+            // rating이 1, 2, 3, 4인 경우 해당 범위 (예: 4 -> 4.0 ~ 4.9)
+            whereClause = whereClause.and(
+                review.totalRating.goe(rating.doubleValue())
+                    .and(review.totalRating.lt(rating.doubleValue() + 1.0))
+            );
+        }
+
+        List<LatestReviewListItemDto> reviews = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt,
+                product.id,
+                product.name
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
+            .where(whereClause)
+            .orderBy(review.createdAt.desc())
+            .limit(limit)
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
+
+        return reviews;
     }
 
     private List<String> findImageUrlsByReviewId(Long reviewId) {

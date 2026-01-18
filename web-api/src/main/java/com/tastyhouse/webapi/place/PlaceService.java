@@ -9,23 +9,24 @@ import com.tastyhouse.core.entity.product.ProductCategory;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewImage;
+import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
+import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
-import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
-import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
-import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
-import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
-import com.tastyhouse.webapi.place.response.PlaceBookmarkResponse;
+import com.tastyhouse.webapi.place.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -249,14 +250,46 @@ public class PlaceService {
                 .toList();
     }
 
-    public PageResult<PlaceReviewListItem> getPlaceReviews(Long placeId, Integer rating, PageRequest pageRequest) {
-        ReviewCoreService.LatestReviewPageResult reviewPageResult = reviewCoreService.findLatestReviewsByPlaceIdWithPagination(placeId, rating, pageRequest.getPage(), pageRequest.getSize());
+    public static class PlaceReviewsByRatingWithPagination {
+        private final PlaceReviewsByRatingResponse response;
+        private final long totalElements;
 
-        List<PlaceReviewListItem> reviews = reviewPageResult.getContent().stream()
+        public PlaceReviewsByRatingWithPagination(PlaceReviewsByRatingResponse response, long totalElements) {
+            this.response = response;
+            this.totalElements = totalElements;
+        }
+
+        public PlaceReviewsByRatingResponse getResponse() {
+            return response;
+        }
+
+        public long getTotalElements() {
+            return totalElements;
+        }
+    }
+
+    public PlaceReviewsByRatingWithPagination getPlaceReviewsByRatingWithPagination(Long placeId, int page, int size) {
+        ReviewCoreService.PlaceReviewsByRatingResult result = reviewCoreService.getPlaceReviewsByRating(placeId, page, size);
+
+        Map<Integer, List<PlaceReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(this::convertToPlaceReviewListItem)
+                                .toList()
+                ));
+
+        List<PlaceReviewListItem> allReviews = result.getAllReviews().stream()
                 .map(this::convertToPlaceReviewListItem)
                 .toList();
 
-        return new PageResult<>(reviews, reviewPageResult.getTotalElements(), reviewPageResult.getTotalPages(), reviewPageResult.getCurrentPage(), reviewPageResult.getPageSize());
+        PlaceReviewsByRatingResponse response = PlaceReviewsByRatingResponse.builder()
+                .reviewsByRating(reviewsByRating)
+                .allReviews(allReviews)
+                .totalReviewCount(result.getTotalReviewCount())
+                .build();
+
+        return new PlaceReviewsByRatingWithPagination(response, result.getTotalElements());
     }
 
     private PlaceReviewListItem convertToPlaceReviewListItem(LatestReviewListItemDto dto) {

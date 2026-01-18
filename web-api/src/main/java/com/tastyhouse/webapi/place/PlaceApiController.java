@@ -142,14 +142,21 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "플레이스 리뷰 목록 조회", description = "플레이스의 리뷰 목록을 조회합니다. 평점별로 필터링할 수 있습니다.")
+    @Operation(summary = "리뷰 목록 조회", description = "플레이스의 리뷰 목록을 평점별로 조회합니다. 각 평점(1점, 2점, 3점, 4점, 5점)별로 최대 5개씩, 전체 리뷰는 페이지네이션으로 조회합니다. 총 리뷰 개수도 함께 반환됩니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
     @GetMapping("/v1/{placeId}/reviews")
-    public ResponseEntity<PagedCommonResponse<PlaceReviewListItem>> getPlaceReviews(@PathVariable Long placeId, @RequestParam(required = false) Integer rating, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PlaceReviewListItem> pageResult = placeService.getPlaceReviews(placeId, rating, pageRequest);
-        PagedCommonResponse<PlaceReviewListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PagedCommonResponse<PlaceReviewsByRatingResponse>> getPlaceReviews(
+            @PathVariable Long placeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PlaceService.PlaceReviewsByRatingWithPagination result = placeService.getPlaceReviewsByRatingWithPagination(placeId, page, size);
+        PagedCommonResponse<PlaceReviewsByRatingResponse> pagedResponse = PagedCommonResponse.success(
+                List.of(result.getResponse()), 
+                page, 
+                size, 
+                result.getTotalElements()
+        );
+        return ResponseEntity.ok(pagedResponse);
     }
 
     @Operation(summary = "리뷰 통계 조회", description = "플레이스의 리뷰 통계를 조회합니다. 평점, 카테고리별 점수, 재방문의사 등을 포함합니다.")
