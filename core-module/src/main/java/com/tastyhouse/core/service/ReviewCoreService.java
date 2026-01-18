@@ -270,6 +270,18 @@ public class ReviewCoreService {
         Long totalCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
         statistics.put("totalReviewCount", totalCount);
 
+        // ratingCounts는 항상 반환 (totalCount가 0일 때도 모두 0으로 초기화)
+        Object[][] ratingData = reviewJpaRepository.getRatingCounts(placeId);
+        Map<Integer, Long> ratingMap = new HashMap<>();
+        for (Object[] row : ratingData) {
+            ratingMap.put(((Number) row[0]).intValue(), (Long) row[1]);
+        }
+        // 1부터 5까지 모든 rating에 대해 값이 없으면 0으로 초기화
+        for (int rating = 1; rating <= 5; rating++) {
+            ratingMap.putIfAbsent(rating, 0L);
+        }
+        statistics.put("ratingCounts", ratingMap);
+
         if (totalCount > 0) {
             statistics.put("averageTasteRating", reviewJpaRepository.getAverageTasteRating(placeId));
             statistics.put("averageAmountRating", reviewJpaRepository.getAverageAmountRating(placeId));
@@ -289,13 +301,6 @@ public class ReviewCoreService {
                 monthlyMap.put((Integer) row[0], (Long) row[1]);
             }
             statistics.put("monthlyReviewCounts", monthlyMap);
-
-            Object[][] ratingData = reviewJpaRepository.getRatingCounts(placeId);
-            Map<Integer, Long> ratingMap = new HashMap<>();
-            for (Object[] row : ratingData) {
-                ratingMap.put(((Number) row[0]).intValue(), (Long) row[1]);
-            }
-            statistics.put("ratingCounts", ratingMap);
         }
 
         return statistics;
