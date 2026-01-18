@@ -132,21 +132,50 @@ public class ReviewCoreService {
         );
     }
 
-    public LatestReviewPageResult findLatestReviewsByPlaceIdWithPagination(Long placeId, Integer rating, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<LatestReviewListItemDto> reviewPage = reviewRepository.findLatestReviewsByPlaceId(placeId, rating, pageRequest);
+    public PlaceReviewsByRatingResult getPlaceReviewsByRating(Long placeId, int page, int size) {
+        // 각 점수별로 최대 5개씩 조회
+        List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 1, 5);
+        List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 2, 5);
+        List<LatestReviewListItemDto> rating3Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 3, 5);
+        List<LatestReviewListItemDto> rating4Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 4, 5);
+        List<LatestReviewListItemDto> rating5Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 5, 5);
 
-        List<LatestReviewListItemDto> content = reviewPage.getContent();
-        if (!content.isEmpty()) {
-            populateLikeAndCommentCounts(content);
+        // 전체 리뷰는 페이지네이션 적용
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<LatestReviewListItemDto> allReviewsPage = reviewRepository.findLatestReviewsByPlaceId(placeId, null, pageRequest, null, "LATEST");
+        List<LatestReviewListItemDto> allReviews = allReviewsPage.getContent();
+
+        // 총 리뷰 개수 조회
+        Long totalReviewCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
+
+        // 좋아요 및 댓글 수 채우기
+        List<LatestReviewListItemDto> allReviewsForPopulate = new ArrayList<>();
+        allReviewsForPopulate.addAll(rating1Reviews);
+        allReviewsForPopulate.addAll(rating2Reviews);
+        allReviewsForPopulate.addAll(rating3Reviews);
+        allReviewsForPopulate.addAll(rating4Reviews);
+        allReviewsForPopulate.addAll(rating5Reviews);
+        allReviewsForPopulate.addAll(allReviews);
+
+        if (!allReviewsForPopulate.isEmpty()) {
+            populateLikeAndCommentCounts(allReviewsForPopulate);
         }
 
-        return new LatestReviewPageResult(
-            content,
-            reviewPage.getTotalElements(),
-            reviewPage.getTotalPages(),
-            reviewPage.getNumber(),
-            reviewPage.getSize()
+        Map<Integer, List<LatestReviewListItemDto>> reviewsByRating = new HashMap<>();
+        reviewsByRating.put(1, rating1Reviews);
+        reviewsByRating.put(2, rating2Reviews);
+        reviewsByRating.put(3, rating3Reviews);
+        reviewsByRating.put(4, rating4Reviews);
+        reviewsByRating.put(5, rating5Reviews);
+
+        return new PlaceReviewsByRatingResult(
+            reviewsByRating,
+            allReviews,
+            totalReviewCount,
+            allReviewsPage.getTotalElements(),
+            allReviewsPage.getTotalPages(),
+            allReviewsPage.getNumber(),
+            allReviewsPage.getSize()
         );
     }
 
@@ -333,6 +362,34 @@ public class ReviewCoreService {
 
         public List<BestReviewListItemDto> getContent() { return content; }
         public long getTotalElements() { return totalElements; }
+        public int getTotalPages() { return totalPages; }
+        public int getCurrentPage() { return currentPage; }
+        public int getPageSize() { return pageSize; }
+    }
+
+    public static class PlaceReviewsByRatingResult {
+        private final Map<Integer, List<LatestReviewListItemDto>> reviewsByRating;
+        private final List<LatestReviewListItemDto> allReviews;
+        private final Long totalReviewCount;
+        private final Long totalElements;
+        private final int totalPages;
+        private final int currentPage;
+        private final int pageSize;
+
+        public PlaceReviewsByRatingResult(Map<Integer, List<LatestReviewListItemDto>> reviewsByRating, List<LatestReviewListItemDto> allReviews, Long totalReviewCount, Long totalElements, int totalPages, int currentPage, int pageSize) {
+            this.reviewsByRating = reviewsByRating;
+            this.allReviews = allReviews;
+            this.totalReviewCount = totalReviewCount;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+            this.currentPage = currentPage;
+            this.pageSize = pageSize;
+        }
+
+        public Map<Integer, List<LatestReviewListItemDto>> getReviewsByRating() { return reviewsByRating; }
+        public List<LatestReviewListItemDto> getAllReviews() { return allReviews; }
+        public Long getTotalReviewCount() { return totalReviewCount; }
+        public Long getTotalElements() { return totalElements; }
         public int getTotalPages() { return totalPages; }
         public int getCurrentPage() { return currentPage; }
         public int getPageSize() { return pageSize; }
