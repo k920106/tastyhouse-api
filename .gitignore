@@ -34,3 +34,7 @@ application-prod.yml
 
 # Cursor
 .vscode/
+
+# Bin directories
+bin/
+**/bin/
