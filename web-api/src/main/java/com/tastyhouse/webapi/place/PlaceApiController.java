@@ -1,7 +1,6 @@
 package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.common.CommonResponse;
-import com.tastyhouse.core.common.PagedCommonResponse;
 import com.tastyhouse.core.entity.place.Amenity;
 import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
@@ -40,12 +39,12 @@ public class PlaceApiController {
     }
 
     @Operation(summary = "베스트 플레이스 목록 조회", description = "평점 기준 베스트 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그 정보를 포함합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/best")
-    public ResponseEntity<PagedCommonResponse<BestPlaceListItem>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
+    public ResponseEntity<CommonResponse<List<BestPlaceListItem>>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<BestPlaceListItem> pageResult = placeService.findBestPlaces(pageRequest);
-        PagedCommonResponse<BestPlaceListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        CommonResponse<List<BestPlaceListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
@@ -60,13 +59,13 @@ public class PlaceApiController {
     }
 
     @Operation(summary = "최신 플레이스 목록 조회", description = "최근 등록된 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그, 등록일 정보를 포함합니다. 전철역, 음식종류, 편의시설 필터를 적용할 수 있습니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/latest")
-    public ResponseEntity<PagedCommonResponse<LatestPlaceListItem>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) Long stationId, @RequestParam(required = false) List<FoodType> foodTypes, @RequestParam(required = false) List<Amenity> amenities) {
+    public ResponseEntity<CommonResponse<List<LatestPlaceListItem>>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) Long stationId, @RequestParam(required = false) List<FoodType> foodTypes, @RequestParam(required = false) List<Amenity> amenities) {
         PageRequest pageRequest = new PageRequest(page, size);
         LatestPlaceFilterRequest filterRequest = new LatestPlaceFilterRequest(stationId, foodTypes, amenities);
         PageResult<LatestPlaceListItem> pageResult = placeService.findLatestPlaces(pageRequest, filterRequest);
-        PagedCommonResponse<LatestPlaceListItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        CommonResponse<List<LatestPlaceListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
@@ -106,21 +105,21 @@ public class PlaceApiController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "정보 조회", description = "플레이스의 기본 정보를 조회합니다. 운영시간, 전화번호 등을 포함합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
-    @GetMapping("/v1/{placeId}/info")
-    public ResponseEntity<CommonResponse<PlaceInfoResponse>> getPlaceInfo(@PathVariable Long placeId) {
-        PlaceInfoResponse placeInfo = placeService.getPlaceInfo(placeId);
-        CommonResponse<PlaceInfoResponse> response = CommonResponse.success(placeInfo);
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "배너 이미지 조회", description = "플레이스의 배너 이미지 목록을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/banners")
     public ResponseEntity<CommonResponse<List<PlaceBannerResponse>>> getPlaceBanners(@PathVariable Long placeId) {
         List<PlaceBannerResponse> banners = placeService.getPlaceBanners(placeId);
         CommonResponse<List<PlaceBannerResponse>> response = CommonResponse.success(banners);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "정보 조회", description = "플레이스의 기본 정보를 조회합니다. 운영시간, 전화번호 등을 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{placeId}/info")
+    public ResponseEntity<CommonResponse<PlaceInfoResponse>> getPlaceInfo(@PathVariable Long placeId) {
+        PlaceInfoResponse placeInfo = placeService.getPlaceInfo(placeId);
+        CommonResponse<PlaceInfoResponse> response = CommonResponse.success(placeInfo);
         return ResponseEntity.ok(response);
     }
 
@@ -143,20 +142,15 @@ public class PlaceApiController {
     }
 
     @Operation(summary = "리뷰 목록 조회", description = "플레이스의 리뷰 목록을 평점별로 조회합니다. 각 평점(1점, 2점, 3점, 4점, 5점)별로 최대 5개씩, 전체 리뷰는 페이지네이션으로 조회합니다. 총 리뷰 개수도 함께 반환됩니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/{placeId}/reviews")
-    public ResponseEntity<PagedCommonResponse<PlaceReviewsByRatingResponse>> getPlaceReviews(
+    public ResponseEntity<CommonResponse<PlaceReviewsByRatingResponse>> getPlaceReviews(
             @PathVariable Long placeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         PlaceService.PlaceReviewsByRatingWithPagination result = placeService.getPlaceReviewsByRatingWithPagination(placeId, page, size);
-        PagedCommonResponse<PlaceReviewsByRatingResponse> pagedResponse = PagedCommonResponse.success(
-                List.of(result.getResponse()), 
-                page, 
-                size, 
-                result.getTotalElements()
-        );
-        return ResponseEntity.ok(pagedResponse);
+        CommonResponse<PlaceReviewsByRatingResponse> response = CommonResponse.success(result.getResponse());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "리뷰 통계 조회", description = "플레이스의 리뷰 통계를 조회합니다. 평점, 카테고리별 점수, 재방문의사 등을 포함합니다.")
