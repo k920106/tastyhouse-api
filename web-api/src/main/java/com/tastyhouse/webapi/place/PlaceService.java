@@ -243,7 +243,7 @@ public class PlaceService {
                             .map(PlacePhotoCategoryImage::getImageUrl)
                             .toList();
                     return PlacePhotoCategoryResponse.builder()
-                            .categoryName(category.getName())
+                            .name(category.getName())
                             .imageUrls(imageUrls)
                             .build();
                 })
