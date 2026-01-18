@@ -1,7 +1,6 @@
 package com.tastyhouse.webapi.product;
 
 import com.tastyhouse.core.common.CommonResponse;
-import com.tastyhouse.core.common.PagedCommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.product.response.ProductCategoryListItem;
@@ -29,12 +28,12 @@ public class ProductApiController {
     private final ProductService productService;
 
     @Operation(summary = "오늘의 할인 상품 목록 조회", description = "할인율 기준으로 오늘의 할인 상품을 페이징하여 조회합니다. 상품명, 이미지, 원가, 할인가, 할인율 정보를 포함합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PagedCommonResponse.class)))})
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/today-discounts")
-    public ResponseEntity<PagedCommonResponse<TodayDiscountProductItem>> getTodayDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<CommonResponse<List<TodayDiscountProductItem>>> getTodayDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<TodayDiscountProductItem> pageResult = productService.findTodayDiscountProducts(pageRequest);
-        PagedCommonResponse<TodayDiscountProductItem> response = PagedCommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        CommonResponse<List<TodayDiscountProductItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
 
