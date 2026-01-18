@@ -12,7 +12,7 @@ import java.util.List;
 public class PlacePhotoCategoryResponse {
 
     @Schema(description = "카테고리명", example = "외부")
-    private String categoryName;
+    private String name;
 
     @Schema(description = "이미지 URL 목록")
     private List<String> imageUrls;
