@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.prize.response;
+package com.tastyhouse.webapi.event.response;
 
 import lombok.Builder;
 import lombok.Getter;
