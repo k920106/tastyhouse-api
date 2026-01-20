@@ -1,0 +1,44 @@
+package com.tastyhouse.webapi.report;
+
+import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.report.request.BugReportCreateRequest;
+import com.tastyhouse.webapi.report.response.BugReportResponse;
+import com.tastyhouse.webapi.service.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "BugReport", description = "버그 제보 API")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/bug-reports")
+public class BugReportApiController {
+
+    private final BugReportService bugReportService;
+
+    @Operation(summary = "버그 제보 등록", description = "버그 제보를 등록합니다. 단말기 정보, 제목, 내용, 이미지를 포함할 수 있습니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "등록 성공", content = @Content(schema = @Schema(implementation = BugReportResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @PostMapping("/v1")
+    public ResponseEntity<CommonResponse<BugReportResponse>> createBugReport(
+        @Valid @RequestBody BugReportCreateRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        BugReportResponse response = bugReportService.createBugReport(userDetails.getMemberId(), request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+}
