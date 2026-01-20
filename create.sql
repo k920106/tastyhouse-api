@@ -14,6 +14,29 @@ CREATE TABLE BANNER
     updated_at DATETIME     NOT NULL
 );
 
+CREATE TABLE BUG_REPORT
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id  BIGINT       NOT NULL,
+    device     VARCHAR(100) NOT NULL,
+    title      VARCHAR(200) NOT NULL,
+    content    TEXT         NOT NULL,
+    created_at DATETIME     NOT NULL,
+    updated_at DATETIME     NOT NULL,
+    INDEX idx_bug_report_member_id (member_id)
+);
+
+CREATE TABLE BUG_REPORT_IMAGE
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bug_report_id BIGINT       NOT NULL,
+    image_url     VARCHAR(255) NOT NULL,
+    sort          INT          NOT NULL,
+    created_at    DATETIME     NOT NULL,
+    updated_at    DATETIME     NOT NULL,
+    INDEX idx_bug_report_image_bug_report_id (bug_report_id)
+);
+
 CREATE TABLE COMMON_OPTION
 (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
