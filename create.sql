@@ -251,6 +251,21 @@ CREATE TABLE PLACE
     updated_at        DATETIME      NOT NULL
 );
 
+CREATE TABLE PARTNERSHIP_REQUEST
+(
+    id                         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    business_name              VARCHAR(200) NOT NULL,
+    address                    VARCHAR(500) NOT NULL,
+    address_detail             VARCHAR(500),
+    contact_name               VARCHAR(100) NOT NULL,
+    contact_phone              VARCHAR(20)  NOT NULL,
+    consultation_requested_at  DATETIME     NOT NULL,
+    created_at                 DATETIME     NOT NULL,
+    updated_at                 DATETIME     NOT NULL,
+    INDEX idx_partnership_request_business_name (business_name),
+    INDEX idx_partnership_request_consultation_date (consultation_requested_at)
+);
+
 CREATE TABLE PLACE_OWNER_MESSAGE_HISTORY
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
