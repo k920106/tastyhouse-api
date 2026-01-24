@@ -195,4 +195,13 @@ public class PlaceApiController {
         CommonResponse<PlaceNameResponse> response = CommonResponse.success(placeName);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "주문 수단 조회", description = "플레이스에서 주문 가능한 수단을 조회합니다. 테이블 오더, 예약, 포장 정보를 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{placeId}/order-methods")
+    public ResponseEntity<CommonResponse<PlaceOrderMethodResponse>> getPlaceOrderMethods(@PathVariable Long placeId) {
+        PlaceOrderMethodResponse orderMethods = placeService.getPlaceOrderMethods(placeId);
+        CommonResponse<PlaceOrderMethodResponse> response = CommonResponse.success(orderMethods);
+        return ResponseEntity.ok(response);
+    }
 }
