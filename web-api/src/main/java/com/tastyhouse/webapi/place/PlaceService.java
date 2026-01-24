@@ -470,4 +470,21 @@ public class PlaceService {
                 .name(place.getName())
                 .build();
     }
+
+    public PlaceOrderMethodResponse getPlaceOrderMethods(Long placeId) {
+        placeCoreService.findPlaceById(placeId); // Ensure place exists
+        List<PlaceOrderMethod> placeOrderMethods = placeCoreService.findPlaceOrderMethods(placeId);
+
+        List<PlaceOrderMethodResponse.OrderMethodItem> orderMethodItems = placeOrderMethods.stream()
+                .map(pom -> PlaceOrderMethodResponse.OrderMethodItem.builder()
+                        .code(pom.getOrderMethod().name())
+                        .name(pom.getOrderMethod().getDisplayName())
+                        .build())
+                .toList();
+
+        return PlaceOrderMethodResponse.builder()
+                .placeId(placeId)
+                .orderMethods(orderMethodItems)
+                .build();
+    }
 }

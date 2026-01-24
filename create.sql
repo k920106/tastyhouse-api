@@ -353,6 +353,17 @@ CREATE TABLE PLACE_CLOSED_DAY
     INDEX idx_place_closed_day_place_id (place_id)
 );
 
+CREATE TABLE PLACE_ORDER_METHOD
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    place_id     BIGINT       NOT NULL,
+    order_method VARCHAR(50)  NOT NULL,
+    created_at   DATETIME     NOT NULL,
+    updated_at   DATETIME     NOT NULL,
+    UNIQUE KEY uk_place_order_method (place_id, order_method),
+    INDEX idx_place_order_method_place_id (place_id)
+);
+
 CREATE TABLE PLACE_CHOICE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
