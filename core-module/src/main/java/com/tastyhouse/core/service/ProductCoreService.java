@@ -20,9 +20,8 @@ public class ProductCoreService {
     private final ProductCategoryJpaRepository productCategoryJpaRepository;
     private final ProductOptionGroupJpaRepository productOptionGroupJpaRepository;
     private final ProductOptionJpaRepository productOptionJpaRepository;
-    private final CommonOptionGroupJpaRepository commonOptionGroupJpaRepository;
-    private final CommonOptionJpaRepository commonOptionJpaRepository;
     private final ProductCommonOptionGroupJpaRepository productCommonOptionGroupJpaRepository;
+    private final ProductCommonOptionJpaRepository productCommonOptionJpaRepository;
 
     public TodayDiscountProductPageResult findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -66,15 +65,11 @@ public class ProductCoreService {
     }
 
     public List<ProductCommonOptionGroup> findProductCommonOptionGroupsByProductId(Long productId) {
-        return productCommonOptionGroupJpaRepository.findByProductIdOrderBySortAsc(productId);
+        return productCommonOptionGroupJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId);
     }
 
-    public List<CommonOptionGroup> findCommonOptionGroupsByIds(List<Long> ids) {
-        return commonOptionGroupJpaRepository.findByIdInAndIsActiveTrueOrderBySortAsc(ids);
-    }
-
-    public List<CommonOption> findCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
-        return commonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
+    public List<ProductCommonOption> findProductCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
+        return productCommonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
     }
 
     public static class TodayDiscountProductPageResult {

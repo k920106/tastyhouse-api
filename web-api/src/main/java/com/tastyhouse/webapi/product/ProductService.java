@@ -178,18 +178,17 @@ public class ProductService {
         List<ProductCommonOptionGroup> productCommonOptionGroups = productCoreService.findProductCommonOptionGroupsByProductId(product.getId());
         if (!productCommonOptionGroups.isEmpty()) {
             List<Long> commonOptionGroupIds = productCommonOptionGroups.stream()
-                .map(ProductCommonOptionGroup::getCommonOptionGroupId)
+                .map(ProductCommonOptionGroup::getId)
                 .toList();
-            List<CommonOptionGroup> commonOptionGroups = productCoreService.findCommonOptionGroupsByIds(commonOptionGroupIds);
-            List<CommonOption> commonOptions = productCoreService.findCommonOptionsByOptionGroupIds(commonOptionGroupIds);
-            Map<Long, List<CommonOption>> commonOptionsByGroupId = commonOptions.stream()
-                .collect(Collectors.groupingBy(CommonOption::getOptionGroupId));
+            List<ProductCommonOption> commonOptions = productCoreService.findProductCommonOptionsByOptionGroupIds(commonOptionGroupIds);
+            Map<Long, List<ProductCommonOption>> commonOptionsByGroupId = commonOptions.stream()
+                .collect(Collectors.groupingBy(ProductCommonOption::getOptionGroupId));
 
-            for (CommonOptionGroup group : commonOptionGroups) {
+            for (ProductCommonOptionGroup group : productCommonOptionGroups) {
                 List<ProductDetailResponse.OptionResponse> options = commonOptionsByGroupId
                     .getOrDefault(group.getId(), Collections.emptyList())
                     .stream()
-                    .map(this::convertCommonOptionToOptionResponse)
+                    .map(this::convertProductCommonOptionToOptionResponse)
                     .toList();
 
                 result.add(ProductDetailResponse.OptionGroupResponse.builder()
@@ -218,7 +217,7 @@ public class ProductService {
             .build();
     }
 
-    private ProductDetailResponse.OptionResponse convertCommonOptionToOptionResponse(CommonOption option) {
+    private ProductDetailResponse.OptionResponse convertProductCommonOptionToOptionResponse(ProductCommonOption option) {
         return ProductDetailResponse.OptionResponse.builder()
             .id(option.getId())
             .name(option.getName())
