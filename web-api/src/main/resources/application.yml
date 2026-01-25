@@ -11,3 +11,7 @@ jwt:
   secret: Z1JUbfzFqiQ9RSX1Bh8s0B5Jsugvk3CV6YpD3RcLa/zqGxBdghHApgQ/0uct6Nw7DQh6kTnMgSdZRrnrXg1uCw==
   accessTokenExpiration: 3600000 # 1 hour in milliseconds
   refreshTokenExpiration: 604800000 # 7 days in milliseconds
+
+bbq:
+  api:
+    base-url: https://bbq.co.kr
