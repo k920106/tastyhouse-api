@@ -124,7 +124,6 @@ CREATE TABLE PRODUCT
     product_category_id BIGINT,
     name                VARCHAR(255)  NOT NULL,
     description         VARCHAR(1000),
-    image_url           VARCHAR(255),
     price               INT           NOT NULL,
     discount_price      INT,
     discount_rate       DECIMAL(19, 2),
@@ -141,6 +140,19 @@ CREATE TABLE PRODUCT
     INDEX idx_product_category (place_id, product_category_id),
     INDEX idx_product_representative (place_id, is_representative),
     INDEX idx_product_active (place_id, is_active, sort)
+);
+
+CREATE TABLE PRODUCT_IMAGE
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT       NOT NULL,
+    image_url  VARCHAR(255) NOT NULL,
+    sort       INT          NOT NULL,
+    is_active  TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at DATETIME     NOT NULL,
+    updated_at DATETIME     NOT NULL,
+    INDEX idx_product_image_product_id (product_id),
+    INDEX idx_product_image_active (product_id, is_active, sort)
 );
 
 CREATE TABLE PRODUCT_CATEGORY

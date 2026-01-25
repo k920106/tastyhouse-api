@@ -1,8 +1,10 @@
 package com.tastyhouse.core.repository.place;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
+import com.tastyhouse.core.entity.product.QProductImage;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.product.dto.QProductSimpleDto;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +52,9 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             .toList();
 
         // 3. 해당 placeId들의 모든 products 조회 (placeId도 함께 조회)
+        QProductImage productImage = QProductImage.productImage;
+        QProductImage subProductImage = new QProductImage("subProductImage");
+        
         List<Tuple> productTuples = queryFactory
             .select(
                 product.placeId,
@@ -57,7 +62,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                     product.id,
                     place.name,
                     product.name,
-                    product.imageUrl,
+                    productImage.imageUrl,
                     product.originalPrice,
                     product.discountPrice,
                     product.discountRate
@@ -65,6 +70,17 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             )
             .from(product)
             .innerJoin(place).on(place.id.eq(product.placeId))
+            .leftJoin(productImage).on(
+                productImage.productId.eq(product.id)
+                .and(productImage.isActive.eq(true))
+                .and(productImage.sort.eq(
+                    JPAExpressions
+                        .select(subProductImage.sort.min())
+                        .from(subProductImage)
+                        .where(subProductImage.productId.eq(product.id)
+                            .and(subProductImage.isActive.eq(true)))
+                ))
+            )
             .where(product.placeId.in(placeIds))
             .fetch();
 
@@ -138,6 +154,9 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             .toList();
 
         // 4. 해당 placeId들의 모든 products 조회 (placeId도 함께 조회)
+        QProductImage productImage = QProductImage.productImage;
+        QProductImage subProductImage = new QProductImage("subProductImage");
+        
         List<Tuple> productTuples = queryFactory
             .select(
                 product.placeId,
@@ -145,7 +164,7 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
                     product.id,
                     place.name,
                     product.name,
-                    product.imageUrl,
+                    productImage.imageUrl,
                     product.originalPrice,
                     product.discountPrice,
                     product.discountRate
@@ -153,6 +172,17 @@ public class PlaceChoiceRepositoryImpl implements PlaceChoiceRepository {
             )
             .from(product)
             .innerJoin(place).on(place.id.eq(product.placeId))
+            .leftJoin(productImage).on(
+                productImage.productId.eq(product.id)
+                .and(productImage.isActive.eq(true))
+                .and(productImage.sort.eq(
+                    JPAExpressions
+                        .select(subProductImage.sort.min())
+                        .from(subProductImage)
+                        .where(subProductImage.productId.eq(product.id)
+                            .and(subProductImage.isActive.eq(true)))
+                ))
+            )
             .where(product.placeId.in(placeIds))
             .fetch();
 

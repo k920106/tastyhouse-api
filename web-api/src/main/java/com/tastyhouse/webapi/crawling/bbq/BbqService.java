@@ -2,10 +2,12 @@ package com.tastyhouse.webapi.crawling.bbq;
 
 import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.ProductCategory;
+import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.product.ProductOption;
 import com.tastyhouse.core.entity.product.ProductOptionGroup;
 import com.tastyhouse.core.repository.product.ProductCategoryJpaRepository;
 import com.tastyhouse.core.repository.product.ProductJpaRepository;
+import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
 import com.tastyhouse.external.bbq.BbqApiClient;
@@ -36,6 +38,7 @@ public class BbqService {
     private final BbqApiClient bbqApiClient;
     private final ProductCategoryJpaRepository productCategoryJpaRepository;
     private final ProductJpaRepository productJpaRepository;
+    private final ProductImageJpaRepository productImageJpaRepository;
     private final ProductOptionGroupJpaRepository productOptionGroupJpaRepository;
     private final ProductOptionJpaRepository productOptionJpaRepository;
 
@@ -213,7 +216,6 @@ public class BbqService {
                     .productCategoryId(categoryId)
                     .name(menuDetail.getName())
                     .description(menuDetail.getDescription())
-                    .imageUrl(menuDetail.getImageUrl())
                     .originalPrice(menuDetail.getOriginalPrice())
                     .discountPrice(null)
                     .discountRate(null)
@@ -226,6 +228,17 @@ public class BbqService {
                     .sort(0)
                     .build();
             Product savedProduct = productJpaRepository.save(product);
+
+            // 상품 이미지 저장
+            if (menuDetail.getImageUrl() != null && !menuDetail.getImageUrl().isEmpty()) {
+                ProductImage productImage = ProductImage.builder()
+                        .productId(savedProduct.getId())
+                        .imageUrl(menuDetail.getImageUrl())
+                        .sort(0)
+                        .isActive(true)
+                        .build();
+                productImageJpaRepository.save(productImage);
+            }
 
             // 5. getMenuSubOptions 메서드를 호출해서 ProductOptionGroup, ProductOption Entity에 save
             List<BbqProductSubOptionResponse> subOptions = getMenuSubOptions(menuId);

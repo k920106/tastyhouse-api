@@ -31,9 +31,6 @@ public class Product extends BaseEntity {
     @Column(name = "description", length = 1000)
     private String description;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
     @Column(name = "price", nullable = false)
     private Integer originalPrice;
 
@@ -66,14 +63,13 @@ public class Product extends BaseEntity {
 
     @Builder
     public Product(Long placeId, Long productCategoryId, String name, String description,
-                   String imageUrl, Integer originalPrice, Integer discountPrice,
+                   Integer originalPrice, Integer discountPrice,
                    BigDecimal discountRate, Double rating, Integer reviewCount,
                    Boolean isRepresentative, Integer spiciness, Boolean isSoldOut, Boolean isActive, Integer sort) {
         this.placeId = placeId;
         this.productCategoryId = productCategoryId;
         this.name = name;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.originalPrice = originalPrice;
         this.discountPrice = discountPrice;
         this.discountRate = discountRate;
@@ -87,13 +83,12 @@ public class Product extends BaseEntity {
     }
 
     public void update(Long productCategoryId, String name, String description,
-                       String imageUrl, Integer originalPrice, Integer discountPrice,
+                       Integer originalPrice, Integer discountPrice,
                        BigDecimal discountRate, Boolean isRepresentative, Integer spiciness,
                        Boolean isSoldOut, Boolean isActive, Integer sort) {
         this.productCategoryId = productCategoryId;
         this.name = name;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.originalPrice = originalPrice;
         this.discountPrice = discountPrice;
         this.discountRate = discountRate;
