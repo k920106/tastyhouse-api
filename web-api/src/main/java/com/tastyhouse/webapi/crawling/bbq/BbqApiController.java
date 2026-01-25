@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.crawling.bbq;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductCategoryResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductSubOptionResponse;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -81,5 +83,18 @@ public class BbqApiController {
             @PathVariable Long menuId) {
         List<BbqProductSubOptionResponse> subOptions = bbqService.getMenuSubOptions(menuId);
         return ResponseEntity.ok(CommonResponse.success(subOptions));
+    }
+
+    @Operation(summary = "신메뉴 크롤링 및 저장", description = "PRODUCT_CATEGORY에서 '신메뉴'를 찾아 BBQ API에서 신메뉴의 첫 번째 상품을 크롤링하고 저장합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "저장 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "500", description = "크롤링 또는 저장 실패")
+    })
+    @PostMapping("/v1/places/{placeId}/new-menu")
+    public ResponseEntity<CommonResponse<Product>> crawlAndSaveNewMenu(
+            @Parameter(description = "플레이스 ID", example = "1", required = true)
+            @PathVariable Long placeId) {
+        Product product = bbqService.crawlAndSaveNewMenu(placeId);
+        return ResponseEntity.ok(CommonResponse.success(product));
     }
 }
