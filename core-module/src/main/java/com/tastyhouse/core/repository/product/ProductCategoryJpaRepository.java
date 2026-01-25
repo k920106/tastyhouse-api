@@ -10,4 +10,6 @@ import java.util.List;
 public interface ProductCategoryJpaRepository extends JpaRepository<ProductCategory, Long> {
 
     List<ProductCategory> findByPlaceIdAndIsActiveTrueOrderBySortAsc(Long placeId);
+
+    List<ProductCategory> findByNameAndPlaceId(String name, Long placeId);
 }
