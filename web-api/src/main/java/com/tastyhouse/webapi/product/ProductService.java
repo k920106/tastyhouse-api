@@ -125,7 +125,7 @@ public class ProductService {
 
         List<ProductDetailResponse.OptionGroupResponse> optionGroups = buildOptionGroups(product);
 
-        String imageUrl = getFirstImageUrl(product.getId());
+        List<String> imageUrls = getAllImageUrls(product.getId());
 
         return ProductDetailResponse.builder()
             .id(product.getId())
@@ -133,7 +133,7 @@ public class ProductService {
             .placeName(placeName)
             .name(product.getName())
             .description(product.getDescription())
-            .imageUrl(imageUrl)
+            .imageUrls(imageUrls)
             .originalPrice(product.getOriginalPrice())
             .discountPrice(product.getDiscountPrice())
             .discountRate(product.getDiscountRate())
@@ -238,5 +238,12 @@ public class ProductService {
             .findFirst()
             .map(ProductImage::getImageUrl)
             .orElse(null);
+    }
+
+    private List<String> getAllImageUrls(Long productId) {
+        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
+            .stream()
+            .map(ProductImage::getImageUrl)
+            .toList();
     }
 }

@@ -27,8 +27,8 @@ public class ProductDetailResponse {
     @Schema(description = "상품 설명", example = "신선한 명란과 크림소스의 조화")
     private String description;
 
-    @Schema(description = "이미지 URL", example = "https://example.com/product.jpg")
-    private String imageUrl;
+    @Schema(description = "이미지 URL 목록", example = "[\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"]")
+    private List<String> imageUrls;
 
     @Schema(description = "원가", example = "18500")
     private Integer originalPrice;
