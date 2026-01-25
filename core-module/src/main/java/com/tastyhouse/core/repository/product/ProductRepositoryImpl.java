@@ -1,9 +1,11 @@
 package com.tastyhouse.core.repository.product;
 
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.place.QPlace;
 import com.tastyhouse.core.entity.product.QProduct;
+import com.tastyhouse.core.entity.product.QProductImage;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.product.dto.QProductSimpleDto;
 import com.tastyhouse.core.entity.product.dto.QTodayDiscountProductDto;
@@ -26,19 +28,32 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Page<TodayDiscountProductDto> findTodayDiscountProducts(Pageable pageable) {
         QProduct product = QProduct.product;
         QPlace place = QPlace.place;
+        QProductImage productImage = QProductImage.productImage;
+        QProductImage subProductImage = new QProductImage("subProductImage");
 
         JPAQuery<TodayDiscountProductDto> query = queryFactory
             .select(new QTodayDiscountProductDto(
                 product.id,
                 place.name,
                 product.name,
-                product.imageUrl,
+                productImage.imageUrl,
                 product.originalPrice,
                 product.discountPrice,
                 product.discountRate
             ))
             .from(product)
             .innerJoin(place).on(product.placeId.eq(place.id))
+            .leftJoin(productImage).on(
+                productImage.productId.eq(product.id)
+                .and(productImage.isActive.eq(true))
+                .and(productImage.sort.eq(
+                    JPAExpressions
+                        .select(subProductImage.sort.min())
+                        .from(subProductImage)
+                        .where(subProductImage.productId.eq(product.id)
+                            .and(subProductImage.isActive.eq(true)))
+                ))
+            )
             .where(product.discountPrice.isNotNull()
                 .and(product.isActive.eq(true)))
             .orderBy(product.discountRate.desc());
@@ -57,19 +72,32 @@ public class ProductRepositoryImpl implements ProductRepository {
     public List<ProductSimpleDto> findProductsByPlaceId(Long placeId) {
         QProduct product = QProduct.product;
         QPlace place = QPlace.place;
+        QProductImage productImage = QProductImage.productImage;
+        QProductImage subProductImage = new QProductImage("subProductImage");
 
         return queryFactory
             .select(new QProductSimpleDto(
                 product.id,
                 place.name,
                 product.name,
-                product.imageUrl,
+                productImage.imageUrl,
                 product.originalPrice,
                 product.discountPrice,
                 product.discountRate
             ))
             .from(product)
             .innerJoin(place).on(place.id.eq(product.placeId))
+            .leftJoin(productImage).on(
+                productImage.productId.eq(product.id)
+                .and(productImage.isActive.eq(true))
+                .and(productImage.sort.eq(
+                    JPAExpressions
+                        .select(subProductImage.sort.min())
+                        .from(subProductImage)
+                        .where(subProductImage.productId.eq(product.id)
+                            .and(subProductImage.isActive.eq(true)))
+                ))
+            )
             .where(product.placeId.eq(placeId)
                 .and(product.isActive.eq(true)))
             .fetch();

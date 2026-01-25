@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.review;
 
+import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewComment;
 import com.tastyhouse.core.entity.review.ReviewReply;
@@ -8,6 +9,7 @@ import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
+import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
@@ -37,6 +39,7 @@ public class ReviewService {
     private final ReviewCoreService reviewCoreService;
     private final ProductCoreService productCoreService;
     private final MemberJpaRepository memberJpaRepository;
+    private final ProductImageJpaRepository productImageJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
         ReviewCoreService.ReviewPageResult coreResult = reviewCoreService.findBestReviewsWithPagination(
@@ -258,10 +261,12 @@ public class ReviewService {
                     ? product.getDiscountPrice() 
                     : product.getOriginalPrice();
                 
+                String productImageUrl = getFirstImageUrl(product.getId());
+                
                 return ReviewProductResponse.builder()
                     .productId(product.getId())
                     .productName(product.getName())
-                    .productImageUrl(product.getImageUrl())
+                    .productImageUrl(productImageUrl)
                     .productPrice(price)
                     .reviewId(reviewDetail.getId())
                     .content(reviewDetail.getContent())
@@ -305,5 +310,13 @@ public class ReviewService {
                     .tagNames(reviewDetail.getTagNames())
                     .build()
             ));
+    }
+
+    private String getFirstImageUrl(Long productId) {
+        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
+            .stream()
+            .findFirst()
+            .map(ProductImage::getImageUrl)
+            .orElse(null);
     }
 }

@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.product;
 
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
+import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
@@ -22,6 +23,7 @@ public class ProductService {
 
     private final ProductCoreService productCoreService;
     private final PlaceCoreService placeCoreService;
+    private final ProductImageJpaRepository productImageJpaRepository;
 
     public PageResult<TodayDiscountProductItem> findTodayDiscountProducts(PageRequest pageRequest) {
         ProductCoreService.TodayDiscountProductPageResult coreResult = productCoreService.findTodayDiscountProducts(
@@ -93,11 +95,13 @@ public class ProductService {
             ? categoryNameMap.get(product.getProductCategoryId())
             : null;
 
+        String imageUrl = getFirstImageUrl(product.getId());
+
         return ProductListItem.builder()
             .id(product.getId())
             .name(product.getName())
             .description(product.getDescription())
-            .imageUrl(product.getImageUrl())
+            .imageUrl(imageUrl)
             .originalPrice(product.getOriginalPrice())
             .discountPrice(product.getDiscountPrice())
             .discountRate(product.getDiscountRate())
@@ -121,13 +125,15 @@ public class ProductService {
 
         List<ProductDetailResponse.OptionGroupResponse> optionGroups = buildOptionGroups(product);
 
+        String imageUrl = getFirstImageUrl(product.getId());
+
         return ProductDetailResponse.builder()
             .id(product.getId())
             .placeId(product.getPlaceId())
             .placeName(placeName)
             .name(product.getName())
             .description(product.getDescription())
-            .imageUrl(product.getImageUrl())
+            .imageUrl(imageUrl)
             .originalPrice(product.getOriginalPrice())
             .discountPrice(product.getDiscountPrice())
             .discountRate(product.getDiscountRate())
@@ -224,5 +230,13 @@ public class ProductService {
             .additionalPrice(option.getAdditionalPrice())
             .isSoldOut(option.getIsSoldOut())
             .build();
+    }
+
+    private String getFirstImageUrl(Long productId) {
+        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
+            .stream()
+            .findFirst()
+            .map(ProductImage::getImageUrl)
+            .orElse(null);
     }
 }
