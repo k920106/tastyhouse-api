@@ -127,6 +127,11 @@ public class ProductService {
 
         List<String> imageUrls = getAllImageUrls(product.getId());
 
+        // 실제 리뷰 총 개수 조회
+        Map<String, Object> reviewStatistics = reviewCoreService.getProductReviewStatistics(product.getId());
+        Long totalReviewCount = (Long) reviewStatistics.get("totalReviewCount");
+        Integer reviewCount = totalReviewCount != null ? totalReviewCount.intValue() : 0;
+
         return ProductDetailResponse.builder()
             .id(product.getId())
             .placeId(product.getPlaceId())
@@ -138,7 +143,7 @@ public class ProductService {
             .discountPrice(product.getDiscountPrice())
             .discountRate(product.getDiscountRate())
             .rating(product.getRating())
-            .reviewCount(product.getReviewCount())
+            .reviewCount(reviewCount)
             .isRepresentative(product.getIsRepresentative())
             .isSoldOut(product.getIsSoldOut())
             .categoryName(categoryName)
