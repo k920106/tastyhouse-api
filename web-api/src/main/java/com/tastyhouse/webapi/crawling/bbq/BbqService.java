@@ -1,15 +1,10 @@
 package com.tastyhouse.webapi.crawling.bbq;
 
 import com.tastyhouse.core.entity.product.Product;
+import com.tastyhouse.core.entity.product.ProductBbq;
 import com.tastyhouse.core.entity.product.ProductCategory;
 import com.tastyhouse.core.entity.product.ProductImage;
-import com.tastyhouse.core.entity.product.ProductOption;
-import com.tastyhouse.core.entity.product.ProductOptionGroup;
-import com.tastyhouse.core.repository.product.ProductCategoryJpaRepository;
-import com.tastyhouse.core.repository.product.ProductJpaRepository;
-import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
-import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
-import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
+import com.tastyhouse.core.repository.product.*;
 import com.tastyhouse.external.bbq.BbqApiClient;
 import com.tastyhouse.external.bbq.dto.BbqMenuCategoryResponse;
 import com.tastyhouse.external.bbq.dto.BbqMenuResponse;
@@ -39,8 +34,7 @@ public class BbqService {
     private final ProductCategoryJpaRepository productCategoryJpaRepository;
     private final ProductJpaRepository productJpaRepository;
     private final ProductImageJpaRepository productImageJpaRepository;
-    private final ProductOptionGroupJpaRepository productOptionGroupJpaRepository;
-    private final ProductOptionJpaRepository productOptionJpaRepository;
+    private final ProductBbqJpaRepository productBbqJpaRepository;
 
     /**
      * BBQ 메뉴 카테고리 목록 조회
@@ -178,111 +172,116 @@ public class BbqService {
     }
 
     /**
-     * 신메뉴 크롤링 및 저장
+     * BBQ 메뉴 크롤링 및 저장
+     *
+     * 1. getMenuCategories 호출하여 카테고리 저장
+     * 2. getMenusByCategoryId 호출하여 상품(+이미지) 저장 (카테고리마다 10초 간격)
      *
      * @param placeId 플레이스 ID
-     * @return 저장된 상품 정보
      */
     @Transactional
-    public Product crawlAndSaveNewMenu(Long placeId) {
+    public void crawlAndSaveNewMenu(Long placeId) {
         try {
-            // 1. PRODUCT_CATEGORY에서 name이 "신메뉴"인 것을 찾기
-            List<ProductCategory> categories = productCategoryJpaRepository.findByNameAndPlaceId("신메뉴", placeId);
-            if (categories.isEmpty()) {
-                throw new RuntimeException("신메뉴 카테고리를 찾을 수 없습니다. placeId: " + placeId);
-            }
-            ProductCategory newMenuCategory = categories.get(0);
-            Long categoryId = newMenuCategory.getId();
-
-            // 2. getMenuCategories 메서드를 호출해서 신메뉴를 찾기
+            // 1. getMenuCategories 호출하여 카테고리 저장
             List<BbqProductCategoryResponse> menuCategories = getMenuCategories();
-            BbqProductCategoryResponse newMenuCategoryResponse = menuCategories.stream()
-                    .filter(category -> "신메뉴".equals(category.getName()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("BBQ API에서 신메뉴 카테고리를 찾을 수 없습니다."));
+            log.info("BBQ 카테고리 {}개 조회 완료", menuCategories.size());
 
-            // 3. getMenusByCategoryId 메서드를 호출해서 신메뉴의 상품을 제일 첫번째만 찾기
-            List<BbqProductResponse> menus = getMenusByCategoryId(newMenuCategoryResponse.getId());
-            if (menus.isEmpty()) {
-                throw new RuntimeException("신메뉴에 상품이 없습니다.");
-            }
-            BbqProductResponse firstMenu = menus.get(0);
-            Long menuId = firstMenu.getId();
+            for (int categoryIndex = 0; categoryIndex < menuCategories.size(); categoryIndex++) {
+                BbqProductCategoryResponse categoryResponse = menuCategories.get(categoryIndex);
 
-            // 4. getMenuDetail 메서드를 호출해서 상품의 정보를 Product Entity에 save
-            BbqProductResponse menuDetail = getMenuDetail(menuId);
-            Product product = Product.builder()
-                    .placeId(placeId)
-                    .productCategoryId(categoryId)
-                    .name(menuDetail.getName())
-                    .description(menuDetail.getDescription())
-                    .originalPrice(menuDetail.getOriginalPrice())
-                    .discountPrice(null)
-                    .discountRate(null)
-                    .rating(null)
-                    .reviewCount(0)
-                    .isRepresentative(false)
-                    .spiciness(null)
-                    .isSoldOut(menuDetail.getIsSoldOut() != null ? menuDetail.getIsSoldOut() : false)
-                    .isActive(true)
-                    .sort(0)
-                    .build();
-            Product savedProduct = productJpaRepository.save(product);
+                // 카테고리 저장 또는 조회
+                ProductCategory savedCategory = saveOrGetCategory(placeId, categoryResponse, categoryIndex);
 
-            // 상품 이미지 저장
-            if (menuDetail.getImageUrl() != null && !menuDetail.getImageUrl().isEmpty()) {
-                ProductImage productImage = ProductImage.builder()
-                        .productId(savedProduct.getId())
-                        .imageUrl(menuDetail.getImageUrl())
-                        .sort(0)
-                        .isActive(true)
-                        .build();
-                productImageJpaRepository.save(productImage);
-            }
+                // 2. getMenusByCategoryId 호출하여 상품 목록 가져오기
+                List<BbqProductResponse> menus = getMenusByCategoryId(categoryResponse.getId());
+                log.info("카테고리 '{}' - 상품 {}개 조회", categoryResponse.getName(), menus.size());
 
-            // 5. getMenuSubOptions 메서드를 호출해서 ProductOptionGroup, ProductOption Entity에 save
-            List<BbqProductSubOptionResponse> subOptions = getMenuSubOptions(menuId);
-            for (int i = 0; i < subOptions.size(); i++) {
-                BbqProductSubOptionResponse subOption = subOptions.get(i);
-                
-                // ProductOptionGroup 저장
-                ProductOptionGroup optionGroup = ProductOptionGroup.builder()
-                        .productId(savedProduct.getId())
-                        .name(subOption.getSubOptionTitle())
-                        .description(null)
-                        .isRequired(subOption.getRequiredSelectCount() != null && subOption.getRequiredSelectCount() > 0)
-                        .isMultipleSelect(subOption.getMaxSelectCount() != null && subOption.getMaxSelectCount() > 1)
-                        .minSelect(subOption.getRequiredSelectCount())
-                        .maxSelect(subOption.getMaxSelectCount())
-                        .sort(i)
-                        .isActive(true)
-                        .build();
-                ProductOptionGroup savedOptionGroup = productOptionGroupJpaRepository.save(optionGroup);
+                // 상품(+이미지) 저장
+                for (int menuIndex = 0; menuIndex < menus.size(); menuIndex++) {
+                    BbqProductResponse menuResponse = menus.get(menuIndex);
+                    saveProductWithImage(placeId, savedCategory.getId(), menuResponse, categoryResponse.getId(), menuIndex);
+                }
 
-                // ProductOption 저장
-                if (subOption.getSubOptionItemDetailResponseList() != null) {
-                    for (int j = 0; j < subOption.getSubOptionItemDetailResponseList().size(); j++) {
-                        BbqProductSubOptionResponse.SubOptionItemDetailResponse itemDetail = 
-                                subOption.getSubOptionItemDetailResponseList().get(j);
-                        
-                        ProductOption productOption = ProductOption.builder()
-                                .optionGroupId(savedOptionGroup.getId())
-                                .name(itemDetail.getItemTitle())
-                                .additionalPrice(itemDetail.getAddPrice() != null ? itemDetail.getAddPrice() : 0)
-                                .sort(j)
-                                .isSoldOut(itemDetail.getIsSoldOut() != null ? itemDetail.getIsSoldOut() : false)
-                                .isActive(!(itemDetail.getIsHidden() != null && itemDetail.getIsHidden()))
-                                .build();
-                        productOptionJpaRepository.save(productOption);
-                    }
+                // 마지막 카테고리가 아닌 경우 10초 대기
+                if (categoryIndex < menuCategories.size() - 1) {
+                    log.info("다음 카테고리 처리를 위해 10초 대기...");
+                    Thread.sleep(10000);
                 }
             }
 
-            log.info("신메뉴 크롤링 및 저장 완료. placeId: {}, productId: {}", placeId, savedProduct.getId());
-            return savedProduct;
+            log.info("BBQ 메뉴 크롤링 및 저장 완료. placeId: {}", placeId);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("크롤링 중 인터럽트 발생: placeId={}", placeId, e);
+            throw new RuntimeException("크롤링 중단됨", e);
         } catch (Exception e) {
-            log.error("신메뉴 크롤링 및 저장 중 오류 발생: placeId={}", placeId, e);
-            throw new RuntimeException("신메뉴 크롤링 및 저장 실패", e);
+            log.error("BBQ 메뉴 크롤링 및 저장 중 오류 발생: placeId={}", placeId, e);
+            throw new RuntimeException("BBQ 메뉴 크롤링 및 저장 실패", e);
         }
+    }
+
+    /**
+     * 카테고리 저장 또는 기존 카테고리 조회
+     */
+    private ProductCategory saveOrGetCategory(Long placeId, BbqProductCategoryResponse categoryResponse, int sort) {
+        List<ProductCategory> existingCategories = productCategoryJpaRepository.findByNameAndPlaceId(categoryResponse.getName(), placeId);
+        if (!existingCategories.isEmpty()) {
+            return existingCategories.get(0);
+        }
+
+        ProductCategory category = ProductCategory.builder()
+                .placeId(placeId)
+                .name(categoryResponse.getName())
+                .sort(sort)
+                .isActive(true)
+                .build();
+        return productCategoryJpaRepository.save(category);
+    }
+
+    /**
+     * 상품 및 이미지 저장
+     */
+    private void saveProductWithImage(Long placeId, Long categoryId, BbqProductResponse menuResponse, Long bbqCategoryId, int sort) {
+        // 상품 상세 정보 조회
+        BbqProductResponse menuDetail = getMenuDetail(menuResponse.getId());
+
+        Product product = Product.builder()
+                .placeId(placeId)
+                .productCategoryId(categoryId)
+                .name(menuDetail.getName())
+                .description(menuDetail.getDescription())
+                .originalPrice(menuDetail.getOriginalPrice())
+                .discountPrice(null)
+                .discountRate(null)
+                .rating(null)
+                .reviewCount(0)
+                .isRepresentative(false)
+                .spiciness(null)
+                .isSoldOut(menuDetail.getIsSoldOut() != null ? menuDetail.getIsSoldOut() : false)
+                .isActive(true)
+                .sort(sort)
+                .build();
+        Product savedProduct = productJpaRepository.save(product);
+
+        // 상품 이미지 저장
+        if (menuDetail.getImageUrl() != null && !menuDetail.getImageUrl().isEmpty()) {
+            ProductImage productImage = ProductImage.builder()
+                    .productId(savedProduct.getId())
+                    .imageUrl(menuDetail.getImageUrl())
+                    .sort(0)
+                    .isActive(true)
+                    .build();
+            productImageJpaRepository.save(productImage);
+        }
+
+        // ProductBbq 매핑 저장 (외부 BBQ 메뉴 ID 저장)
+        ProductBbq productBbq = ProductBbq.builder()
+                .productId(savedProduct.getId())
+                .bbqMenuId(menuResponse.getId())
+                .bbqCategoryId(bbqCategoryId)
+                .build();
+        productBbqJpaRepository.save(productBbq);
+
+        log.debug("상품 저장 완료: productId={}, name={}", savedProduct.getId(), savedProduct.getName());
     }
 }

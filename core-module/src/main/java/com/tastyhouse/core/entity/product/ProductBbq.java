@@ -1,0 +1,50 @@
+package com.tastyhouse.core.entity.product;
+
+import com.tastyhouse.core.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * Product와 BBQ 메뉴 ID 매핑 엔티티
+ * BBQ API의 외부 메뉴 ID를 임시 저장
+ */
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+@Table(name = "PRODUCT_BBQ")
+public class ProductBbq extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "product_id", nullable = false, unique = true)
+    private Long productId;
+
+    @Column(name = "bbq_menu_id", nullable = false)
+    private Long bbqMenuId;
+
+    @Column(name = "bbq_category_id")
+    private Long bbqCategoryId;
+
+    @Column(name = "is_options_synced", nullable = false)
+    private Boolean isOptionsSynced;
+
+    @Builder
+    public ProductBbq(Long productId, Long bbqMenuId, Long bbqCategoryId, Boolean isOptionsSynced) {
+        this.productId = productId;
+        this.bbqMenuId = bbqMenuId;
+        this.bbqCategoryId = bbqCategoryId;
+        this.isOptionsSynced = isOptionsSynced != null ? isOptionsSynced : false;
+    }
+
+    /**
+     * 옵션 동기화 완료 표시
+     */
+    public void markOptionsSynced() {
+        this.isOptionsSynced = true;
+    }
+}

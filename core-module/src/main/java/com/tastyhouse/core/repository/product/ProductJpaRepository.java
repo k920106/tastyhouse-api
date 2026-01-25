@@ -14,4 +14,6 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     List<Product> findByPlaceIdAndIsActiveTrueOrderByIsRepresentativeDescRatingDescIdAsc(Long placeId);
 
     List<Product> findByPlaceIdAndIsActiveTrueOrderBySortAsc(Long placeId);
+
+    List<Product> findByPlaceId(Long placeId);
 }

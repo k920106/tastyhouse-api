@@ -10,4 +10,6 @@ import java.util.List;
 public interface ProductOptionGroupJpaRepository extends JpaRepository<ProductOptionGroup, Long> {
 
     List<ProductOptionGroup> findByProductIdAndIsActiveTrueOrderBySortAsc(Long productId);
+
+    boolean existsByProductId(Long productId);
 }
