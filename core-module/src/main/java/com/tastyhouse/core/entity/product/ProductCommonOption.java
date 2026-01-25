@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(name = "COMMON_OPTION")
-public class CommonOption extends BaseEntity {
+@Table(name = "PRODUCT_COMMON_OPTION")
+public class ProductCommonOption extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +36,8 @@ public class CommonOption extends BaseEntity {
     private Boolean isActive;
 
     @Builder
-    public CommonOption(Long optionGroupId, String name, Integer additionalPrice,
-                        Integer sort, Boolean isSoldOut, Boolean isActive) {
+    public ProductCommonOption(Long optionGroupId, String name, Integer additionalPrice,
+                               Integer sort, Boolean isSoldOut, Boolean isActive) {
         this.optionGroupId = optionGroupId;
         this.name = name;
         this.additionalPrice = additionalPrice != null ? additionalPrice : 0;

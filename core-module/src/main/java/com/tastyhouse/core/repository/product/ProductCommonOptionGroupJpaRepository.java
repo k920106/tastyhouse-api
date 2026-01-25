@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ProductCommonOptionGroupJpaRepository extends JpaRepository<ProductCommonOptionGroup, Long> {
 
-    List<ProductCommonOptionGroup> findByProductIdOrderBySortAsc(Long productId);
+    List<ProductCommonOptionGroup> findByProductIdAndIsActiveTrueOrderBySortAsc(Long productId);
 }
