@@ -109,4 +109,43 @@ public class BbqApiClient {
         return getMenusByCategoryId(categoryId)
                 .block(Duration.ofSeconds(10));
     }
+
+    /**
+     * BBQ 메뉴 상세 조회
+     *
+     * @param menuId 메뉴 ID
+     * @return 메뉴 상세 정보
+     */
+    public Mono<BbqMenuResponse> getMenuDetail(Long menuId) {
+        String url = baseUrl + "/api/delivery/menu/detail/" + menuId;
+
+        return getWebClient().get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(BbqMenuResponse.class)
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(menu -> {
+                    log.info("BBQ 메뉴 상세 조회 성공: menuId={}, menuName={}", menuId, menu.getMenuName());
+                })
+                .doOnError(WebClientResponseException.class, ex -> {
+                    log.error("BBQ 메뉴 상세 조회 실패: menuId={}, Status={}, Message={}", 
+                            menuId, ex.getStatusCode(), ex.getMessage());
+                })
+                .doOnError(Throwable.class, ex -> {
+                    if (!(ex instanceof WebClientResponseException)) {
+                        log.error("BBQ 메뉴 상세 조회 중 예외 발생: menuId={}", menuId, ex);
+                    }
+                });
+    }
+
+    /**
+     * BBQ 메뉴 상세 조회 (동기 방식)
+     *
+     * @param menuId 메뉴 ID
+     * @return 메뉴 상세 정보
+     */
+    public BbqMenuResponse getMenuDetailSync(Long menuId) {
+        return getMenuDetail(menuId)
+                .block(Duration.ofSeconds(10));
+    }
 }

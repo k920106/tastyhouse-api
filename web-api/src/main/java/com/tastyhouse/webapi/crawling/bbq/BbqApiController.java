@@ -55,4 +55,17 @@ public class BbqApiController {
         List<BbqProductResponse> menus = bbqService.getMenusByCategoryId(categoryId);
         return ResponseEntity.ok(CommonResponse.success(menus));
     }
+
+    @Operation(summary = "BBQ 메뉴 상세 조회", description = "BBQ의 특정 메뉴 상세 정보를 조회합니다. Product Entity 구조에 맞춰 반환됩니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "500", description = "BBQ API 호출 실패")
+    })
+    @GetMapping("/v1/menu/{menuId}")
+    public ResponseEntity<CommonResponse<BbqProductResponse>> getMenuDetail(
+            @Parameter(description = "메뉴 ID", example = "30352", required = true)
+            @PathVariable Long menuId) {
+        BbqProductResponse menu = bbqService.getMenuDetail(menuId);
+        return ResponseEntity.ok(CommonResponse.success(menu));
+    }
 }

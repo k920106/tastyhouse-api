@@ -76,6 +76,22 @@ public class BbqService {
     }
 
     /**
+     * BBQ 메뉴 상세 조회
+     *
+     * @param menuId 메뉴 ID
+     * @return Product Entity 구조에 맞춘 상품 상세 정보
+     */
+    public BbqProductResponse getMenuDetail(Long menuId) {
+        try {
+            BbqMenuResponse externalMenu = bbqApiClient.getMenuDetailSync(menuId);
+            return convertToProductResponse(externalMenu);
+        } catch (Exception e) {
+            log.error("BBQ 메뉴 상세 조회 중 오류 발생: menuId={}", menuId, e);
+            throw new RuntimeException("BBQ 메뉴 상세 조회 실패", e);
+        }
+    }
+
+    /**
      * 외부 API 응답을 Product 구조에 맞는 응답으로 변환
      *
      * @param externalResponse 외부 API 응답
