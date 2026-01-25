@@ -306,6 +306,68 @@ public class ReviewCoreService {
         return statistics;
     }
 
+    public PlaceReviewsByRatingResult getProductReviewsByRating(Long productId, int page, int size) {
+        // 각 점수별로 최대 5개씩 조회
+        List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 1, 5);
+        List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 2, 5);
+        List<LatestReviewListItemDto> rating3Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 3, 5);
+        List<LatestReviewListItemDto> rating4Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 4, 5);
+        List<LatestReviewListItemDto> rating5Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 5, 5);
+
+        // 전체 리뷰는 페이지네이션 적용
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<LatestReviewListItemDto> allReviewsPage = reviewRepository.findLatestReviewsByProductId(productId, null, pageRequest, null, "LATEST");
+        List<LatestReviewListItemDto> allReviews = allReviewsPage.getContent();
+
+        // 총 리뷰 개수 조회
+        Long totalReviewCount = reviewJpaRepository.countByProductIdAndIsHiddenFalse(productId);
+
+        // 좋아요 및 댓글 수 채우기
+        List<LatestReviewListItemDto> allReviewsForPopulate = new ArrayList<>();
+        allReviewsForPopulate.addAll(rating1Reviews);
+        allReviewsForPopulate.addAll(rating2Reviews);
+        allReviewsForPopulate.addAll(rating3Reviews);
+        allReviewsForPopulate.addAll(rating4Reviews);
+        allReviewsForPopulate.addAll(rating5Reviews);
+        allReviewsForPopulate.addAll(allReviews);
+
+        if (!allReviewsForPopulate.isEmpty()) {
+            populateLikeAndCommentCounts(allReviewsForPopulate);
+        }
+
+        Map<Integer, List<LatestReviewListItemDto>> reviewsByRating = new HashMap<>();
+        reviewsByRating.put(1, rating1Reviews);
+        reviewsByRating.put(2, rating2Reviews);
+        reviewsByRating.put(3, rating3Reviews);
+        reviewsByRating.put(4, rating4Reviews);
+        reviewsByRating.put(5, rating5Reviews);
+
+        return new PlaceReviewsByRatingResult(
+            reviewsByRating,
+            allReviews,
+            totalReviewCount,
+            allReviewsPage.getTotalElements(),
+            allReviewsPage.getTotalPages(),
+            allReviewsPage.getNumber(),
+            allReviewsPage.getSize()
+        );
+    }
+
+    public Map<String, Object> getProductReviewStatistics(Long productId) {
+        Map<String, Object> statistics = new HashMap<>();
+
+        Long totalCount = reviewJpaRepository.countByProductIdAndIsHiddenFalse(productId);
+        statistics.put("totalReviewCount", totalCount);
+
+        if (totalCount > 0) {
+            statistics.put("averageTasteRating", reviewJpaRepository.getAverageTasteRatingByProductId(productId));
+            statistics.put("averageAmountRating", reviewJpaRepository.getAverageAmountRatingByProductId(productId));
+            statistics.put("averagePriceRating", reviewJpaRepository.getAveragePriceRatingByProductId(productId));
+        }
+
+        return statistics;
+    }
+
     public static class PlaceReviewPageResult {
         private final List<Review> content;
         private final long totalElements;

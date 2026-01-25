@@ -23,6 +23,10 @@ public interface ReviewRepository {
 
     List<LatestReviewListItemDto> findReviewsByPlaceIdAndRating(Long placeId, Integer rating, int limit);
 
+    Page<LatestReviewListItemDto> findLatestReviewsByProductId(Long productId, Integer rating, Pageable pageable, Boolean hasImage, String sortType);
+
+    List<LatestReviewListItemDto> findReviewsByProductIdAndRating(Long productId, Integer rating, int limit);
+
     List<MemberReviewCountDto> countReviewsByMemberWithPeriod(
         LocalDateTime startDate,
         LocalDateTime endDate

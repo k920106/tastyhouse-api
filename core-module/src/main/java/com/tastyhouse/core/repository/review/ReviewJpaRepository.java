@@ -41,4 +41,21 @@ public interface ReviewJpaRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT FLOOR(r.totalRating) as rating, COUNT(r) as count FROM Review r WHERE r.placeId = :placeId AND r.isHidden = false GROUP BY FLOOR(r.totalRating)")
     Object[][] getRatingCounts(@Param("placeId") Long placeId);
+
+    // 상품 리뷰 조회
+    Page<Review> findByProductIdAndIsHiddenFalseOrderByCreatedAtDesc(Long productId, Pageable pageable);
+
+    Page<Review> findByProductIdAndTotalRatingAndIsHiddenFalseOrderByCreatedAtDesc(Long productId, Double rating, Pageable pageable);
+
+    Long countByProductIdAndIsHiddenFalse(Long productId);
+
+    // 상품 리뷰 통계
+    @Query("SELECT AVG(r.tasteRating) FROM Review r WHERE r.productId = :productId AND r.isHidden = false")
+    Double getAverageTasteRatingByProductId(@Param("productId") Long productId);
+
+    @Query("SELECT AVG(r.amountRating) FROM Review r WHERE r.productId = :productId AND r.isHidden = false")
+    Double getAverageAmountRatingByProductId(@Param("productId") Long productId);
+
+    @Query("SELECT AVG(r.priceRating) FROM Review r WHERE r.productId = :productId AND r.isHidden = false")
+    Double getAveragePriceRatingByProductId(@Param("productId") Long productId);
 }

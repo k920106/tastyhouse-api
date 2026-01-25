@@ -415,6 +415,149 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return reviews;
     }
 
+    @Override
+    public Page<LatestReviewListItemDto> findLatestReviewsByProductId(Long productId, Integer rating, Pageable pageable, Boolean hasImage, String sortType) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+        QReviewLike reviewLike = QReviewLike.reviewLike;
+        QMember member = QMember.member;
+        QProduct product = QProduct.product;
+
+        var whereClause = review.productId.eq(productId).and(review.isHidden.eq(false));
+        if (rating != null) {
+            if (rating == 5) {
+                whereClause = whereClause.and(review.totalRating.eq(5.0));
+            } else {
+                whereClause = whereClause.and(
+                    review.totalRating.goe(rating.doubleValue())
+                        .and(review.totalRating.lt(rating.doubleValue() + 1.0))
+                );
+            }
+        }
+
+        if (hasImage != null) {
+            QReviewImage subReviewImage = new QReviewImage("subReviewImage");
+            if (hasImage) {
+                whereClause = whereClause.and(
+                    JPAExpressions
+                        .selectOne()
+                        .from(subReviewImage)
+                        .where(subReviewImage.reviewId.eq(review.id))
+                        .exists()
+                );
+            } else {
+                whereClause = whereClause.and(
+                    JPAExpressions
+                        .selectOne()
+                        .from(subReviewImage)
+                        .where(subReviewImage.reviewId.eq(review.id))
+                        .notExists()
+                );
+            }
+        }
+
+        JPAQuery<LatestReviewListItemDto> query = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt,
+                product.id,
+                product.name
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
+            .where(whereClause);
+
+        if ("RECOMMENDED".equals(sortType)) {
+            QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+            query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
+                .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
+                    member.id, member.nickname, member.profileImageUrl, review.createdAt,
+                    product.id, product.name)
+                .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
+        } else if ("OLDEST".equals(sortType)) {
+            query.orderBy(review.createdAt.asc());
+        } else {
+            query.orderBy(review.createdAt.desc());
+        }
+
+        long total = query.fetch().size();
+
+        List<LatestReviewListItemDto> reviews = query
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
+    @Override
+    public List<LatestReviewListItemDto> findReviewsByProductIdAndRating(Long productId, Integer rating, int limit) {
+        QReview review = QReview.review;
+        QPlace place = QPlace.place;
+        QPlaceStation placeStation = QPlaceStation.placeStation;
+        QMember member = QMember.member;
+        QProduct product = QProduct.product;
+
+        var whereClause = review.productId.eq(productId).and(review.isHidden.eq(false));
+
+        if (rating == 5) {
+            whereClause = whereClause.and(review.totalRating.eq(5.0));
+        } else {
+            whereClause = whereClause.and(
+                review.totalRating.goe(rating.doubleValue())
+                    .and(review.totalRating.lt(rating.doubleValue() + 1.0))
+            );
+        }
+
+        List<LatestReviewListItemDto> reviews = queryFactory
+            .select(new QLatestReviewListItemDto(
+                review.id,
+                placeStation.stationName,
+                review.totalRating,
+                review.content,
+                member.id,
+                member.nickname,
+                member.profileImageUrl,
+                review.createdAt,
+                product.id,
+                product.name
+            ))
+            .from(review)
+            .innerJoin(place).on(review.placeId.eq(place.id))
+            .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
+            .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(product).on(review.productId.eq(product.id))
+            .where(whereClause)
+            .orderBy(review.createdAt.desc())
+            .limit(limit)
+            .fetch();
+
+        if (!reviews.isEmpty()) {
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
+            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+        }
+
+        return reviews;
+    }
+
     private List<String> findImageUrlsByReviewId(Long reviewId) {
         QReviewImage reviewImage = QReviewImage.reviewImage;
 
