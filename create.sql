@@ -142,6 +142,20 @@ CREATE TABLE PRODUCT
     INDEX idx_product_active (place_id, is_active, sort)
 );
 
+CREATE TABLE PRODUCT_BBQ
+(
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id      BIGINT   NOT NULL UNIQUE,
+    bbq_menu_id     BIGINT   NOT NULL,
+    bbq_category_id BIGINT,
+    is_options_synced TINYINT(1) NOT NULL DEFAULT 0,
+    created_at      DATETIME NOT NULL,
+    updated_at      DATETIME NOT NULL,
+    INDEX idx_product_bbq_product_id (product_id),
+    INDEX idx_product_bbq_menu_id (bbq_menu_id),
+    INDEX idx_product_bbq_category_id (bbq_category_id)
+);
+
 CREATE TABLE PRODUCT_IMAGE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,

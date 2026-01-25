@@ -85,16 +85,15 @@ public class BbqApiController {
         return ResponseEntity.ok(CommonResponse.success(subOptions));
     }
 
-    @Operation(summary = "신메뉴 크롤링 및 저장", description = "PRODUCT_CATEGORY에서 '신메뉴'를 찾아 BBQ API에서 신메뉴의 첫 번째 상품을 크롤링하고 저장합니다.")
+    @Operation(summary = "크롤링 및 저장", description = "PRODUCT_CATEGORY에서 '신메뉴'를 찾아 BBQ API에서 신메뉴의 첫 번째 상품을 크롤링하고 저장합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "저장 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
         @ApiResponse(responseCode = "500", description = "크롤링 또는 저장 실패")
     })
     @PostMapping("/v1/places/{placeId}/new-menu")
-    public ResponseEntity<CommonResponse<Product>> crawlAndSaveNewMenu(
+    public void crawlAndSaveNewMenu(
             @Parameter(description = "플레이스 ID", example = "1", required = true)
             @PathVariable Long placeId) {
-        Product product = bbqService.crawlAndSaveNewMenu(placeId);
-        return ResponseEntity.ok(CommonResponse.success(product));
+        bbqService.crawlAndSaveNewMenu(placeId);
     }
 }
