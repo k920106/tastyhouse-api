@@ -3,10 +3,7 @@ package com.tastyhouse.webapi.product;
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
-import com.tastyhouse.webapi.product.response.ProductCategoryListItem;
-import com.tastyhouse.webapi.product.response.ProductDetailResponse;
-import com.tastyhouse.webapi.product.response.ProductListItem;
-import com.tastyhouse.webapi.product.response.TodayDiscountProductItem;
+import com.tastyhouse.webapi.product.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,5 +62,26 @@ public class ProductApiController {
         return productService.findProductById(productId)
             .map(product -> ResponseEntity.ok(CommonResponse.success(product)))
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "리뷰 목록 조회", description = "상품의 리뷰 목록을 평점별로 조회합니다. 각 평점(1점, 2점, 3점, 4점, 5점)별로 최대 5개씩, 전체 리뷰는 페이지네이션으로 조회합니다. 총 리뷰 개수도 함께 반환됩니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{productId}/reviews")
+    public ResponseEntity<CommonResponse<ProductReviewsByRatingResponse>> getProductReviews(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        ProductService.ProductReviewsByRatingWithPagination result = productService.getProductReviewsByRatingWithPagination(productId, page, size);
+        CommonResponse<ProductReviewsByRatingResponse> response = CommonResponse.success(result.getResponse());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "리뷰 통계 조회", description = "상품의 리뷰 통계를 조회합니다. 평점, 맛 평점, 양 평점, 가격 평점을 포함합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/{productId}/reviews/statistics")
+    public ResponseEntity<CommonResponse<ProductReviewStatisticsResponse>> getProductReviewStatistics(@PathVariable Long productId) {
+        ProductReviewStatisticsResponse statistics = productService.getProductReviewStatistics(productId);
+        CommonResponse<ProductReviewStatisticsResponse> response = CommonResponse.success(statistics);
+        return ResponseEntity.ok(response);
     }
 }

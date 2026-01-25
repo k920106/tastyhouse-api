@@ -2,15 +2,14 @@ package com.tastyhouse.webapi.product;
 
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
+import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
+import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
-import com.tastyhouse.webapi.product.response.ProductCategoryListItem;
-import com.tastyhouse.webapi.product.response.ProductDetailResponse;
-import com.tastyhouse.webapi.product.response.ProductListItem;
-import com.tastyhouse.webapi.product.response.TodayDiscountProductItem;
+import com.tastyhouse.webapi.product.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,7 @@ public class ProductService {
     private final ProductCoreService productCoreService;
     private final PlaceCoreService placeCoreService;
     private final ProductImageJpaRepository productImageJpaRepository;
+    private final ReviewCoreService reviewCoreService;
 
     public PageResult<TodayDiscountProductItem> findTodayDiscountProducts(PageRequest pageRequest) {
         ProductCoreService.TodayDiscountProductPageResult coreResult = productCoreService.findTodayDiscountProducts(
@@ -245,5 +245,76 @@ public class ProductService {
             .stream()
             .map(ProductImage::getImageUrl)
             .toList();
+    }
+
+    public ProductReviewsByRatingWithPagination getProductReviewsByRatingWithPagination(Long productId, int page, int size) {
+        ReviewCoreService.PlaceReviewsByRatingResult result = reviewCoreService.getProductReviewsByRating(productId, page, size);
+
+        Map<Integer, List<ProductReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry<Integer, List<LatestReviewListItemDto>>::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(this::convertToProductReviewListItem)
+                                .toList()
+                ));
+
+        List<ProductReviewListItem> allReviews = result.getAllReviews().stream()
+                .map(this::convertToProductReviewListItem)
+                .toList();
+
+        ProductReviewsByRatingResponse response = ProductReviewsByRatingResponse.builder()
+                .reviewsByRating(reviewsByRating)
+                .allReviews(allReviews)
+                .totalReviewCount(result.getTotalReviewCount())
+                .build();
+
+        return new ProductReviewsByRatingWithPagination(response, result.getTotalElements());
+    }
+
+    private ProductReviewListItem convertToProductReviewListItem(LatestReviewListItemDto dto) {
+        return ProductReviewListItem.builder()
+                .id(dto.getId())
+                .imageUrls(dto.getImageUrls())
+                .totalRating(dto.getTotalRating())
+                .content(dto.getContent())
+                .memberNickname(dto.getMemberNickname())
+                .memberProfileImageUrl(dto.getMemberProfileImageUrl())
+                .createdAt(dto.getCreatedAt())
+                .productId(dto.getProductId())
+                .productName(dto.getProductName())
+                .build();
+    }
+
+    public ProductReviewStatisticsResponse getProductReviewStatistics(Long productId) {
+        Map<String, Object> statistics = reviewCoreService.getProductReviewStatistics(productId);
+
+        Product product = productCoreService.findProductById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+
+        return ProductReviewStatisticsResponse.builder()
+                .totalRating(product.getRating())
+                .totalReviewCount((Long) statistics.get("totalReviewCount"))
+                .averageTasteRating((Double) statistics.get("averageTasteRating"))
+                .averageAmountRating((Double) statistics.get("averageAmountRating"))
+                .averagePriceRating((Double) statistics.get("averagePriceRating"))
+                .build();
+    }
+
+    public static class ProductReviewsByRatingWithPagination {
+        private final ProductReviewsByRatingResponse response;
+        private final Long totalElements;
+
+        public ProductReviewsByRatingWithPagination(ProductReviewsByRatingResponse response, Long totalElements) {
+            this.response = response;
+            this.totalElements = totalElements;
+        }
+
+        public ProductReviewsByRatingResponse getResponse() {
+            return response;
+        }
+
+        public Long getTotalElements() {
+            return totalElements;
+        }
     }
 }
