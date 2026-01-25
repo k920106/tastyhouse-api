@@ -3,6 +3,7 @@ package com.tastyhouse.webapi.crawling.bbq;
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductCategoryResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductResponse;
+import com.tastyhouse.webapi.crawling.bbq.response.BbqProductSubOptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -67,5 +68,18 @@ public class BbqApiController {
             @PathVariable Long menuId) {
         BbqProductResponse menu = bbqService.getMenuDetail(menuId);
         return ResponseEntity.ok(CommonResponse.success(menu));
+    }
+
+    @Operation(summary = "BBQ 메뉴 옵션 조회", description = "BBQ의 특정 메뉴의 옵션 목록을 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "500", description = "BBQ API 호출 실패")
+    })
+    @GetMapping("/v1/menu/{menuId}/sub-options")
+    public ResponseEntity<CommonResponse<List<BbqProductSubOptionResponse>>> getMenuSubOptions(
+            @Parameter(description = "메뉴 ID", example = "30352", required = true)
+            @PathVariable Long menuId) {
+        List<BbqProductSubOptionResponse> subOptions = bbqService.getMenuSubOptions(menuId);
+        return ResponseEntity.ok(CommonResponse.success(subOptions));
     }
 }

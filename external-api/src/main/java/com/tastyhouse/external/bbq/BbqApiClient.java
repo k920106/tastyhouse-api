@@ -2,6 +2,7 @@ package com.tastyhouse.external.bbq;
 
 import com.tastyhouse.external.bbq.dto.BbqMenuCategoryResponse;
 import com.tastyhouse.external.bbq.dto.BbqMenuResponse;
+import com.tastyhouse.external.bbq.dto.BbqMenuSubOptionResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -146,6 +147,46 @@ public class BbqApiClient {
      */
     public BbqMenuResponse getMenuDetailSync(Long menuId) {
         return getMenuDetail(menuId)
+                .block(Duration.ofSeconds(10));
+    }
+
+    /**
+     * BBQ 메뉴 서브 옵션 조회
+     *
+     * @param menuId 메뉴 ID
+     * @return 메뉴 서브 옵션 목록
+     */
+    public Mono<List<BbqMenuSubOptionResponse>> getMenuSubOptions(Long menuId) {
+        String url = baseUrl + "/api/delivery/menu/sub-option/" + menuId;
+
+        return getWebClient().get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(BbqMenuSubOptionResponse.class)
+                .collectList()
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(subOptions -> {
+                    log.info("BBQ 메뉴 서브 옵션 조회 성공: menuId={}, 옵션 수={}", menuId, subOptions.size());
+                })
+                .doOnError(WebClientResponseException.class, ex -> {
+                    log.error("BBQ 메뉴 서브 옵션 조회 실패: menuId={}, Status={}, Message={}", 
+                            menuId, ex.getStatusCode(), ex.getMessage());
+                })
+                .doOnError(Throwable.class, ex -> {
+                    if (!(ex instanceof WebClientResponseException)) {
+                        log.error("BBQ 메뉴 서브 옵션 조회 중 예외 발생: menuId={}", menuId, ex);
+                    }
+                });
+    }
+
+    /**
+     * BBQ 메뉴 서브 옵션 조회 (동기 방식)
+     *
+     * @param menuId 메뉴 ID
+     * @return 메뉴 서브 옵션 목록
+     */
+    public List<BbqMenuSubOptionResponse> getMenuSubOptionsSync(Long menuId) {
+        return getMenuSubOptions(menuId)
                 .block(Duration.ofSeconds(10));
     }
 }

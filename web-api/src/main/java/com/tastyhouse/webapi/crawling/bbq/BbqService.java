@@ -3,8 +3,10 @@ package com.tastyhouse.webapi.crawling.bbq;
 import com.tastyhouse.external.bbq.BbqApiClient;
 import com.tastyhouse.external.bbq.dto.BbqMenuCategoryResponse;
 import com.tastyhouse.external.bbq.dto.BbqMenuResponse;
+import com.tastyhouse.external.bbq.dto.BbqMenuSubOptionResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductCategoryResponse;
 import com.tastyhouse.webapi.crawling.bbq.response.BbqProductResponse;
+import com.tastyhouse.webapi.crawling.bbq.response.BbqProductSubOptionResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -109,6 +111,53 @@ public class BbqService {
                 .isAdultOnly(externalResponse.getIsAdultOnly() != null ? externalResponse.getIsAdultOnly() : false)
                 .canDeliver(externalResponse.getCanDeliver() != null ? externalResponse.getCanDeliver() : false)
                 .canTakeout(externalResponse.getCanTakeout() != null ? externalResponse.getCanTakeout() : false)
+                .build();
+    }
+
+    /**
+     * BBQ 메뉴 서브 옵션 조회
+     *
+     * @param menuId 메뉴 ID
+     * @return 서브 옵션 목록
+     */
+    public List<BbqProductSubOptionResponse> getMenuSubOptions(Long menuId) {
+        try {
+            List<BbqMenuSubOptionResponse> externalSubOptions = bbqApiClient.getMenuSubOptionsSync(menuId);
+            return externalSubOptions.stream()
+                    .map(this::convertToProductSubOptionResponse)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("BBQ 메뉴 서브 옵션 조회 중 오류 발생: menuId={}", menuId, e);
+            throw new RuntimeException("BBQ 메뉴 서브 옵션 조회 실패", e);
+        }
+    }
+
+    /**
+     * 외부 API 응답을 서브 옵션 응답으로 변환
+     *
+     * @param externalResponse 외부 API 응답
+     * @return 서브 옵션 응답
+     */
+    private BbqProductSubOptionResponse convertToProductSubOptionResponse(BbqMenuSubOptionResponse externalResponse) {
+        List<BbqProductSubOptionResponse.SubOptionItemDetailResponse> itemDetails = null;
+        if (externalResponse.getSubOptionItemDetailResponseList() != null) {
+            itemDetails = externalResponse.getSubOptionItemDetailResponseList().stream()
+                    .map(item -> BbqProductSubOptionResponse.SubOptionItemDetailResponse.builder()
+                            .id(item.getId())
+                            .itemTitle(item.getItemTitle())
+                            .addPrice(item.getAddPrice())
+                            .isSoldOut(item.getIsSoldOut() != null ? item.getIsSoldOut() : false)
+                            .isHidden(item.getIsHidden() != null ? item.getIsHidden() : false)
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
+        return BbqProductSubOptionResponse.builder()
+                .id(externalResponse.getId())
+                .subOptionTitle(externalResponse.getSubOptionTitle())
+                .requiredSelectCount(externalResponse.getRequiredSelectCount())
+                .maxSelectCount(externalResponse.getMaxSelectCount())
+                .subOptionItemDetailResponseList(itemDetails)
                 .build();
     }
 }
