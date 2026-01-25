@@ -38,7 +38,7 @@ public class ProductCoreService {
     }
 
     public List<Product> findProductsByPlaceId(Long placeId) {
-        return productJpaRepository.findByPlaceIdOrderByIsRepresentativeDescRatingDescIdAsc(placeId);
+        return productJpaRepository.findByPlaceIdAndIsActiveTrueOrderByIsRepresentativeDescRatingDescIdAsc(placeId);
     }
 
     public List<Product> findActiveProductsByPlaceId(Long placeId) {

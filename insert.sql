@@ -1,13 +1,18 @@
 INSERT INTO PLACE_AMENITY_CATEGORY
 (amenity, display_name, image_url_on, image_url_off, sort, is_active, created_at, updated_at)
 VALUES ('PARKING', '주차', '/images/place/icon-parking-on.png', '/images/place/icon-parking-off.png', 1, 1, NOW(), NOW()),
-       ('RESTROOM', '내부화장실', '/images/place/icon-toilet-on.png', '/images/place/icon-toilet-off.png', 2, 1, NOW(), NOW()),
-       ('RESERVATION', '예약', '/images/place/icon-reservation-on.png', '/images/place/icon-reservation-off.png', 3, 1, NOW(), NOW()),
-       ('BABY_CHAIR', '아기의자', '/images/place/icon-baby-chair-on.png', '/images/place/icon-baby-chair-off.png', 4, 1, NOW(), NOW()),
+       ('RESTROOM', '내부화장실', '/images/place/icon-toilet-on.png', '/images/place/icon-toilet-off.png', 2, 1, NOW(),
+        NOW()),
+       ('RESERVATION', '예약', '/images/place/icon-reservation-on.png', '/images/place/icon-reservation-off.png', 3, 1,
+        NOW(), NOW()),
+       ('BABY_CHAIR', '아기의자', '/images/place/icon-baby-chair-on.png', '/images/place/icon-baby-chair-off.png', 4, 1,
+        NOW(), NOW()),
        ('PET_FRIENDLY', '애견동반', '/images/place/icon-pet-on.png', '/images/place/icon-pet-off.png', 5, 1, NOW(), NOW()),
-       ('OUTLET', '개별 콘센트', '/images/place/icon-socket-on.png', '/images/place/icon-socket-off.png', 6, 1, NOW(), NOW()),
+       ('OUTLET', '개별 콘센트', '/images/place/icon-socket-on.png', '/images/place/icon-socket-off.png', 6, 1, NOW(),
+        NOW()),
        ('TAKEOUT', '포장', '/images/place/icon-takeout-on.png', '/images/place/icon-takeout-off.png', 7, 1, NOW(), NOW()),
-       ('DELIVERY', '배달', '/images/place/icon-delivery-on.png', '/images/place/icon-delivery-off.png', 8, 1, NOW(), NOW());
+       ('DELIVERY', '배달', '/images/place/icon-delivery-on.png', '/images/place/icon-delivery-off.png', 8, 1, NOW(),
+        NOW());
 
 INSERT INTO PLACE_FOOD_TYPE_CATEGORY
 (food_type, display_name, image_url, sort, is_active, created_at, updated_at)

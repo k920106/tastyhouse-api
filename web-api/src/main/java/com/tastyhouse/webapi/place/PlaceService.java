@@ -219,7 +219,7 @@ public class PlaceService {
                             .map(this::convertToPlaceMenuResponse)
                             .toList();
                     return PlaceMenuCategoryResponse.builder()
-                            .categoryName(category.getDisplayName())
+                            .categoryName(category.getName())
                             .menus(menuResponses)
                             .build();
                 })

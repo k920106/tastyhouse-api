@@ -39,7 +39,8 @@ public class ProductRepositoryImpl implements ProductRepository {
             ))
             .from(product)
             .innerJoin(place).on(product.placeId.eq(place.id))
-            .where(product.discountPrice.isNotNull())
+            .where(product.discountPrice.isNotNull()
+                .and(product.isActive.eq(true)))
             .orderBy(product.discountRate.desc());
 
         long total = query.fetch().size();
@@ -69,7 +70,8 @@ public class ProductRepositoryImpl implements ProductRepository {
             ))
             .from(product)
             .innerJoin(place).on(place.id.eq(product.placeId))
-            .where(product.placeId.eq(placeId))
+            .where(product.placeId.eq(placeId)
+                .and(product.isActive.eq(true)))
             .fetch();
     }
 }
