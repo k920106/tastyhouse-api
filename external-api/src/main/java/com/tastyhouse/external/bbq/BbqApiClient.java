@@ -1,6 +1,7 @@
 package com.tastyhouse.external.bbq;
 
 import com.tastyhouse.external.bbq.dto.BbqMenuCategoryResponse;
+import com.tastyhouse.external.bbq.dto.BbqMenuResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,6 +67,46 @@ public class BbqApiClient {
      */
     public List<BbqMenuCategoryResponse> getMenuCategoriesSync() {
         return getMenuCategories()
+                .block(Duration.ofSeconds(10));
+    }
+
+    /**
+     * BBQ 카테고리별 메뉴 목록 조회
+     *
+     * @param categoryId 카테고리 ID
+     * @return 메뉴 목록
+     */
+    public Mono<List<BbqMenuResponse>> getMenusByCategoryId(Long categoryId) {
+        String url = baseUrl + "/api/delivery/menu/" + categoryId;
+
+        return getWebClient().get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(BbqMenuResponse.class)
+                .collectList()
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(menus -> {
+                    log.info("BBQ 카테고리별 메뉴 조회 성공: categoryId={}, 메뉴 수={}", categoryId, menus.size());
+                })
+                .doOnError(WebClientResponseException.class, ex -> {
+                    log.error("BBQ 카테고리별 메뉴 조회 실패: categoryId={}, Status={}, Message={}", 
+                            categoryId, ex.getStatusCode(), ex.getMessage());
+                })
+                .doOnError(Throwable.class, ex -> {
+                    if (!(ex instanceof WebClientResponseException)) {
+                        log.error("BBQ 카테고리별 메뉴 조회 중 예외 발생: categoryId={}", categoryId, ex);
+                    }
+                });
+    }
+
+    /**
+     * BBQ 카테고리별 메뉴 목록 조회 (동기 방식)
+     *
+     * @param categoryId 카테고리 ID
+     * @return 메뉴 목록
+     */
+    public List<BbqMenuResponse> getMenusByCategoryIdSync(Long categoryId) {
+        return getMenusByCategoryId(categoryId)
                 .block(Duration.ofSeconds(10));
     }
 }
