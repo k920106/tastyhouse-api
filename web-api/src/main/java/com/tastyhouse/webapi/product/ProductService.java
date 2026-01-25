@@ -1,6 +1,5 @@
 package com.tastyhouse.webapi.product;
 
-import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
 import com.tastyhouse.core.service.PlaceCoreService;
@@ -73,8 +72,7 @@ public class ProductService {
     private ProductCategoryListItem convertToProductCategoryListItem(ProductCategory category) {
         return ProductCategoryListItem.builder()
             .id(category.getId())
-            .categoryType(category.getCategoryType().name())
-            .displayName(category.getDisplayName())
+            .displayName(category.getName())
             .sort(category.getSort())
             .build();
     }
@@ -87,7 +85,7 @@ public class ProductService {
     private Map<Long, String> buildCategoryNameMap(Long placeId) {
         List<ProductCategory> categories = productCoreService.findProductCategoriesByPlaceId(placeId);
         return categories.stream()
-            .collect(Collectors.toMap(ProductCategory::getId, ProductCategory::getDisplayName));
+            .collect(Collectors.toMap(ProductCategory::getId, ProductCategory::getName));
     }
 
     private ProductListItem convertToProductListItem(Product product, Map<Long, String> categoryNameMap) {
@@ -117,7 +115,7 @@ public class ProductService {
         String categoryName = null;
         if (product.getProductCategoryId() != null) {
             categoryName = productCoreService.findProductCategoryById(product.getProductCategoryId())
-                .map(ProductCategory::getDisplayName)
+                .map(ProductCategory::getName)
                 .orElse(null);
         }
 

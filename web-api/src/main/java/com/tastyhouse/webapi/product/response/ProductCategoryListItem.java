@@ -12,9 +12,6 @@ public class ProductCategoryListItem {
     @Schema(description = "카테고리 ID", example = "1")
     private Long id;
 
-    @Schema(description = "카테고리 타입 코드", example = "SIGNATURE")
-    private String categoryType;
-
     @Schema(description = "카테고리 표시명", example = "시그니처 메뉴")
     private String displayName;
 

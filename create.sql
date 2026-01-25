@@ -180,8 +180,7 @@ CREATE TABLE PRODUCT_CATEGORY
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     place_id      BIGINT       NOT NULL,
-    category_type VARCHAR(50)  NOT NULL,
-    display_name  VARCHAR(100) NOT NULL,
+    name  VARCHAR(100) NOT NULL,
     sort          INT          NOT NULL,
     is_active     TINYINT(1)   NOT NULL DEFAULT 1,
     created_at    DATETIME     NOT NULL,
