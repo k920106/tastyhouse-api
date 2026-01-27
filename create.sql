@@ -355,6 +355,26 @@ CREATE TABLE NOTICE
     INDEX idx_notice_created_at (created_at)
 );
 
+CREATE TABLE POLICY_DOCUMENT
+(
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    type           VARCHAR(50)  NOT NULL,
+    version        VARCHAR(20)  NOT NULL,
+    title          VARCHAR(200) NOT NULL,
+    content        LONGTEXT     NOT NULL,
+    is_current     TINYINT(1)   NOT NULL DEFAULT 0,
+    mandatory      TINYINT(1)   NOT NULL DEFAULT 1,
+    effective_date DATETIME     NOT NULL,
+    created_by     VARCHAR(100),
+    updated_by     VARCHAR(100),
+    created_at     DATETIME     NOT NULL,
+    updated_at     DATETIME     NOT NULL,
+    UNIQUE KEY uk_policy_document_type_version (type, version),
+    INDEX idx_policy_document_type_current (type, is_current),
+    INDEX idx_policy_document_type (type),
+    INDEX idx_policy_document_effective_date (effective_date)
+);
+
 CREATE TABLE PARTNERSHIP_REQUEST
 (
     id                         BIGINT AUTO_INCREMENT PRIMARY KEY,
