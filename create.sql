@@ -319,6 +319,30 @@ CREATE TABLE PLACE
     updated_at        DATETIME      NOT NULL
 );
 
+CREATE TABLE MEMBER_POINT
+(
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id               BIGINT   NOT NULL UNIQUE,
+    available_points        INT      NOT NULL DEFAULT 0,
+    expired_this_month      INT      NOT NULL DEFAULT 0,
+    created_at              DATETIME NOT NULL,
+    updated_at              DATETIME NOT NULL,
+    INDEX idx_member_point_member_id (member_id)
+);
+
+CREATE TABLE MEMBER_POINT_HISTORY
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id         BIGINT       NOT NULL,
+    point_type        VARCHAR(50)  NOT NULL,
+    point_amount      INT          NOT NULL,
+    reason            VARCHAR(200) NOT NULL,
+    created_at        DATETIME     NOT NULL,
+    updated_at        DATETIME     NOT NULL,
+    INDEX idx_member_point_history_member_id (member_id),
+    INDEX idx_member_point_history_created_at (created_at)
+);
+
 CREATE TABLE PARTNERSHIP_REQUEST
 (
     id                         BIGINT AUTO_INCREMENT PRIMARY KEY,

@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
+import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,5 +37,19 @@ public class MemberApiController {
 
         Optional<MemberInfoResponse> memberInfo = memberService.findMemberInfo(userDetails.getMemberId());
         return memberInfo.map(memberInfoResponse -> ResponseEntity.ok(CommonResponse.success(memberInfoResponse))).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "보유 포인트 조회", description = "현재 로그인한 회원의 사용 가능한 포인트와 이번달 소멸 예정 포인트를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/point")
+    public ResponseEntity<CommonResponse<PointResponse>> getMyPoint(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        PointResponse pointResponse = memberService.getMemberPoint(memberId);
+        return ResponseEntity.ok(CommonResponse.success(pointResponse));
     }
 }
