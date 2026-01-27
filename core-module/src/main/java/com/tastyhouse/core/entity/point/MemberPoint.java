@@ -1,0 +1,59 @@
+package com.tastyhouse.core.entity.point;
+
+import com.tastyhouse.core.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Entity
+@Table(
+    name = "MEMBER_POINT",
+    indexes = {
+        @Index(name = "idx_member_point_member_id", columnList = "member_id")
+    }
+)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class MemberPoint extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "member_id", nullable = false, unique = true)
+    private Long memberId;
+
+    @Column(name = "available_points", nullable = false)
+    private Integer availablePoints = 0;
+
+    @Column(name = "expired_this_month", nullable = false)
+    private Integer expiredThisMonth = 0;
+
+    @Builder
+    public MemberPoint(
+        Long memberId,
+        Integer availablePoints,
+        Integer expiredThisMonth
+    ) {
+        this.memberId = memberId;
+        this.availablePoints = availablePoints != null ? availablePoints : 0;
+        this.expiredThisMonth = expiredThisMonth != null ? expiredThisMonth : 0;
+    }
+
+    public void addPoints(Integer amount) {
+        this.availablePoints += amount;
+    }
+
+    public void deductPoints(Integer amount) {
+        if (this.availablePoints < amount) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
+        this.availablePoints -= amount;
+    }
+
+    public void updateExpiredThisMonth(Integer amount) {
+        this.expiredThisMonth = amount;
+    }
+}
