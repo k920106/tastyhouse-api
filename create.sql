@@ -37,6 +37,42 @@ CREATE TABLE BUG_REPORT_IMAGE
     INDEX idx_bug_report_image_bug_report_id (bug_report_id)
 );
 
+CREATE TABLE COUPON
+(
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name               VARCHAR(200) NOT NULL,
+    description        VARCHAR(500),
+    discount_amount    INT          NOT NULL,
+    min_order_amount   INT          NOT NULL DEFAULT 0,
+    max_discount_count INT,
+    issue_start_at     DATETIME     NOT NULL,
+    issue_end_at       DATETIME     NOT NULL,
+    use_start_at       DATETIME     NOT NULL,
+    use_end_at         DATETIME     NOT NULL,
+    is_active          TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at         DATETIME     NOT NULL,
+    updated_at         DATETIME     NOT NULL,
+    INDEX idx_coupon_active (is_active),
+    INDEX idx_coupon_issue_period (issue_start_at, issue_end_at),
+    INDEX idx_coupon_use_period (use_start_at, use_end_at)
+);
+
+CREATE TABLE MEMBER_COUPON
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id  BIGINT      NOT NULL,
+    coupon_id  BIGINT      NOT NULL,
+    is_used    TINYINT(1)  NOT NULL DEFAULT 0,
+    used_at    DATETIME,
+    expired_at DATETIME    NOT NULL,
+    created_at DATETIME    NOT NULL,
+    updated_at DATETIME    NOT NULL,
+    UNIQUE KEY uk_member_coupon (member_id, coupon_id),
+    INDEX idx_member_coupon_member_id (member_id),
+    INDEX idx_member_coupon_coupon_id (coupon_id),
+    INDEX idx_member_coupon_used (member_id, is_used)
+);
+
 CREATE TABLE EVENT_PRIZE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
