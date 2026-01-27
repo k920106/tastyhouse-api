@@ -31,6 +31,18 @@ public class Event extends BaseEntity {
     @Column(name = "description", length = 1000)
     private String description;
 
+    @Column(name = "subtitle", length = 200)
+    private String subtitle;
+
+    @Column(name = "thumbnail_image_url", length = 500)
+    private String thumbnailImageUrl;
+
+    @Column(name = "banner_image_url", length = 500)
+    private String bannerImageUrl;
+
+    @Column(name = "content_html", columnDefinition = "TEXT")
+    private String contentHtml;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'RANKING'")
     private EventType type;
@@ -49,6 +61,10 @@ public class Event extends BaseEntity {
     public Event(
         String name,
         String description,
+        String subtitle,
+        String thumbnailImageUrl,
+        String bannerImageUrl,
+        String contentHtml,
         EventType type,
         EventStatus status,
         LocalDateTime startAt,
@@ -56,6 +72,10 @@ public class Event extends BaseEntity {
     ) {
         this.name = name;
         this.description = description;
+        this.subtitle = subtitle;
+        this.thumbnailImageUrl = thumbnailImageUrl;
+        this.bannerImageUrl = bannerImageUrl;
+        this.contentHtml = contentHtml;
         this.type = type;
         this.status = status;
         this.startAt = startAt;
