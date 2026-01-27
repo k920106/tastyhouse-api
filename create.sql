@@ -53,17 +53,35 @@ CREATE TABLE EVENT_PRIZE
     INDEX idx_prize_name (name)
 );
 
+CREATE TABLE EVENT_WINNER
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id     BIGINT      NOT NULL,
+    rank_no      INT         NOT NULL,
+    winner_name  VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    announced_at DATETIME    NOT NULL,
+    created_at   DATETIME    NOT NULL,
+    updated_at   DATETIME    NOT NULL,
+    INDEX idx_event_winner_event_id (event_id),
+    INDEX idx_event_winner_announced_at (announced_at)
+);
+
 CREATE TABLE EVENT
 (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(200) NOT NULL,
-    description VARCHAR(1000),
-    type        VARCHAR(50)  NOT NULL DEFAULT 'RANKING',
-    status      VARCHAR(20)  NOT NULL,
-    start_at    DATETIME     NOT NULL,
-    end_at      DATETIME     NOT NULL,
-    created_at  DATETIME     NOT NULL,
-    updated_at  DATETIME     NOT NULL,
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name                VARCHAR(200) NOT NULL,
+    description         VARCHAR(1000),
+    subtitle            VARCHAR(200),
+    thumbnail_image_url VARCHAR(500),
+    banner_image_url    VARCHAR(500),
+    content_html        TEXT,
+    type                VARCHAR(50)  NOT NULL DEFAULT 'RANKING',
+    status              VARCHAR(20)  NOT NULL,
+    start_at            DATETIME     NOT NULL,
+    end_at              DATETIME     NOT NULL,
+    created_at          DATETIME     NOT NULL,
+    updated_at          DATETIME     NOT NULL,
     INDEX idx_event_status (status),
     INDEX idx_event_period (start_at, end_at)
 );
