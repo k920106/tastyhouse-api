@@ -649,3 +649,105 @@ CREATE TABLE TAG
     id       BIGINT AUTO_INCREMENT PRIMARY KEY,
     tag_name VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE ORDERS
+(
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id               BIGINT       NOT NULL,
+    place_id                BIGINT       NOT NULL,
+    order_number            VARCHAR(50)  NOT NULL UNIQUE,
+    order_status            VARCHAR(20)  NOT NULL,
+    orderer_name            VARCHAR(100) NOT NULL,
+    orderer_phone           VARCHAR(20)  NOT NULL,
+    orderer_email           VARCHAR(100),
+    total_product_amount    INT          NOT NULL DEFAULT 0,
+    product_discount_amount INT          NOT NULL DEFAULT 0,
+    coupon_discount_amount  INT          NOT NULL DEFAULT 0,
+    point_discount_amount   INT          NOT NULL DEFAULT 0,
+    total_discount_amount   INT          NOT NULL DEFAULT 0,
+    final_amount            INT          NOT NULL DEFAULT 0,
+    member_coupon_id        BIGINT,
+    used_point              INT          NOT NULL DEFAULT 0,
+    earned_point            INT          NOT NULL DEFAULT 0,
+    agreement_confirmed     TINYINT(1)   NOT NULL DEFAULT 0,
+    created_at              DATETIME     NOT NULL,
+    updated_at              DATETIME     NOT NULL,
+    INDEX idx_orders_member_id (member_id),
+    INDEX idx_orders_place_id (place_id),
+    INDEX idx_orders_order_status (order_status),
+    INDEX idx_orders_created_at (created_at)
+);
+
+CREATE TABLE ORDER_ITEM
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id          BIGINT       NOT NULL,
+    product_id        BIGINT       NOT NULL,
+    product_name      VARCHAR(255) NOT NULL,
+    product_image_url VARCHAR(500),
+    quantity          INT          NOT NULL DEFAULT 1,
+    unit_price        INT          NOT NULL DEFAULT 0,
+    discount_price    INT,
+    option_total_price INT         NOT NULL DEFAULT 0,
+    total_price       INT          NOT NULL DEFAULT 0,
+    created_at        DATETIME     NOT NULL,
+    updated_at        DATETIME     NOT NULL,
+    INDEX idx_order_item_order_id (order_id),
+    INDEX idx_order_item_product_id (product_id)
+);
+
+CREATE TABLE ORDER_ITEM_OPTION
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id     BIGINT       NOT NULL,
+    option_group_id   BIGINT,
+    option_group_name VARCHAR(100) NOT NULL,
+    option_id         BIGINT,
+    option_name       VARCHAR(100) NOT NULL,
+    additional_price  INT          NOT NULL DEFAULT 0,
+    created_at        DATETIME     NOT NULL,
+    updated_at        DATETIME     NOT NULL,
+    INDEX idx_order_item_option_order_item_id (order_item_id)
+);
+
+CREATE TABLE PAYMENT
+(
+    id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id             BIGINT      NOT NULL UNIQUE,
+    payment_method       VARCHAR(30) NOT NULL,
+    payment_status       VARCHAR(20) NOT NULL,
+    amount               INT         NOT NULL DEFAULT 0,
+    pg_provider          VARCHAR(30),
+    pg_tid               VARCHAR(100),
+    pg_order_id          VARCHAR(100),
+    card_company         VARCHAR(50),
+    card_number          VARCHAR(30),
+    installment_months   INT,
+    approved_at          DATETIME,
+    cancelled_at         DATETIME,
+    cancel_reason        VARCHAR(500),
+    receipt_url          VARCHAR(500),
+    cash_receipt_number  VARCHAR(50),
+    cash_receipt_type    VARCHAR(20),
+    created_at           DATETIME    NOT NULL,
+    updated_at           DATETIME    NOT NULL,
+    INDEX idx_payment_order_id (order_id),
+    INDEX idx_payment_payment_status (payment_status),
+    INDEX idx_payment_pg_tid (pg_tid),
+    INDEX idx_payment_created_at (created_at)
+);
+
+CREATE TABLE PAYMENT_REFUND
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_id    BIGINT      NOT NULL,
+    refund_amount INT         NOT NULL DEFAULT 0,
+    refund_reason VARCHAR(500),
+    refund_status VARCHAR(20) NOT NULL,
+    pg_refund_id  VARCHAR(100),
+    refunded_at   DATETIME,
+    created_at    DATETIME    NOT NULL,
+    updated_at    DATETIME    NOT NULL,
+    INDEX idx_payment_refund_payment_id (payment_id),
+    INDEX idx_payment_refund_refund_status (refund_status)
+);
