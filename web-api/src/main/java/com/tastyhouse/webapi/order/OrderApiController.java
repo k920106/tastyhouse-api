@@ -1,0 +1,106 @@
+package com.tastyhouse.webapi.order;
+
+import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.order.request.OrderCancelRequest;
+import com.tastyhouse.webapi.order.request.OrderCreateRequest;
+import com.tastyhouse.webapi.order.response.OrderListItem;
+import com.tastyhouse.webapi.order.response.OrderResponse;
+import com.tastyhouse.webapi.service.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Tag(name = "Order", description = "주문 API")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/orders")
+public class OrderApiController {
+
+    private final OrderService orderService;
+
+    @Operation(summary = "주문 생성", description = "새로운 주문을 생성합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "주문 생성 성공", content = @Content(schema = @Schema(implementation = OrderResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @PostMapping("/v1")
+    public ResponseEntity<CommonResponse<OrderResponse>> createOrder(
+        @Valid @RequestBody OrderCreateRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        OrderResponse response = orderService.createOrder(userDetails.getMemberId(), request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "주문 목록 조회", description = "회원의 주문 목록을 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @GetMapping("/v1")
+    public ResponseEntity<CommonResponse<List<OrderListItem>>> getOrderList(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        List<OrderListItem> response = orderService.getOrderList(userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "주문 상세 조회", description = "주문 상세 정보를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = OrderResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "주문을 찾을 수 없음")
+    })
+    @GetMapping("/v1/{orderId}")
+    public ResponseEntity<CommonResponse<OrderResponse>> getOrderDetail(
+        @PathVariable Long orderId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        OrderResponse response = orderService.getOrderDetail(userDetails.getMemberId(), orderId);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "주문 취소", description = "주문을 취소합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "취소 성공", content = @Content(schema = @Schema(implementation = OrderResponse.class))),
+        @ApiResponse(responseCode = "400", description = "취소할 수 없는 주문 상태"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "주문을 찾을 수 없음")
+    })
+    @PostMapping("/v1/{orderId}/cancel")
+    public ResponseEntity<CommonResponse<OrderResponse>> cancelOrder(
+        @PathVariable Long orderId,
+        @Valid @RequestBody(required = false) OrderCancelRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        OrderResponse response = orderService.cancelOrder(userDetails.getMemberId(), orderId, request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+}
