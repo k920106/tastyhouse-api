@@ -2,6 +2,8 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
+import com.tastyhouse.webapi.coupon.CouponService;
+import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,6 +21,7 @@ public class MemberService {
 
     private final MemberJpaRepository memberJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
+    private final CouponService couponService;
 
     public Optional<MemberInfoResponse> findMemberInfo(Long memberId) {
         return memberJpaRepository.findById(memberId)
@@ -43,5 +47,13 @@ public class MemberService {
                 member.getPhoneNumber(),
                 member.getUsername()
             ));
+    }
+
+    public List<MemberCouponListItemResponse> getMemberCoupons(Long memberId) {
+        return couponService.getMemberCoupons(memberId);
+    }
+
+    public List<MemberCouponListItemResponse> getAvailableMemberCoupons(Long memberId) {
+        return couponService.getAvailableMemberCoupons(memberId);
     }
 }

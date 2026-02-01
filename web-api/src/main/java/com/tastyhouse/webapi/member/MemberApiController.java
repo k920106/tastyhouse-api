@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "Member", description = "회원 관리 API")
@@ -72,5 +74,33 @@ public class MemberApiController {
         return contactInfo
             .map(response -> ResponseEntity.ok(CommonResponse.success(response)))
             .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "보유 쿠폰 목록 조회", description = "현재 로그인한 회원이 보유한 모든 쿠폰을 조회합니다. (사용 여부 무관)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/coupons")
+    public ResponseEntity<CommonResponse<List<MemberCouponListItemResponse>>> getMyCoupons(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        List<MemberCouponListItemResponse> coupons = memberService.getMemberCoupons(memberId);
+        return ResponseEntity.ok(CommonResponse.success(coupons));
+    }
+
+    @Operation(summary = "사용 가능한 쿠폰 목록 조회", description = "현재 로그인한 회원이 보유한 사용 가능한 쿠폰을 조회합니다. (미사용 + 유효기간 내)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/coupons/available")
+    public ResponseEntity<CommonResponse<List<MemberCouponListItemResponse>>> getMyAvailableCoupons(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        List<MemberCouponListItemResponse> coupons = memberService.getAvailableMemberCoupons(memberId);
+        return ResponseEntity.ok(CommonResponse.success(coupons));
     }
 }
