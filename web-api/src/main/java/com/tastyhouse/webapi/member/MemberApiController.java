@@ -5,6 +5,7 @@ import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
+import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -102,5 +103,19 @@ public class MemberApiController {
         Long memberId = userDetails.getMemberId();
         List<MemberCouponListItemResponse> coupons = memberService.getAvailableMemberCoupons(memberId);
         return ResponseEntity.ok(CommonResponse.success(coupons));
+    }
+
+    @Operation(summary = "사용 가능 포인트 조회 (주문용)", description = "주문 시 사용 가능한 포인트를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/point/usable")
+    public ResponseEntity<CommonResponse<UsablePointResponse>> getMyUsablePoint(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        UsablePointResponse usablePoint = memberService.getUsablePoint(memberId);
+        return ResponseEntity.ok(CommonResponse.success(usablePoint));
     }
 }

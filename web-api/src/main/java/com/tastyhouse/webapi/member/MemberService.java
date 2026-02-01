@@ -7,6 +7,7 @@ import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
+import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,5 +56,13 @@ public class MemberService {
 
     public List<MemberCouponListItemResponse> getAvailableMemberCoupons(Long memberId) {
         return couponService.getAvailableMemberCoupons(memberId);
+    }
+
+    public UsablePointResponse getUsablePoint(Long memberId) {
+        return memberPointJpaRepository.findByMemberId(memberId)
+            .map(UsablePointResponse::from)
+            .orElseGet(() -> UsablePointResponse.builder()
+                .usablePoints(0)
+                .build());
     }
 }
