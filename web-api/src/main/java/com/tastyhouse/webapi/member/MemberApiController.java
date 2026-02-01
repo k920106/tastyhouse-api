@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
@@ -51,5 +52,25 @@ public class MemberApiController {
         Long memberId = userDetails.getMemberId();
         PointResponse pointResponse = memberService.getMemberPoint(memberId);
         return ResponseEntity.ok(CommonResponse.success(pointResponse));
+    }
+
+    @Operation(summary = "내 연락처 정보 조회", description = "로그인한 회원의 이름, 휴대폰 번호, 이메일을 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberContactResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
+    @GetMapping("/v1/me/contact")
+    public ResponseEntity<CommonResponse<MemberContactResponse>> getMyContact(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Optional<MemberContactResponse> contactInfo = memberService.getMemberContact(userDetails.getMemberId());
+        return contactInfo
+            .map(response -> ResponseEntity.ok(CommonResponse.success(response)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

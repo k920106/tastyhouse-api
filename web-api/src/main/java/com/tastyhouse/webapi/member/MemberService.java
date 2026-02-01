@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
+import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberInfoResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,5 +34,14 @@ public class MemberService {
                 .availablePoints(0)
                 .expiredThisMonth(0)
                 .build());
+    }
+
+    public Optional<MemberContactResponse> getMemberContact(Long memberId) {
+        return memberJpaRepository.findById(memberId)
+            .map(member -> new MemberContactResponse(
+                member.getFullName(),
+                member.getPhoneNumber(),
+                member.getUsername()
+            ));
     }
 }
