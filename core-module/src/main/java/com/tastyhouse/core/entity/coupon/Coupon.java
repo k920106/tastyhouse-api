@@ -32,8 +32,15 @@ public class Coupon extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
+    private DiscountType discountType = DiscountType.AMOUNT;
+
     @Column(name = "discount_amount", nullable = false)
     private Integer discountAmount;
+
+    @Column(name = "max_discount_amount")
+    private Integer maxDiscountAmount;
 
     @Column(name = "min_order_amount", nullable = false)
     private Integer minOrderAmount = 0;
@@ -60,7 +67,9 @@ public class Coupon extends BaseEntity {
     public Coupon(
         String name,
         String description,
+        DiscountType discountType,
         Integer discountAmount,
+        Integer maxDiscountAmount,
         Integer minOrderAmount,
         Integer maxDiscountCount,
         LocalDateTime issueStartAt,
@@ -71,7 +80,9 @@ public class Coupon extends BaseEntity {
     ) {
         this.name = name;
         this.description = description;
+        this.discountType = discountType != null ? discountType : DiscountType.AMOUNT;
         this.discountAmount = discountAmount;
+        this.maxDiscountAmount = maxDiscountAmount;
         this.minOrderAmount = minOrderAmount != null ? minOrderAmount : 0;
         this.maxDiscountCount = maxDiscountCount;
         this.issueStartAt = issueStartAt;

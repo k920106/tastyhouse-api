@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.coupon.response;
 
+import com.tastyhouse.core.entity.coupon.DiscountType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +15,9 @@ public class MemberCouponListItemResponse {
     private Long couponId;
     private String name;
     private String description;
+    private DiscountType discountType;
     private Integer discountAmount;
+    private Integer maxDiscountAmount;
     private Integer minOrderAmount;
     private LocalDateTime useStartAt;
     private LocalDateTime useEndAt;
@@ -28,7 +31,9 @@ public class MemberCouponListItemResponse {
         Long couponId,
         String name,
         String description,
+        DiscountType discountType,
         Integer discountAmount,
+        Integer maxDiscountAmount,
         Integer minOrderAmount,
         LocalDateTime useStartAt,
         LocalDateTime useEndAt,
@@ -49,7 +54,9 @@ public class MemberCouponListItemResponse {
             .couponId(couponId)
             .name(name)
             .description(description)
+            .discountType(discountType)
             .discountAmount(discountAmount)
+            .maxDiscountAmount(maxDiscountAmount)
             .minOrderAmount(minOrderAmount)
             .useStartAt(useStartAt)
             .useEndAt(useEndAt)
