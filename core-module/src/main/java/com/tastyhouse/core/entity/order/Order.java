@@ -66,17 +66,13 @@ public class Order extends BaseEntity {
     @Column(name = "earned_point", nullable = false)
     private Integer earnedPoint;
 
-    @Column(name = "agreement_confirmed", nullable = false)
-    private Boolean agreementConfirmed;
-
     @Builder
     public Order(Long memberId, Long placeId, String orderNumber, OrderStatus orderStatus,
                  String ordererName, String ordererPhone, String ordererEmail,
                  Integer totalProductAmount, Integer productDiscountAmount,
                  Integer couponDiscountAmount, Integer pointDiscountAmount,
                  Integer totalDiscountAmount, Integer finalAmount,
-                 Long memberCouponId, Integer usedPoint, Integer earnedPoint,
-                 Boolean agreementConfirmed) {
+                 Long memberCouponId, Integer usedPoint, Integer earnedPoint) {
         this.memberId = memberId;
         this.placeId = placeId;
         this.orderNumber = orderNumber;
@@ -93,7 +89,6 @@ public class Order extends BaseEntity {
         this.memberCouponId = memberCouponId;
         this.usedPoint = usedPoint != null ? usedPoint : 0;
         this.earnedPoint = earnedPoint != null ? earnedPoint : 0;
-        this.agreementConfirmed = agreementConfirmed != null ? agreementConfirmed : false;
     }
 
     public void updateStatus(OrderStatus orderStatus) {

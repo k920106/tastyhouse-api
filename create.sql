@@ -671,7 +671,6 @@ CREATE TABLE ORDERS
     member_coupon_id        BIGINT,
     used_point              INT          NOT NULL DEFAULT 0,
     earned_point            INT          NOT NULL DEFAULT 0,
-    agreement_confirmed     TINYINT(1)   NOT NULL DEFAULT 0,
     created_at              DATETIME     NOT NULL,
     updated_at              DATETIME     NOT NULL,
     INDEX idx_orders_member_id (member_id),

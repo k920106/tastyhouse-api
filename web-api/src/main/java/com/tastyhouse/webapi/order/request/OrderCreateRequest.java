@@ -1,11 +1,9 @@
 package com.tastyhouse.webapi.order.request;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -13,27 +11,34 @@ public record OrderCreateRequest(
     @NotNull(message = "매장 ID는 필수입니다")
     Long placeId,
 
-    @NotBlank(message = "주문자명은 필수입니다")
-    @Size(max = 100, message = "주문자명은 100자 이내로 입력해주세요")
-    String ordererName,
-
-    @NotBlank(message = "휴대폰 번호는 필수입니다")
-    @Size(max = 20, message = "휴대폰 번호는 20자 이내로 입력해주세요")
-    String ordererPhone,
-
-    @Email(message = "올바른 이메일 형식이 아닙니다")
-    @Size(max = 100, message = "이메일은 100자 이내로 입력해주세요")
-    String ordererEmail,
-
     @NotEmpty(message = "주문 상품은 필수입니다")
     @Valid
     List<OrderItemRequest> orderItems,
 
     Long memberCouponId,
 
+    @NotNull(message = "포인트 사용 금액은 필수입니다")
+    @Min(value = 0, message = "포인트 사용 금액은 0 이상이어야 합니다")
     Integer usePoint,
 
-    @NotNull(message = "약관 동의는 필수입니다")
-    Boolean agreementConfirmed
+    @NotNull(message = "상품 금액은 필수입니다")
+    @Min(value = 0, message = "상품 금액은 0 이상이어야 합니다")
+    Integer totalProductAmount,
+
+    @NotNull(message = "할인 금액은 필수입니다")
+    @Min(value = 0, message = "할인 금액은 0 이상이어야 합니다")
+    Integer totalDiscountAmount,
+
+    @NotNull(message = "상품 할인 금액은 필수입니다")
+    @Min(value = 0, message = "상품 할인 금액은 0 이상이어야 합니다")
+    Integer productDiscountAmount,
+
+    @NotNull(message = "쿠폰 사용 금액은 필수입니다")
+    @Min(value = 0, message = "쿠폰 사용 금액은 0 이상이어야 합니다")
+    Integer couponDiscountAmount,
+
+    @NotNull(message = "결제 금액은 필수입니다")
+    @Min(value = 0, message = "결제 금액은 0 이상이어야 합니다")
+    Integer finalAmount
 ) {
 }

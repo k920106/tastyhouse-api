@@ -27,6 +27,8 @@ import com.tastyhouse.core.repository.product.ProductJpaRepository;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
+import com.tastyhouse.webapi.member.MemberService;
+import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.order.request.OrderCancelRequest;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.request.OrderItemOptionRequest;
@@ -58,11 +60,15 @@ public class OrderService {
     private final CouponJpaRepository couponJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
+    private final MemberService memberService;
 
     @Transactional
     public OrderResponse createOrder(Long memberId, OrderCreateRequest request) {
         Place place = placeJpaRepository.findById(request.placeId())
             .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+
+        MemberContactResponse contact = memberService.getMemberContact(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
         int totalProductAmount = 0;
         int productDiscountAmount = 0;
@@ -72,10 +78,9 @@ public class OrderService {
             .placeId(request.placeId())
             .orderNumber(generateOrderNumber())
             .orderStatus(OrderStatus.PENDING)
-            .ordererName(request.ordererName())
-            .ordererPhone(request.ordererPhone())
-            .ordererEmail(request.ordererEmail())
-            .agreementConfirmed(request.agreementConfirmed())
+            .ordererName(contact.getFullName())
+            .ordererPhone(contact.getPhoneNumber())
+            .ordererEmail(contact.getEmail())
             .build();
 
         Order savedOrder = orderJpaRepository.save(order);
@@ -107,9 +112,9 @@ public class OrderService {
 
             OrderItem savedOrderItem = orderItemJpaRepository.save(orderItem);
 
-            if (itemRequest.options() != null) {
-                for (OrderItemOptionRequest optionRequest : itemRequest.options()) {
-                    ProductOptionGroup optionGroup = productOptionGroupJpaRepository.findById(optionRequest.optionGroupId())
+            if (itemRequest.selectedOptions() != null) {
+                for (OrderItemOptionRequest optionRequest : itemRequest.selectedOptions()) {
+                    ProductOptionGroup optionGroup = productOptionGroupJpaRepository.findById(optionRequest.groupId())
                         .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
 
                     ProductOption option = productOptionJpaRepository.findById(optionRequest.optionId())
@@ -168,7 +173,7 @@ public class OrderService {
         }
 
         int pointDiscountAmount = 0;
-        if (request.usePoint() != null && request.usePoint() > 0) {
+        if (request.usePoint() > 0) {
             MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("포인트 정보를 찾을 수 없습니다."));
 
@@ -191,11 +196,44 @@ public class OrderService {
         int totalDiscountAmount = productDiscountAmount + couponDiscountAmount + pointDiscountAmount;
         int finalAmount = totalProductAmount - totalDiscountAmount;
 
+        validateOrderAmounts(request, totalProductAmount, totalDiscountAmount,
+            productDiscountAmount, couponDiscountAmount, pointDiscountAmount, finalAmount);
+
         savedOrder.updateAmounts(totalProductAmount, productDiscountAmount,
             couponDiscountAmount, pointDiscountAmount, totalDiscountAmount,
             finalAmount, memberCouponId, pointDiscountAmount);
 
         return buildOrderResponse(savedOrder, place.getName());
+    }
+
+    private void validateOrderAmounts(OrderCreateRequest request,
+                                      int totalProductAmount, int totalDiscountAmount,
+                                      int productDiscountAmount, int couponDiscountAmount,
+                                      int pointDiscountAmount, int finalAmount) {
+        if (!request.totalProductAmount().equals(totalProductAmount)) {
+            throw new IllegalArgumentException(
+                "상품 금액이 일치하지 않습니다. 요청: " + request.totalProductAmount() + ", 계산: " + totalProductAmount);
+        }
+        if (!request.productDiscountAmount().equals(productDiscountAmount)) {
+            throw new IllegalArgumentException(
+                "상품 할인 금액이 일치하지 않습니다. 요청: " + request.productDiscountAmount() + ", 계산: " + productDiscountAmount);
+        }
+        if (!request.couponDiscountAmount().equals(couponDiscountAmount)) {
+            throw new IllegalArgumentException(
+                "쿠폰 사용 금액이 일치하지 않습니다. 요청: " + request.couponDiscountAmount() + ", 계산: " + couponDiscountAmount);
+        }
+        if (!request.usePoint().equals(pointDiscountAmount)) {
+            throw new IllegalArgumentException(
+                "포인트 사용 금액이 일치하지 않습니다. 요청: " + request.usePoint() + ", 계산: " + pointDiscountAmount);
+        }
+        if (!request.totalDiscountAmount().equals(totalDiscountAmount)) {
+            throw new IllegalArgumentException(
+                "할인 금액이 일치하지 않습니다. 요청: " + request.totalDiscountAmount() + ", 계산: " + totalDiscountAmount);
+        }
+        if (!request.finalAmount().equals(finalAmount)) {
+            throw new IllegalArgumentException(
+                "결제 금액이 일치하지 않습니다. 요청: " + request.finalAmount() + ", 계산: " + finalAmount);
+        }
     }
 
     @Transactional(readOnly = true)
