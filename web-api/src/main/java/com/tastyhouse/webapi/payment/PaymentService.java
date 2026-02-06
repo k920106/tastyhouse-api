@@ -68,10 +68,6 @@ public class PaymentService {
 
         Payment savedPayment = paymentJpaRepository.save(payment);
 
-        if (isOnSitePayment(request.paymentMethod())) {
-            completeOnSitePayment(savedPayment, order, memberId);
-        }
-
         return buildPaymentResponse(savedPayment);
     }
 
@@ -198,7 +194,32 @@ public class PaymentService {
         return buildPaymentResponse(payment);
     }
 
-    private void completeOnSitePayment(Payment payment, Order order, Long memberId) {
+    @Transactional
+    public PaymentResponse completeOnSitePayment(Long memberId, Long paymentId) {
+        Payment payment = paymentJpaRepository.findById(paymentId)
+            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+
+        Order order = orderJpaRepository.findById(payment.getOrderId())
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (!order.getMemberId().equals(memberId)) {
+            throw new IllegalArgumentException("본인의 결제만 완료 처리할 수 있습니다.");
+        }
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("대기 중인 결제만 완료 처리할 수 있습니다.");
+        }
+
+        if (!isOnSitePayment(payment.getPaymentMethod())) {
+            throw new IllegalStateException("현장결제만 완료 처리할 수 있습니다.");
+        }
+
+        processOnSitePaymentCompletion(payment, order, memberId);
+
+        return buildPaymentResponse(payment);
+    }
+
+    private void processOnSitePaymentCompletion(Payment payment, Order order, Long memberId) {
         payment.complete(null, LocalDateTime.now(), null);
         order.confirm();
 

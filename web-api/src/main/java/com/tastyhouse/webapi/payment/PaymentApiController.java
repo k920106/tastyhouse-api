@@ -100,6 +100,26 @@ public class PaymentApiController {
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
+    @Operation(summary = "현장결제 완료", description = "현장결제를 완료 처리합니다. 구매자가 직접 호출합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "현장결제 완료 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
+        @ApiResponse(responseCode = "400", description = "완료할 수 없는 결제 상태"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
+    })
+    @PostMapping("/v1/{paymentId}/complete")
+    public ResponseEntity<CommonResponse<PaymentResponse>> completeOnSitePayment(
+        @PathVariable Long paymentId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        PaymentResponse response = paymentService.completeOnSitePayment(userDetails.getMemberId(), paymentId);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
     @Operation(summary = "환불 요청", description = "결제에 대한 환불을 요청합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "환불 요청 성공", content = @Content(schema = @Schema(implementation = PaymentRefundResponse.class))),
