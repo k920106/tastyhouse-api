@@ -26,9 +26,7 @@ Thumbs.db
 # Environment
 .env
 application.yml
-application-local.yml
-application-dev.yml
-application-prod.yml
+application-*.yml
 
 # Claude
 .claude/settings.local.json
