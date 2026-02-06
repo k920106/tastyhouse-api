@@ -13,10 +13,13 @@ import com.tastyhouse.core.entity.point.PointType;
 import com.tastyhouse.core.repository.order.OrderJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentRefundJpaRepository;
+import com.tastyhouse.core.repository.payment.TossPaymentRecordJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.external.payment.toss.TossPaymentClient;
+import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResponse;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResult;
+import com.tastyhouse.core.entity.payment.TossPaymentRecord;
 import com.tastyhouse.webapi.payment.request.PaymentCancelRequest;
 import com.tastyhouse.webapi.payment.request.PaymentConfirmRequest;
 import com.tastyhouse.webapi.payment.request.PaymentCreateRequest;
@@ -39,6 +42,7 @@ public class PaymentService {
 
     private final PaymentJpaRepository paymentJpaRepository;
     private final PaymentRefundJpaRepository paymentRefundJpaRepository;
+    private final TossPaymentRecordJpaRepository tossPaymentRecordJpaRepository;
     private final OrderJpaRepository orderJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
@@ -123,36 +127,48 @@ public class PaymentService {
             throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
         }
 
-        TossPaymentConfirmResult result = tossPaymentClient.confirmPayment(
+        TossPaymentConfirmResponse response = tossPaymentClient.confirmPayment(
             request.paymentKey(),
             request.pgOrderId(),
             request.amount()
         );
 
-        if (!result.isSuccess()) {
+        if (response.isError()) {
             log.error("Toss payment confirm failed. orderId: {}, errorCode: {}, errorMessage: {}",
-                request.pgOrderId(), result.getErrorCode(), result.getErrorMessage());
+                request.pgOrderId(), response.getCode(), response.getMessage());
             payment.fail();
-            throw new IllegalStateException(result.getErrorMessage() != null
-                ? result.getErrorMessage()
+
+            // 토스 결제 실패 정보 저장
+            TossPaymentRecord tossPaymentRecord = buildTossPaymentRecord(payment.getId(), response);
+            tossPaymentRecordJpaRepository.save(tossPaymentRecord);
+
+            throw new IllegalStateException(response.getMessage() != null
+                ? response.getMessage()
                 : "결제 승인에 실패했습니다.");
         }
 
-        payment.updatePgInfo(PgProvider.TOSS, result.getPaymentKey(), result.getOrderId());
+        payment.updatePgInfo(PgProvider.TOSS, response.getPaymentKey(), response.getOrderId());
 
-        if (result.getCardCompany() != null) {
+        if (response.getCard() != null) {
             payment.updateCardInfo(
-                result.getCardCompany(),
-                result.getCardNumber(),
-                result.getInstallmentPlanMonths()
+                mapIssuerCodeToCardCompany(response.getCard().getIssuerCode()),
+                response.getCard().getNumber(),
+                response.getCard().getInstallmentPlanMonths()
             );
         }
 
-        payment.complete(result.getPaymentKey(), result.getApprovedAt(), result.getReceiptUrl());
+        LocalDateTime approvedAt = parseDateTime(response.getApprovedAt());
+        String receiptUrl = response.getReceipt() != null ? response.getReceipt().getUrl() : null;
+
+        payment.complete(response.getPaymentKey(), approvedAt, receiptUrl);
         order.confirm();
 
+        // 토스 결제 성공 정보 저장
+        TossPaymentRecord tossPaymentRecord = buildTossPaymentRecord(payment.getId(), response);
+        tossPaymentRecordJpaRepository.save(tossPaymentRecord);
+
         log.info("Toss payment confirmed successfully. paymentId: {}, orderId: {}, amount: {}",
-            payment.getId(), result.getOrderId(), result.getTotalAmount());
+            payment.getId(), response.getOrderId(), response.getTotalAmount());
 
         return buildPaymentResponse(payment);
     }
@@ -350,5 +366,157 @@ public class PaymentService {
             .refundedAt(refund.getRefundedAt())
             .createdAt(refund.getCreatedAt())
             .build();
+    }
+
+    private TossPaymentRecord buildTossPaymentRecord(Long paymentId, TossPaymentConfirmResponse response) {
+        TossPaymentRecord.TossPaymentRecordBuilder builder = TossPaymentRecord.builder()
+            .paymentId(paymentId)
+            .version(response.getVersion())
+            .paymentKey(response.getPaymentKey())
+            .type(response.getType())
+            .orderId(response.getOrderId())
+            .orderName(response.getOrderName())
+            .mId(response.getMId())
+            .currency(response.getCurrency())
+            .method(response.getMethod())
+            .totalAmount(response.getTotalAmount())
+            .balanceAmount(response.getBalanceAmount())
+            .status(response.getStatus())
+            .requestedAt(parseDateTime(response.getRequestedAt()))
+            .approvedAt(parseDateTime(response.getApprovedAt()))
+            .useEscrow(response.getUseEscrow())
+            .lastTransactionKey(response.getLastTransactionKey())
+            .suppliedAmount(response.getSuppliedAmount())
+            .vat(response.getVat())
+            .cultureExpense(response.getCultureExpense())
+            .taxFreeAmount(response.getTaxFreeAmount())
+            .taxExemptionAmount(response.getTaxExemptionAmount())
+            .isPartialCancelable(response.getIsPartialCancelable())
+            .country(response.getCountry());
+
+        // 카드 정보
+        if (response.getCard() != null) {
+            TossPaymentConfirmResponse.Card card = response.getCard();
+            builder.cardAmount(card.getAmount())
+                .cardIssuerCode(card.getIssuerCode())
+                .cardAcquirerCode(card.getAcquirerCode())
+                .cardNumber(card.getNumber())
+                .cardInstallmentPlanMonths(card.getInstallmentPlanMonths())
+                .cardApproveNo(card.getApproveNo())
+                .cardUseCardPoint(card.getUseCardPoint())
+                .cardType(card.getCardType())
+                .cardOwnerType(card.getOwnerType())
+                .cardAcquireStatus(card.getAcquireStatus())
+                .cardIsInterestFree(card.getIsInterestFree())
+                .cardInterestPayer(card.getInterestPayer());
+        }
+
+        // 가상계좌 정보
+        if (response.getVirtualAccount() != null) {
+            TossPaymentConfirmResponse.VirtualAccount va = response.getVirtualAccount();
+            builder.virtualAccountType(va.getAccountType())
+                .virtualAccountNumber(va.getAccountNumber())
+                .virtualAccountBankCode(va.getBankCode())
+                .virtualAccountCustomerName(va.getCustomerName())
+                .virtualAccountDueDate(parseDateTime(va.getDueDate()))
+                .virtualAccountRefundStatus(va.getRefundStatus())
+                .virtualAccountExpired(va.getExpired())
+                .virtualAccountSettlementStatus(va.getSettlementStatus());
+        }
+
+        // 휴대폰 정보
+        if (response.getMobilePhone() != null) {
+            TossPaymentConfirmResponse.MobilePhone mp = response.getMobilePhone();
+            builder.mobilePhoneCustomerMobilePhone(mp.getCustomerMobilePhone())
+                .mobilePhoneSettlementStatus(mp.getSettlementStatus())
+                .mobilePhoneReceiptUrl(mp.getReceiptUrl());
+        }
+
+        // 계좌이체 정보
+        if (response.getTransfer() != null) {
+            TossPaymentConfirmResponse.Transfer transfer = response.getTransfer();
+            builder.transferBankCode(transfer.getBankCode())
+                .transferSettlementStatus(transfer.getSettlementStatus());
+        }
+
+        // 간편결제 정보
+        if (response.getEasyPay() != null) {
+            TossPaymentConfirmResponse.EasyPay easyPay = response.getEasyPay();
+            builder.easyPayProvider(easyPay.getProvider())
+                .easyPayAmount(easyPay.getAmount())
+                .easyPayDiscountAmount(easyPay.getDiscountAmount());
+        }
+
+        // 영수증 정보
+        if (response.getReceipt() != null) {
+            builder.receiptUrl(response.getReceipt().getUrl());
+        }
+
+        // 결제창 정보
+        if (response.getCheckout() != null) {
+            builder.checkoutUrl(response.getCheckout().getUrl());
+        }
+
+        // 실패 정보
+        if (response.getFailure() != null) {
+            builder.failureCode(response.getFailure().getCode())
+                .failureMessage(response.getFailure().getMessage());
+        }
+
+        // 에러 정보 (최상위)
+        if (response.getCode() != null) {
+            builder.failureCode(response.getCode())
+                .failureMessage(response.getMessage());
+        }
+
+        return builder.build();
+    }
+
+    private LocalDateTime parseDateTime(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isBlank()) {
+            return null;
+        }
+        try {
+            java.time.OffsetDateTime offsetDateTime = java.time.OffsetDateTime.parse(
+                dateTimeStr,
+                java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
+            );
+            return offsetDateTime.toLocalDateTime();
+        } catch (Exception e) {
+            log.warn("Failed to parse datetime: {}", dateTimeStr, e);
+            return null;
+        }
+    }
+
+    private String mapIssuerCodeToCardCompany(String issuerCode) {
+        if (issuerCode == null) {
+            return null;
+        }
+        return switch (issuerCode) {
+            case "3K" -> "기업BC";
+            case "46" -> "광주";
+            case "71" -> "롯데";
+            case "30" -> "KDB산업";
+            case "31" -> "BC";
+            case "51" -> "삼성";
+            case "38" -> "새마을";
+            case "41" -> "신한";
+            case "62" -> "신협";
+            case "36" -> "씨티";
+            case "33" -> "우리";
+            case "37" -> "우체국";
+            case "39" -> "저축";
+            case "35" -> "전북";
+            case "42" -> "제주";
+            case "15" -> "카카오뱅크";
+            case "3A" -> "케이뱅크";
+            case "24" -> "토스뱅크";
+            case "21" -> "하나";
+            case "61" -> "현대";
+            case "11" -> "KB국민";
+            case "91" -> "NH농협";
+            case "34" -> "Sh수협";
+            default -> issuerCode;
+        };
     }
 }

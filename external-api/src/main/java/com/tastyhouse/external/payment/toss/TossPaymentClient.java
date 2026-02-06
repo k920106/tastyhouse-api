@@ -25,7 +25,7 @@ public class TossPaymentClient {
     private final WebClient.Builder webClientBuilder;
     private final TossPaymentProperties tossPaymentProperties;
 
-    public TossPaymentConfirmResult confirmPayment(String paymentKey, String pgOrderId, Integer amount) {
+    public TossPaymentConfirmResponse confirmPayment(String paymentKey, String pgOrderId, Integer amount) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.builder()
             .paymentKey(paymentKey)
             .orderId(pgOrderId)
@@ -44,22 +44,37 @@ public class TossPaymentClient {
                 .block();
 
             if (response == null) {
-                return createErrorResult("UNKNOWN_ERROR", "응답이 없습니다.");
+                TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+                errorResponse.setCode("UNKNOWN_ERROR");
+                errorResponse.setMessage("응답이 없습니다.");
+                return errorResponse;
             }
 
-            if (response.isError()) {
-                return createErrorResult(response.getCode(), response.getMessage());
-            }
-
-            return mapToResult(response);
+            return response;
 
         } catch (WebClientResponseException e) {
             log.error("Toss payment confirm failed. status: {}, body: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
-            return createErrorResult("PG_API_ERROR", "결제 승인 API 호출에 실패했습니다: " + e.getMessage());
+            TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+            errorResponse.setCode("PG_API_ERROR");
+            errorResponse.setMessage("결제 승인 API 호출에 실패했습니다: " + e.getMessage());
+            return errorResponse;
         } catch (Exception e) {
             log.error("Toss payment confirm error", e);
-            return createErrorResult("SYSTEM_ERROR", "결제 승인 중 오류가 발생했습니다: " + e.getMessage());
+            TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+            errorResponse.setCode("SYSTEM_ERROR");
+            errorResponse.setMessage("결제 승인 중 오류가 발생했습니다: " + e.getMessage());
+            return errorResponse;
         }
+    }
+
+    public TossPaymentConfirmResult confirmPaymentLegacy(String paymentKey, String pgOrderId, Integer amount) {
+        TossPaymentConfirmResponse response = confirmPayment(paymentKey, pgOrderId, amount);
+
+        if (response.isError()) {
+            return createErrorResult(response.getCode(), response.getMessage());
+        }
+
+        return mapToResult(response);
     }
 
     private String createAuthorizationHeader() {
