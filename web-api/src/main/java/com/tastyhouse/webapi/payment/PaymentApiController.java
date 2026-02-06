@@ -5,6 +5,7 @@ import com.tastyhouse.webapi.payment.request.PaymentCancelRequest;
 import com.tastyhouse.webapi.payment.request.PaymentConfirmRequest;
 import com.tastyhouse.webapi.payment.request.PaymentCreateRequest;
 import com.tastyhouse.webapi.payment.request.RefundRequest;
+import com.tastyhouse.webapi.payment.request.TossPaymentConfirmApiRequest;
 import com.tastyhouse.webapi.payment.response.PaymentRefundResponse;
 import com.tastyhouse.webapi.payment.response.PaymentResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
@@ -57,6 +58,26 @@ public class PaymentApiController {
         @Valid @RequestBody PaymentConfirmRequest request
     ) {
         PaymentResponse response = paymentService.confirmPayment(request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "토스 결제 승인", description = "토스페이먼츠 결제를 승인합니다. 프론트엔드에서 /success 리다이렉트 후 호출합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "결제 승인 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 결제 승인 실패"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
+    })
+    @PostMapping("/v1/toss/confirm")
+    public ResponseEntity<CommonResponse<PaymentResponse>> confirmTossPayment(
+        @Valid @RequestBody TossPaymentConfirmApiRequest request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        PaymentResponse response = paymentService.confirmTossPayment(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 

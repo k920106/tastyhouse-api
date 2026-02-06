@@ -6,6 +6,7 @@ import com.tastyhouse.core.entity.payment.Payment;
 import com.tastyhouse.core.entity.payment.PaymentMethod;
 import com.tastyhouse.core.entity.payment.PaymentRefund;
 import com.tastyhouse.core.entity.payment.PaymentStatus;
+import com.tastyhouse.core.entity.payment.PgProvider;
 import com.tastyhouse.core.entity.point.MemberPoint;
 import com.tastyhouse.core.entity.point.MemberPointHistory;
 import com.tastyhouse.core.entity.point.PointType;
@@ -14,19 +15,24 @@ import com.tastyhouse.core.repository.payment.PaymentJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentRefundJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
+import com.tastyhouse.external.payment.toss.TossPaymentClient;
+import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResult;
 import com.tastyhouse.webapi.payment.request.PaymentCancelRequest;
 import com.tastyhouse.webapi.payment.request.PaymentConfirmRequest;
 import com.tastyhouse.webapi.payment.request.PaymentCreateRequest;
 import com.tastyhouse.webapi.payment.request.RefundRequest;
+import com.tastyhouse.webapi.payment.request.TossPaymentConfirmApiRequest;
 import com.tastyhouse.webapi.payment.response.PaymentRefundResponse;
 import com.tastyhouse.webapi.payment.response.PaymentResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -36,6 +42,7 @@ public class PaymentService {
     private final OrderJpaRepository orderJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
+    private final TossPaymentClient tossPaymentClient;
 
     private static final int CASH_POINT_EARN_RATE = 10;
 
@@ -92,6 +99,60 @@ public class PaymentService {
         payment.complete(request.pgTid(), LocalDateTime.now(), request.receiptUrl());
 
         order.confirm();
+
+        return buildPaymentResponse(payment);
+    }
+
+    @Transactional
+    public PaymentResponse confirmTossPayment(Long memberId, TossPaymentConfirmApiRequest request) {
+        Payment payment = paymentJpaRepository.findByPgOrderId(request.orderId())
+            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+
+        Order order = orderJpaRepository.findById(payment.getOrderId())
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (!order.getMemberId().equals(memberId)) {
+            throw new IllegalArgumentException("본인의 결제만 승인할 수 있습니다.");
+        }
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("승인 대기 중인 결제만 처리할 수 있습니다.");
+        }
+
+        if (!payment.getAmount().equals(request.amount())) {
+            throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
+        }
+
+        TossPaymentConfirmResult result = tossPaymentClient.confirmPayment(
+            request.paymentKey(),
+            request.orderId(),
+            request.amount()
+        );
+
+        if (!result.isSuccess()) {
+            log.error("Toss payment confirm failed. orderId: {}, errorCode: {}, errorMessage: {}",
+                request.orderId(), result.getErrorCode(), result.getErrorMessage());
+            payment.fail();
+            throw new IllegalStateException(result.getErrorMessage() != null
+                ? result.getErrorMessage()
+                : "결제 승인에 실패했습니다.");
+        }
+
+        payment.updatePgInfo(PgProvider.TOSS, result.getPaymentKey(), result.getOrderId());
+
+        if (result.getCardCompany() != null) {
+            payment.updateCardInfo(
+                result.getCardCompany(),
+                result.getCardNumber(),
+                result.getInstallmentPlanMonths()
+            );
+        }
+
+        payment.complete(result.getPaymentKey(), result.getApprovedAt(), result.getReceiptUrl());
+        order.confirm();
+
+        log.info("Toss payment confirmed successfully. paymentId: {}, orderId: {}, amount: {}",
+            payment.getId(), result.getOrderId(), result.getTotalAmount());
 
         return buildPaymentResponse(payment);
     }

@@ -35,7 +35,7 @@ public class ReviewApiController {
     @PostMapping
 //    public void create(@RequestBody ReviewCreateRequest reviewCreateRequest) {
     public void create(@ModelAttribute ReviewCreateRequest reviewCreateRequest) {
-        System.out.println("hi");
+
     }
 
     @Operation(summary = "베스트 리뷰 목록 조회", description = "평점이 높은 순으로 정렬된 베스트 리뷰 목록을 페이징하여 조회합니다.")

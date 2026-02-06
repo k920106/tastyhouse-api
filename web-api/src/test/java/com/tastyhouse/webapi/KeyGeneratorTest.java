@@ -21,7 +21,6 @@ public class KeyGeneratorTest {
         SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
         String base64Key = Encoders.BASE64.encode(key.getEncoded());
-        System.out.println("Generated HS512 Key: " + base64Key);
 
         byte[] decodedKey = Decoders.BASE64.decode(base64Key);
         assertThat(decodedKey.length).isEqualTo(64);
