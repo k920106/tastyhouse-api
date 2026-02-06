@@ -105,7 +105,7 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse confirmTossPayment(Long memberId, TossPaymentConfirmApiRequest request) {
-        Payment payment = paymentJpaRepository.findByPgOrderId(request.orderId())
+        Payment payment = paymentJpaRepository.findByPgOrderId(request.pgOrderId())
             .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
@@ -125,13 +125,13 @@ public class PaymentService {
 
         TossPaymentConfirmResult result = tossPaymentClient.confirmPayment(
             request.paymentKey(),
-            request.orderId(),
+            request.pgOrderId(),
             request.amount()
         );
 
         if (!result.isSuccess()) {
             log.error("Toss payment confirm failed. orderId: {}, errorCode: {}, errorMessage: {}",
-                request.orderId(), result.getErrorCode(), result.getErrorMessage());
+                request.pgOrderId(), result.getErrorCode(), result.getErrorMessage());
             payment.fail();
             throw new IllegalStateException(result.getErrorMessage() != null
                 ? result.getErrorMessage()

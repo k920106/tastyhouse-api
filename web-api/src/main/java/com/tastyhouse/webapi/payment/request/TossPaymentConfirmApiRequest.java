@@ -13,7 +13,7 @@ public record TossPaymentConfirmApiRequest(
 
     @Schema(description = "주문 ID (PG 주문 ID)", example = "0A_rILxddiTVva8R7VddT")
     @NotBlank(message = "주문 ID는 필수입니다")
-    String orderId,
+    String pgOrderId,
 
     @Schema(description = "결제 금액", example = "15000")
     @NotNull(message = "결제 금액은 필수입니다")

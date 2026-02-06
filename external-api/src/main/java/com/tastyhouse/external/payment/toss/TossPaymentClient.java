@@ -25,10 +25,10 @@ public class TossPaymentClient {
     private final WebClient.Builder webClientBuilder;
     private final TossPaymentProperties tossPaymentProperties;
 
-    public TossPaymentConfirmResult confirmPayment(String paymentKey, String orderId, Integer amount) {
+    public TossPaymentConfirmResult confirmPayment(String paymentKey, String pgOrderId, Integer amount) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.builder()
             .paymentKey(paymentKey)
-            .orderId(orderId)
+            .orderId(pgOrderId)
             .amount(amount)
             .build();
 
