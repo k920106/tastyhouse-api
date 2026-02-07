@@ -26,6 +26,8 @@ import com.tastyhouse.webapi.payment.request.PaymentCreateRequest;
 import com.tastyhouse.webapi.payment.request.RefundRequest;
 import com.tastyhouse.webapi.payment.request.TossPaymentConfirmApiRequest;
 import com.tastyhouse.webapi.payment.response.PaymentRefundResponse;
+import com.tastyhouse.webapi.payment.response.PaymentCancelCode;
+import com.tastyhouse.webapi.payment.response.PaymentCancelResponse;
 import com.tastyhouse.webapi.payment.response.PaymentResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -174,7 +176,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse cancelPayment(Long memberId, Long paymentId, PaymentCancelRequest request) {
+    public PaymentCancelResponse cancelPayment(Long memberId, Long paymentId, PaymentCancelRequest request) {
         Payment payment = paymentJpaRepository.findById(paymentId)
             .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
 
@@ -185,8 +187,9 @@ public class PaymentService {
             throw new IllegalArgumentException("본인의 결제만 취소할 수 있습니다.");
         }
 
-        if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 결제만 취소할 수 있습니다.");
+        PaymentCancelCode cancelCode = validateOrderStatusForCancel(order.getOrderStatus());
+        if (cancelCode != PaymentCancelCode.SUCCESS) {
+            return PaymentCancelResponse.of(cancelCode);
         }
 
         payment.cancel(request.cancelReason());
@@ -222,7 +225,16 @@ public class PaymentService {
             }
         }
 
-        return buildPaymentResponse(payment);
+        return PaymentCancelResponse.of(PaymentCancelCode.SUCCESS);
+    }
+
+    private PaymentCancelCode validateOrderStatusForCancel(OrderStatus orderStatus) {
+        return switch (orderStatus) {
+            case PREPARING -> PaymentCancelCode.ALREADY_PREPARING;
+            case CANCELLED -> PaymentCancelCode.ALREADY_CANCELLED;
+            case COMPLETED -> PaymentCancelCode.ORDER_COMPLETED;
+            case PENDING, CONFIRMED -> PaymentCancelCode.SUCCESS;
+        };
     }
 
     @Transactional

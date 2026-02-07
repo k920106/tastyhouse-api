@@ -6,6 +6,8 @@ import com.tastyhouse.webapi.payment.request.PaymentConfirmRequest;
 import com.tastyhouse.webapi.payment.request.PaymentCreateRequest;
 import com.tastyhouse.webapi.payment.request.RefundRequest;
 import com.tastyhouse.webapi.payment.request.TossPaymentConfirmApiRequest;
+import com.tastyhouse.webapi.payment.response.PaymentCancelCode;
+import com.tastyhouse.webapi.payment.response.PaymentCancelResponse;
 import com.tastyhouse.webapi.payment.response.PaymentRefundResponse;
 import com.tastyhouse.webapi.payment.response.PaymentResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
@@ -102,13 +104,12 @@ public class PaymentApiController {
 
     @Operation(summary = "결제 취소", description = "결제를 취소합니다.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "취소 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
-        @ApiResponse(responseCode = "400", description = "취소할 수 없는 결제 상태"),
+        @ApiResponse(responseCode = "200", description = "취소 결과", content = @Content(schema = @Schema(implementation = PaymentCancelResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
         @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
     })
     @PostMapping("/v1/{paymentId}/cancel")
-    public ResponseEntity<CommonResponse<PaymentResponse>> cancelPayment(
+    public ResponseEntity<CommonResponse<PaymentCancelResponse>> cancelPayment(
         @PathVariable Long paymentId,
         @Valid @RequestBody PaymentCancelRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
@@ -117,7 +118,7 @@ public class PaymentApiController {
             return ResponseEntity.status(401).build();
         }
 
-        PaymentResponse response = paymentService.cancelPayment(userDetails.getMemberId(), paymentId, request);
+        PaymentCancelResponse response = paymentService.cancelPayment(userDetails.getMemberId(), paymentId, request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
