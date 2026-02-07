@@ -14,6 +14,7 @@ public class OrderResponse {
     private String orderNumber;
     private PaymentStatus paymentStatus;
     private String placeName;
+    private String placePhoneNumber;
     private String ordererName;
     private String ordererPhone;
     private String ordererEmail;

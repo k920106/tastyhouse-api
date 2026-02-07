@@ -215,7 +215,7 @@ public class OrderService {
             couponDiscountAmount, pointDiscountAmount, totalDiscountAmount,
             finalAmount, memberCouponId, pointDiscountAmount);
 
-        return buildOrderResponse(savedOrder, place.getName());
+        return buildOrderResponse(savedOrder, place);
     }
 
     private void validateOrderAmounts(OrderCreateRequest request,
@@ -281,7 +281,7 @@ public class OrderService {
         }
 
         Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
-        return buildOrderResponse(order, place != null ? place.getName() : null);
+        return buildOrderResponse(order, place);
     }
 
 
@@ -291,7 +291,7 @@ public class OrderService {
         return "ORD" + dateTime + uuid;
     }
 
-    private OrderResponse buildOrderResponse(Order order, String placeName) {
+    private OrderResponse buildOrderResponse(Order order, Place place) {
         List<OrderItem> items = orderItemJpaRepository.findByOrderId(order.getId());
 
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
@@ -339,7 +339,8 @@ public class OrderService {
             .id(order.getId())
             .orderNumber(order.getOrderNumber())
             .paymentStatus(payment != null ? payment.getPaymentStatus() : null)
-            .placeName(placeName)
+            .placeName(place != null ? place.getName() : null)
+            .placePhoneNumber(place != null ? place.getPhoneNumber() : null)
             .ordererName(order.getOrdererName())
             .ordererPhone(order.getOrdererPhone())
             .ordererEmail(order.getOrdererEmail())
