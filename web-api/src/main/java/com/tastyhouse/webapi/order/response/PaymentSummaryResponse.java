@@ -14,6 +14,8 @@ public class PaymentSummaryResponse {
     private PaymentMethod paymentMethod;
     private PaymentStatus paymentStatus;
     private Integer amount;
+    private String cardCompany;
+    private String cardNumber;
     private LocalDateTime approvedAt;
     private String receiptUrl;
 }

@@ -363,6 +363,8 @@ public class OrderService {
                 .paymentMethod(payment.getPaymentMethod())
                 .paymentStatus(payment.getPaymentStatus())
                 .amount(payment.getAmount())
+                .cardCompany(payment.getCardCompany())
+                .cardNumber(payment.getCardNumber())
                 .approvedAt(payment.getApprovedAt())
                 .receiptUrl(payment.getReceiptUrl())
                 .build();
