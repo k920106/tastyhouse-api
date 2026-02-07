@@ -1,6 +1,6 @@
 package com.tastyhouse.webapi.order.response;
 
-import com.tastyhouse.core.entity.order.OrderStatus;
+import com.tastyhouse.core.entity.payment.PaymentStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private String orderNumber;
-    private OrderStatus orderStatus;
+    private PaymentStatus paymentStatus;
     private String placeName;
     private String ordererName;
     private String ordererPhone;

@@ -338,7 +338,7 @@ public class OrderService {
         return OrderResponse.builder()
             .id(order.getId())
             .orderNumber(order.getOrderNumber())
-            .orderStatus(order.getOrderStatus())
+            .paymentStatus(payment != null ? payment.getPaymentStatus() : null)
             .placeName(placeName)
             .ordererName(order.getOrdererName())
             .ordererPhone(order.getOrdererPhone())

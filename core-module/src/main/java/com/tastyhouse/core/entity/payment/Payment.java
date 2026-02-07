@@ -109,10 +109,6 @@ public class Payment extends BaseEntity {
         this.cancelReason = cancelReason;
     }
 
-    public void refund() {
-        this.paymentStatus = PaymentStatus.REFUNDED;
-    }
-
     public void updatePgInfo(PgProvider pgProvider, String pgTid, String pgOrderId) {
         this.pgProvider = pgProvider;
         this.pgTid = pgTid;
