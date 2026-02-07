@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.order;
 
 import com.tastyhouse.core.entity.coupon.Coupon;
+import com.tastyhouse.core.entity.coupon.DiscountType;
 import com.tastyhouse.core.entity.coupon.MemberCoupon;
 import com.tastyhouse.core.entity.order.Order;
 import com.tastyhouse.core.entity.order.OrderItem;
@@ -167,7 +168,19 @@ public class OrderService {
                 throw new IllegalStateException("최소 주문 금액을 충족하지 않습니다.");
             }
 
-            couponDiscountAmount = coupon.getDiscountAmount();
+            // 쿠폰 타입에 따라 할인 금액 계산
+            if (coupon.getDiscountType() == DiscountType.AMOUNT) {
+                // 정액 할인
+                couponDiscountAmount = coupon.getDiscountAmount();
+            } else if (coupon.getDiscountType() == DiscountType.RATE) {
+                // 정률 할인 - 상품 할인 후 금액 기준으로 계산
+                couponDiscountAmount = (int) Math.round(orderAmountAfterProductDiscount * coupon.getDiscountAmount() / 100.0);
+                // 최대 할인 금액 제한 적용
+                if (coupon.getMaxDiscountAmount() != null && couponDiscountAmount > coupon.getMaxDiscountAmount()) {
+                    couponDiscountAmount = coupon.getMaxDiscountAmount();
+                }
+            }
+
             memberCouponId = memberCoupon.getId();
             memberCoupon.use();
         }
@@ -373,6 +386,7 @@ public class OrderService {
             .earnedPoint(order.getEarnedPoint())
             .orderItems(itemResponses)
             .payment(paymentSummary)
+            .approvedAt(payment != null ? payment.getApprovedAt() : null)
             .createdAt(order.getCreatedAt())
             .build();
     }

@@ -27,5 +27,6 @@ public class OrderResponse {
     private Integer earnedPoint;
     private List<OrderItemResponse> orderItems;
     private PaymentSummaryResponse payment;
+    private LocalDateTime approvedAt;
     private LocalDateTime createdAt;
 }
