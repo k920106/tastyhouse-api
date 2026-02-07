@@ -14,4 +14,5 @@ public class TossPaymentProperties {
     private String secretKey;
     private String baseUrl = "https://api.tosspayments.com";
     private String confirmPath = "/v1/payments/confirm";
+    private String cancelPath = "/v1/payments/{paymentKey}/cancel";
 }

@@ -1,5 +1,7 @@
 package com.tastyhouse.external.payment.toss;
 
+import com.tastyhouse.external.payment.toss.dto.TossPaymentCancelRequest;
+import com.tastyhouse.external.payment.toss.dto.TossPaymentCancelResult;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmRequest;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResponse;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResult;
@@ -32,6 +34,8 @@ public class TossPaymentClient {
             .amount(amount)
             .build();
 
+        log.info("토스 결제 승인하기 API 요청. paymentKey: {}, pgOrderId: {}, amount: {}", paymentKey, pgOrderId, amount);
+
         try {
             TossPaymentConfirmResponse response = webClientBuilder.build()
                 .post()
@@ -44,22 +48,24 @@ public class TossPaymentClient {
                 .block();
 
             if (response == null) {
+                log.warn("토스 결제 승인하기 API 응답 없음. paymentKey: {}", paymentKey);
                 TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
                 errorResponse.setCode("UNKNOWN_ERROR");
                 errorResponse.setMessage("응답이 없습니다.");
                 return errorResponse;
             }
 
+            log.info("토스 결제 승인하기 API 완료. paymentKey: {}, status: {}", paymentKey, response.getStatus());
             return response;
 
         } catch (WebClientResponseException e) {
-            log.error("Toss payment confirm failed. status: {}, body: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            log.error("토스 결제 승인하기 API 실패. status: {}, body: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
             TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
             errorResponse.setCode("PG_API_ERROR");
-            errorResponse.setMessage("결제 승인 API 호출에 실패했습니다: " + e.getMessage());
+            errorResponse.setMessage("결제 승인하기 API 호출에 실패했습니다: " + e.getMessage());
             return errorResponse;
         } catch (Exception e) {
-            log.error("Toss payment confirm error", e);
+            log.error("토스 결제 승인하기 API 에러. error: ", e);
             TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
             errorResponse.setCode("SYSTEM_ERROR");
             errorResponse.setMessage("결제 승인 중 오류가 발생했습니다: " + e.getMessage());
@@ -75,6 +81,88 @@ public class TossPaymentClient {
         }
 
         return mapToResult(response);
+    }
+
+    public TossPaymentConfirmResponse cancelPayment(String paymentKey, String cancelReason) {
+        TossPaymentCancelRequest request = TossPaymentCancelRequest.builder()
+            .cancelReason(cancelReason)
+            .build();
+
+        String cancelUrl = tossPaymentProperties.getBaseUrl()
+            + tossPaymentProperties.getCancelPath().replace("{paymentKey}", paymentKey);
+
+        log.info("토스 전액 취소하기 API 요청. paymentKey: {}, cancelReason: {}", paymentKey, cancelReason);
+
+        try {
+            TossPaymentConfirmResponse response = webClientBuilder.build()
+                .post()
+                .uri(cancelUrl)
+                .header(HttpHeaders.AUTHORIZATION, createAuthorizationHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(TossPaymentConfirmResponse.class)
+                .block();
+
+            if (response == null) {
+                log.warn("토스 전액 취소하기 API 응답 없음. paymentKey: {}", paymentKey);
+                TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+                errorResponse.setCode("UNKNOWN_ERROR");
+                errorResponse.setMessage("응답이 없습니다.");
+                return errorResponse;
+            }
+
+            log.info("토스 전액 취소하기 API 완료. paymentKey: {}, status: {}", paymentKey, response.getStatus());
+            return response;
+        } catch (WebClientResponseException e) {
+            log.error("토스 전액 취소하기 API 실패. status: {}, body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+            errorResponse.setCode("PG_API_ERROR");
+            errorResponse.setMessage("결제 취소 API 호출에 실패했습니다: " + e.getMessage());
+            return errorResponse;
+        } catch (Exception e) {
+            log.error("토스 전액 취소하기 API 에러. error: ", e);
+            TossPaymentConfirmResponse errorResponse = new TossPaymentConfirmResponse();
+            errorResponse.setCode("SYSTEM_ERROR");
+            errorResponse.setMessage("결제 취소 중 오류가 발생했습니다: " + e.getMessage());
+            return errorResponse;
+        }
+    }
+
+    public TossPaymentCancelResult cancelPaymentWithResult(String paymentKey, String cancelReason) {
+        TossPaymentConfirmResponse response = cancelPayment(paymentKey, cancelReason);
+
+        if (response.isError()) {
+            return TossPaymentCancelResult.builder()
+                .success(false)
+                .errorCode(response.getCode())
+                .errorMessage(response.getMessage())
+                .build();
+        }
+
+        return mapToCancelResult(response);
+    }
+
+    private TossPaymentCancelResult mapToCancelResult(TossPaymentConfirmResponse response) {
+        TossPaymentCancelResult.TossPaymentCancelResultBuilder builder = TossPaymentCancelResult.builder()
+            .success(true)
+            .paymentKey(response.getPaymentKey())
+            .orderId(response.getOrderId())
+            .orderName(response.getOrderName())
+            .status(response.getStatus())
+            .totalAmount(response.getTotalAmount())
+            .balanceAmount(response.getBalanceAmount());
+
+        if (response.getCancels() != null && !response.getCancels().isEmpty()) {
+            TossPaymentConfirmResponse.Cancel latestCancel = response.getCancels().get(0);
+            builder.cancelReason(latestCancel.getCancelReason())
+                .canceledAt(parseDateTime(latestCancel.getCanceledAt()))
+                .cancelAmount(latestCancel.getCancelAmount())
+                .refundableAmount(latestCancel.getRefundableAmount())
+                .cancelStatus(latestCancel.getCancelStatus());
+        }
+
+        return builder.build();
     }
 
     private String createAuthorizationHeader() {

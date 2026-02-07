@@ -192,6 +192,29 @@ public class PaymentService {
             return PaymentCancelResponse.of(cancelCode);
         }
 
+        // 토스 PG 결제인 경우 토스 취소 API 호출
+        if (payment.getPgProvider() == PgProvider.TOSS
+                && payment.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            try {
+                TossPaymentConfirmResponse tossResponse = tossPaymentClient.cancelPayment(
+                    payment.getPgTid(), request.cancelReason()
+                );
+
+                if (tossResponse.isError()) {
+                    log.error("Toss payment cancel failed. paymentId: {}, errorCode: {}, errorMessage: {}",
+                        paymentId, tossResponse.getCode(), tossResponse.getMessage());
+                    return PaymentCancelResponse.of(PaymentCancelCode.CANCEL_FAILED);
+                }
+
+                // 토스 취소 응답 기록 저장
+                TossPaymentRecord tossPaymentRecord = buildTossPaymentRecord(payment.getId(), tossResponse);
+                tossPaymentRecordJpaRepository.save(tossPaymentRecord);
+            } catch (Exception e) {
+                log.error("Toss payment cancel exception. paymentId: {}", paymentId, e);
+                return PaymentCancelResponse.of(PaymentCancelCode.CANCEL_FAILED);
+            }
+        }
+
         payment.cancel(request.cancelReason());
         order.cancel();
 

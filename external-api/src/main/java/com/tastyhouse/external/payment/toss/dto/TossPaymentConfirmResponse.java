@@ -41,6 +41,7 @@ public class TossPaymentConfirmResponse {
     private Integer taxExemptionAmount;
     private String method;
     private String type;
+    private java.util.List<Cancel> cancels;
 
     // 에러 응답
     private String code;
@@ -132,6 +133,25 @@ public class TossPaymentConfirmResponse {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Checkout {
         private String url;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Cancel {
+        private String cancelReason;
+        private String canceledAt;
+        private Integer cancelAmount;
+        private Integer taxFreeAmount;
+        private Integer taxExemptionAmount;
+        private Integer refundableAmount;
+        private Integer transferDiscountAmount;
+        private Integer easyPayDiscountAmount;
+        private String transactionKey;
+        private String receiptKey;
+        private String cancelStatus;
+        private String cancelRequestId;
     }
 
     public boolean isSuccess() {
