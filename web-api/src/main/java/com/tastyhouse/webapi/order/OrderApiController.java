@@ -1,7 +1,6 @@
 package com.tastyhouse.webapi.order;
 
 import com.tastyhouse.core.common.CommonResponse;
-import com.tastyhouse.webapi.order.request.OrderCancelRequest;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.response.OrderListItem;
 import com.tastyhouse.webapi.order.response.OrderResponse;
@@ -83,24 +82,4 @@ public class OrderApiController {
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
-    @Operation(summary = "주문 취소", description = "주문을 취소합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "취소 성공", content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-        @ApiResponse(responseCode = "400", description = "취소할 수 없는 주문 상태"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-        @ApiResponse(responseCode = "404", description = "주문을 찾을 수 없음")
-    })
-    @PostMapping("/v1/{orderId}/cancel")
-    public ResponseEntity<CommonResponse<OrderResponse>> cancelOrder(
-        @PathVariable Long orderId,
-        @Valid @RequestBody(required = false) OrderCancelRequest request,
-        @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        OrderResponse response = orderService.cancelOrder(userDetails.getMemberId(), orderId, request);
-        return ResponseEntity.ok(CommonResponse.success(response));
-    }
 }

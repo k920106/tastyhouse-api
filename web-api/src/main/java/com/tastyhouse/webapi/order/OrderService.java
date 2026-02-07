@@ -30,7 +30,6 @@ import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
 import com.tastyhouse.webapi.member.MemberService;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
-import com.tastyhouse.webapi.order.request.OrderCancelRequest;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.request.OrderItemOptionRequest;
 import com.tastyhouse.webapi.order.request.OrderItemRequest;
@@ -285,40 +284,6 @@ public class OrderService {
         return buildOrderResponse(order, place != null ? place.getName() : null);
     }
 
-    @Transactional
-    public OrderResponse cancelOrder(Long memberId, Long orderId, OrderCancelRequest request) {
-        Order order = orderJpaRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
-
-        if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 주문만 취소할 수 있습니다.");
-        }
-
-        if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
-            throw new IllegalStateException("취소할 수 없는 주문 상태입니다.");
-        }
-
-        order.cancel();
-
-        if (order.getUsedPoint() > 0) {
-            MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
-                .orElse(null);
-            if (memberPoint != null) {
-                memberPoint.addPoints(order.getUsedPoint());
-
-                MemberPointHistory pointHistory = MemberPointHistory.builder()
-                    .memberId(memberId)
-                    .pointType(PointType.REFUND)
-                    .pointAmount(order.getUsedPoint())
-                    .reason("주문 취소 환불")
-                    .build();
-                memberPointHistoryJpaRepository.save(pointHistory);
-            }
-        }
-
-        Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
-        return buildOrderResponse(order, place != null ? place.getName() : null);
-    }
 
     private String generateOrderNumber() {
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
