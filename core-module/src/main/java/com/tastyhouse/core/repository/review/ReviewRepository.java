@@ -3,6 +3,7 @@ package com.tastyhouse.core.repository.review;
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,4 +34,6 @@ public interface ReviewRepository {
     );
 
     Optional<ReviewDetailDto> findReviewDetail(Long reviewId);
+
+    Page<MyReviewListItemDto> findMyReviews(Long memberId, Pageable pageable);
 }

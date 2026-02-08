@@ -13,6 +13,7 @@ import com.tastyhouse.core.entity.review.QReviewImage;
 import com.tastyhouse.core.entity.review.QReviewLike;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QBestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.QLatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
@@ -567,5 +568,76 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .where(reviewImage.reviewId.eq(reviewId))
             .orderBy(reviewImage.sort.asc())
             .fetch();
+    }
+
+    @Override
+    public Page<MyReviewListItemDto> findMyReviews(Long memberId, Pageable pageable) {
+        QReview review = QReview.review;
+
+        // 1. 먼저 리뷰 ID만 조회 (total count 계산용)
+        List<Long> allReviewIds = queryFactory
+            .select(review.id)
+            .from(review)
+            .where(
+                review.memberId.eq(memberId),
+                review.isHidden.eq(false)
+            )
+            .orderBy(review.createdAt.desc())
+            .fetch();
+
+        long total = allReviewIds.size();
+
+        // 2. 페이징된 리뷰 ID 조회
+        List<Long> pagedReviewIds = queryFactory
+            .select(review.id)
+            .from(review)
+            .where(
+                review.memberId.eq(memberId),
+                review.isHidden.eq(false)
+            )
+            .orderBy(review.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        // 3. 각 리뷰의 첫 번째 이미지 URL 조회
+        Map<Long, String> imageUrlMap = findFirstImageUrlsByReviewIds(pagedReviewIds);
+
+        // 4. DTO 생성
+        List<MyReviewListItemDto> reviews = pagedReviewIds.stream()
+            .map(reviewId -> new MyReviewListItemDto(reviewId, imageUrlMap.get(reviewId)))
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
+    private Map<Long, String> findFirstImageUrlsByReviewIds(List<Long> reviewIds) {
+        if (reviewIds.isEmpty()) {
+            return Map.of();
+        }
+
+        QReviewImage reviewImage = QReviewImage.reviewImage;
+        QReviewImage subReviewImage = new QReviewImage("subReviewImage");
+
+        List<com.querydsl.core.Tuple> results = queryFactory
+            .select(reviewImage.reviewId, reviewImage.imageUrl)
+            .from(reviewImage)
+            .where(
+                reviewImage.reviewId.in(reviewIds),
+                reviewImage.sort.eq(
+                    JPAExpressions
+                        .select(subReviewImage.sort.min())
+                        .from(subReviewImage)
+                        .where(subReviewImage.reviewId.eq(reviewImage.reviewId))
+                )
+            )
+            .fetch();
+
+        return results.stream()
+            .collect(Collectors.toMap(
+                tuple -> tuple.get(reviewImage.reviewId),
+                tuple -> tuple.get(reviewImage.imageUrl),
+                (existing, replacement) -> existing // 중복 시 첫 번째 값 유지
+            ));
     }
 }

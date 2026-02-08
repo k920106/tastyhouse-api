@@ -1,15 +1,19 @@
 package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -152,5 +157,28 @@ public class MemberApiController {
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
+    }
+
+    @Operation(summary = "내가 작성한 리뷰 목록 조회", description = "로그인한 회원이 작성한 리뷰 목록을 페이징하여 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/reviews")
+    public ResponseEntity<CommonResponse<List<MyReviewListItemResponse>>> getMyReviews(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
+    ) {
+        Long memberId = userDetails.getMemberId();
+        PageRequest pageRequest = new PageRequest(page, size);
+        PageResult<MyReviewListItemResponse> pageResult = memberService.getMyReviews(memberId, pageRequest);
+        CommonResponse<List<MyReviewListItemResponse>> response = CommonResponse.success(
+            pageResult.getContent(),
+            pageResult.getCurrentPage(),
+            pageResult.getPageSize(),
+            pageResult.getTotalElements()
+        );
+        return ResponseEntity.ok(response);
     }
 }
