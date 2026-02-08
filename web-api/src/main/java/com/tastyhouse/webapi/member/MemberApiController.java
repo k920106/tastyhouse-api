@@ -2,11 +2,13 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
+import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
-import com.tastyhouse.webapi.member.response.MemberInfoResponse;
+import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,16 +35,22 @@ public class MemberApiController {
 
     private final MemberService memberService;
 
-    @Operation(summary = "내 정보 조회", description = "로그인한 회원의 정보를 조회합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberInfoResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"), @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")})
+    @Operation(summary = "내 프로필 조회", description = "로그인한 회원의 프로필 정보를 조회합니다. (마이페이지용)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberProfileResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
     @GetMapping("/v1/me")
-    public ResponseEntity<CommonResponse<MemberInfoResponse>> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<CommonResponse<MemberProfileResponse>> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(401).build();
         }
 
-        Optional<MemberInfoResponse> memberInfo = memberService.findMemberInfo(userDetails.getMemberId());
-        return memberInfo.map(memberInfoResponse -> ResponseEntity.ok(CommonResponse.success(memberInfoResponse))).orElseGet(() -> ResponseEntity.notFound().build());
+        Optional<MemberProfileResponse> memberProfile = memberService.getMemberProfile(userDetails.getMemberId());
+        return memberProfile
+            .map(profile -> ResponseEntity.ok(CommonResponse.success(profile)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "보유 포인트 조회", description = "현재 로그인한 회원의 사용 가능한 포인트와 이번달 소멸 예정 포인트를 조회합니다.")
@@ -117,5 +127,30 @@ public class MemberApiController {
         Long memberId = userDetails.getMemberId();
         UsablePointResponse usablePoint = memberService.getUsablePoint(memberId);
         return ResponseEntity.ok(CommonResponse.success(usablePoint));
+    }
+
+    @Operation(summary = "프로필 수정", description = "로그인한 회원의 프로필 정보를 수정합니다. (닉네임, 상태메시지, 프로필 이미지)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "수정 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)")
+    })
+    @PutMapping("/v1/me/profile")
+    public ResponseEntity<CommonResponse<Void>> updateMyProfile(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        memberService.updateMemberProfile(
+            userDetails.getMemberId(),
+            request.getNickname(),
+            request.getStatusMessage(),
+            request.getProfileImageUrl()
+        );
+
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 }
