@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.entity.payment.dto.MyPaymentListItemDto;
 import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
+import com.tastyhouse.core.entity.rank.MemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
@@ -81,14 +82,10 @@ public class MemberService {
     public Optional<MemberProfileResponse> getMemberProfile(Long memberId) {
         return memberJpaRepository.findById(memberId)
             .map(member -> {
-                // 전체 리뷰 개수 조회 (ALL 타입)
+                // 전체 리뷰 개수 조회 (ALL 타입, 가장 최근 데이터)
                 Integer reviewCount = memberReviewRankJpaRepository
-                    .findByMemberIdAndRankTypeAndBaseDate(
-                        memberId,
-                        RankType.ALL,
-                        LocalDate.now()
-                    )
-                    .map(rank -> rank.getReviewCount())
+                    .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
+                    .map(MemberReviewRank::getReviewCount)
                     .orElse(0);
 
                 return MemberProfileResponse.builder()
