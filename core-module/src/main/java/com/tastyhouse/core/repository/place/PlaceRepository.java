@@ -5,6 +5,7 @@ import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
+import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +19,6 @@ public interface PlaceRepository {
     Page<BestPlaceItemDto> findBestPlaces(Pageable pageable);
 
     Page<LatestPlaceItemDto> findLatestPlaces(Pageable pageable, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities);
+
+    Page<MyBookmarkedPlaceItemDto> findMyBookmarkedPlaces(Long memberId, Pageable pageable);
 }

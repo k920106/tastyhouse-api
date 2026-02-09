@@ -7,6 +7,7 @@ import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
+import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -206,6 +207,54 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))
             .foodTypes(foodTypeMap.getOrDefault(p.getId(), List.of()))
             .build()).collect(Collectors.toList());
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<MyBookmarkedPlaceItemDto> findMyBookmarkedPlaces(Long memberId, Pageable pageable) {
+        // 1. 전체 개수 조회
+        Long total = queryFactory
+            .select(placeBookmark.count())
+            .from(placeBookmark)
+            .where(placeBookmark.memberId.eq(memberId))
+            .fetchOne();
+
+        if (total == null || total == 0) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        // 2. 북마크된 Place 정보 조회 (최신순)
+        var results = queryFactory
+            .select(
+                place.id,
+                placeBookmark.id,
+                place.name,
+                placeStation.stationName,
+                place.rating,
+                place.thumbnailImageUrl
+            )
+            .from(placeBookmark)
+            .join(place).on(placeBookmark.placeId.eq(place.id))
+            .join(placeStation).on(place.stationId.eq(placeStation.id))
+            .where(placeBookmark.memberId.eq(memberId))
+            .orderBy(placeBookmark.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        // 3. DTO 변환
+        List<MyBookmarkedPlaceItemDto> content = results.stream()
+            .map(tuple -> new MyBookmarkedPlaceItemDto(
+                tuple.get(place.id),
+                tuple.get(placeBookmark.id),
+                tuple.get(place.name),
+                tuple.get(placeStation.stationName),
+                tuple.get(place.rating),
+                tuple.get(place.thumbnailImageUrl),
+                true
+            ))
+            .collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }

@@ -1,10 +1,12 @@
 package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.entity.payment.dto.MyPaymentListItemDto;
+import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentRepository;
+import com.tastyhouse.core.repository.place.PlaceRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
@@ -14,6 +16,7 @@ import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyPaymentListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
@@ -39,6 +42,7 @@ public class MemberService {
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PaymentRepository paymentRepository;
+    private final PlaceRepository placeRepository;
 
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
@@ -140,6 +144,25 @@ public class MemberService {
 
         List<MyPaymentListItemResponse> content = page.getContent().stream()
             .map(MyPaymentListItemResponse::from)
+            .collect(Collectors.toList());
+
+        return new PageResult<>(
+            content,
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.getNumber(),
+            page.getSize()
+        );
+    }
+
+    public PageResult<MyBookmarkedPlaceListItemResponse> getMyBookmarkedPlaces(Long memberId, PageRequest pageRequest) {
+        org.springframework.data.domain.PageRequest springPageRequest =
+            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+
+        Page<MyBookmarkedPlaceItemDto> page = placeRepository.findMyBookmarkedPlaces(memberId, springPageRequest);
+
+        List<MyBookmarkedPlaceListItemResponse> content = page.getContent().stream()
+            .map(MyBookmarkedPlaceListItemResponse::from)
             .collect(Collectors.toList());
 
         return new PageResult<>(
