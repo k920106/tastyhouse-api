@@ -5,11 +5,11 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
-import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyPaymentListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
+import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
@@ -60,6 +60,45 @@ public class MemberApiController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "프로필 수정", description = "로그인한 회원의 프로필 정보를 수정합니다. (닉네임, 상태메시지, 프로필 이미지)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "수정 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)")
+    })
+    @PutMapping("/v1/me/profile")
+    public ResponseEntity<CommonResponse<Void>> updateMyProfile(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        memberService.updateMemberProfile(
+            userDetails.getMemberId(),
+            request.getNickname(),
+            request.getStatusMessage(),
+            request.getProfileImageUrl()
+        );
+
+        return ResponseEntity.ok(CommonResponse.success(null));
+    }
+
+    @Operation(summary = "내 리뷰 통계 조회", description = "로그인한 회원의 리뷰 통계(전체 리뷰 개수)를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MyReviewStatsResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/review-stats")
+    public ResponseEntity<CommonResponse<MyReviewStatsResponse>> getMyReviewStats(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        MyReviewStatsResponse stats = memberService.getMyReviewStats(memberId);
+        return ResponseEntity.ok(CommonResponse.success(stats));
+    }
+
     @Operation(summary = "보유 포인트 조회", description = "현재 로그인한 회원의 사용 가능한 포인트와 이번달 소멸 예정 포인트를 조회합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
@@ -74,25 +113,6 @@ public class MemberApiController {
         return ResponseEntity.ok(CommonResponse.success(pointResponse));
     }
 
-    @Operation(summary = "내 연락처 정보 조회", description = "로그인한 회원의 이름, 휴대폰 번호, 이메일을 조회합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberContactResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
-    })
-    @GetMapping("/v1/me/contact")
-    public ResponseEntity<CommonResponse<MemberContactResponse>> getMyContact(
-        @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        Optional<MemberContactResponse> contactInfo = memberService.getMemberContact(userDetails.getMemberId());
-        return contactInfo
-            .map(response -> ResponseEntity.ok(CommonResponse.success(response)))
-            .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
     @Operation(summary = "보유 쿠폰 목록 조회", description = "현재 로그인한 회원이 보유한 모든 쿠폰을 조회합니다. (사용 여부 무관)")
     @ApiResponses({
@@ -134,31 +154,6 @@ public class MemberApiController {
         Long memberId = userDetails.getMemberId();
         UsablePointResponse usablePoint = memberService.getUsablePoint(memberId);
         return ResponseEntity.ok(CommonResponse.success(usablePoint));
-    }
-
-    @Operation(summary = "프로필 수정", description = "로그인한 회원의 프로필 정보를 수정합니다. (닉네임, 상태메시지, 프로필 이미지)")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "수정 성공"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)")
-    })
-    @PutMapping("/v1/me/profile")
-    public ResponseEntity<CommonResponse<Void>> updateMyProfile(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
-        @Valid @RequestBody UpdateProfileRequest request
-    ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        memberService.updateMemberProfile(
-            userDetails.getMemberId(),
-            request.getNickname(),
-            request.getStatusMessage(),
-            request.getProfileImageUrl()
-        );
-
-        return ResponseEntity.ok(CommonResponse.success(null));
     }
 
     @Operation(summary = "내가 작성한 리뷰 목록 조회", description = "로그인한 회원이 작성한 리뷰 목록을 페이징하여 조회합니다.")

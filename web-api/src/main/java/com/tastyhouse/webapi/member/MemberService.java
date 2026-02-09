@@ -15,11 +15,11 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
-import com.tastyhouse.webapi.member.response.MemberContactResponse;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyPaymentListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
+import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import lombok.RequiredArgsConstructor;
@@ -54,15 +54,6 @@ public class MemberService {
                 .build());
     }
 
-    public Optional<MemberContactResponse> getMemberContact(Long memberId) {
-        return memberJpaRepository.findById(memberId)
-            .map(member -> new MemberContactResponse(
-                member.getFullName(),
-                member.getPhoneNumber(),
-                member.getUsername()
-            ));
-    }
-
     public List<MemberCouponListItemResponse> getMemberCoupons(Long memberId) {
         return couponService.getMemberCoupons(memberId);
     }
@@ -81,22 +72,16 @@ public class MemberService {
 
     public Optional<MemberProfileResponse> getMemberProfile(Long memberId) {
         return memberJpaRepository.findById(memberId)
-            .map(member -> {
-                // 전체 리뷰 개수 조회 (ALL 타입, 가장 최근 데이터)
-                Integer reviewCount = memberReviewRankJpaRepository
-                    .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
-                    .map(MemberReviewRank::getReviewCount)
-                    .orElse(0);
-
-                return MemberProfileResponse.builder()
-                    .id(member.getId())
-                    .nickname(member.getNickname())
-                    .grade(member.getMemberGrade())
-                    .reviewCount(reviewCount)
-                    .statusMessage(member.getStatusMessage())
-                    .profileImageUrl(member.getProfileImageUrl())
-                    .build();
-            });
+            .map(member -> MemberProfileResponse.builder()
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .grade(member.getMemberGrade())
+                .statusMessage(member.getStatusMessage())
+                .profileImageUrl(member.getProfileImageUrl())
+                .fullName(member.getFullName())
+                .phoneNumber(member.getPhoneNumber())
+                .email(member.getUsername())
+                .build());
     }
 
     @Transactional
@@ -169,5 +154,17 @@ public class MemberService {
             page.getNumber(),
             page.getSize()
         );
+    }
+
+    public MyReviewStatsResponse getMyReviewStats(Long memberId) {
+        // 전체 리뷰 개수 조회 (ALL 타입, 가장 최근 데이터)
+        Integer reviewCount = memberReviewRankJpaRepository
+            .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
+            .map(MemberReviewRank::getReviewCount)
+            .orElse(0);
+
+        return MyReviewStatsResponse.builder()
+            .totalReviewCount(reviewCount)
+            .build();
     }
 }

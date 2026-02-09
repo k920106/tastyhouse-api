@@ -13,6 +13,7 @@ import com.tastyhouse.core.entity.point.MemberPoint;
 import com.tastyhouse.core.entity.point.MemberPointHistory;
 import com.tastyhouse.core.entity.point.PointType;
 import com.tastyhouse.core.entity.product.Product;
+import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.product.ProductOption;
 import com.tastyhouse.core.entity.product.ProductOptionGroup;
 import com.tastyhouse.core.repository.coupon.CouponJpaRepository;
@@ -24,12 +25,12 @@ import com.tastyhouse.core.repository.payment.PaymentJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
-import com.tastyhouse.core.repository.product.ProductJpaRepository;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
+import com.tastyhouse.core.repository.product.ProductJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
 import com.tastyhouse.webapi.member.MemberService;
-import com.tastyhouse.webapi.member.response.MemberContactResponse;
+import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.request.OrderItemOptionRequest;
 import com.tastyhouse.webapi.order.request.OrderItemRequest;
@@ -67,7 +68,7 @@ public class OrderService {
         Place place = placeJpaRepository.findById(request.placeId())
             .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
 
-        MemberContactResponse contact = memberService.getMemberContact(memberId)
+        MemberProfileResponse contact = memberService.getMemberProfile(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
         int totalProductAmount = 0;
@@ -94,7 +95,7 @@ public class OrderService {
             }
 
             String productImageUrl = productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(product.getId())
-                .stream().findFirst().map(img -> img.getImageUrl()).orElse(null);
+                .stream().findFirst().map(ProductImage::getImageUrl).orElse(null);
 
             int unitPrice = product.getOriginalPrice();
             Integer discountPrice = product.getDiscountPrice();
