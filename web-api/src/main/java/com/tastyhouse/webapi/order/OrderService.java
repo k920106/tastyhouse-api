@@ -29,13 +29,17 @@ import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.repository.product.ProductJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
 import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.member.MemberService;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.member.response.OrderListItemResponse;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.request.OrderItemOptionRequest;
 import com.tastyhouse.webapi.order.request.OrderItemRequest;
 import com.tastyhouse.webapi.order.response.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -250,26 +254,37 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderListItem> getOrderList(Long memberId) {
-        List<Order> orders = orderJpaRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
+    public PageResult<OrderListItemResponse> getOrderList(Long memberId, PageRequest pageRequest) {
+        org.springframework.data.domain.PageRequest springPageRequest =
+            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
 
-        return orders.stream().map(order -> {
+        Page<Order> page = orderJpaRepository.findByMemberIdOrderByCreatedAtDesc(memberId, springPageRequest);
+
+        List<OrderListItemResponse> content = page.getContent().stream().map(order -> {
             Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
             List<OrderItem> items = orderItemJpaRepository.findByOrderId(order.getId());
-            OrderItem firstItem = items.isEmpty() ? null : items.get(0);
+            OrderItem firstItem = items.isEmpty() ? null : items.getFirst();
+            Payment payment = paymentJpaRepository.findByOrderId(order.getId()).orElse(null);
 
-            return OrderListItem.builder()
+            return OrderListItemResponse.builder()
                 .id(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .orderStatus(order.getOrderStatus())
                 .placeName(place != null ? place.getName() : null)
+                .placeThumbnailImageUrl(place != null ? place.getThumbnailImageUrl() : null)
                 .firstProductName(firstItem != null ? firstItem.getProductName() : null)
-                .firstProductImageUrl(firstItem != null ? firstItem.getProductImageUrl() : null)
-                .totalProductCount(items.size())
-                .finalAmount(order.getFinalAmount())
-                .createdAt(order.getCreatedAt())
+                .totalItemCount(items.size())
+                .amount(order.getFinalAmount())
+                .paymentStatus(payment != null ? payment.getPaymentStatus() : null)
+                .paymentDate(payment != null ? payment.getApprovedAt() : null)
                 .build();
         }).toList();
+
+        return new PageResult<>(
+            content,
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.getNumber(),
+            page.getSize()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -284,7 +299,6 @@ public class OrderService {
         Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
         return buildOrderResponse(order, place);
     }
-
 
     private String generateOrderNumber() {
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));

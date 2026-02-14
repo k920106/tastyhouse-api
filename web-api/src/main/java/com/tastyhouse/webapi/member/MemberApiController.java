@@ -7,7 +7,6 @@ import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
-import com.tastyhouse.webapi.member.response.MyPaymentListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
@@ -171,29 +170,6 @@ public class MemberApiController {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<MyReviewListItemResponse> pageResult = memberService.getMyReviews(memberId, pageRequest);
         CommonResponse<List<MyReviewListItemResponse>> response = CommonResponse.success(
-            pageResult.getContent(),
-            pageResult.getCurrentPage(),
-            pageResult.getPageSize(),
-            pageResult.getTotalElements()
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "내 결제 내역 목록 조회", description = "로그인한 회원의 결제 내역 목록을 페이징하여 조회합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    })
-    @GetMapping("/v1/me/payments")
-    public ResponseEntity<CommonResponse<List<MyPaymentListItemResponse>>> getMyPayments(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
-        @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
-    ) {
-        Long memberId = userDetails.getMemberId();
-        PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<MyPaymentListItemResponse> pageResult = memberService.getMyPayments(memberId, pageRequest);
-        CommonResponse<List<MyPaymentListItemResponse>> response = CommonResponse.success(
             pageResult.getContent(),
             pageResult.getCurrentPage(),
             pageResult.getPageSize(),

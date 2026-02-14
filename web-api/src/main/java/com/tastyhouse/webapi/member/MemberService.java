@@ -1,12 +1,10 @@
 package com.tastyhouse.webapi.member;
 
-import com.tastyhouse.core.entity.payment.dto.MyPaymentListItemDto;
 import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import com.tastyhouse.core.entity.rank.MemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
-import com.tastyhouse.core.repository.payment.PaymentRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
@@ -15,19 +13,12 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
-import com.tastyhouse.webapi.member.response.MemberProfileResponse;
-import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
-import com.tastyhouse.webapi.member.response.MyPaymentListItemResponse;
-import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
-import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
-import com.tastyhouse.webapi.member.response.PointResponse;
-import com.tastyhouse.webapi.member.response.UsablePointResponse;
+import com.tastyhouse.webapi.member.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +33,6 @@ public class MemberService {
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
-    private final PaymentRepository paymentRepository;
     private final PlaceRepository placeRepository;
 
     public PointResponse getMemberPoint(Long memberId) {
@@ -107,25 +97,6 @@ public class MemberService {
 
         List<MyReviewListItemResponse> content = page.getContent().stream()
             .map(MyReviewListItemResponse::from)
-            .collect(Collectors.toList());
-
-        return new PageResult<>(
-            content,
-            page.getTotalElements(),
-            page.getTotalPages(),
-            page.getNumber(),
-            page.getSize()
-        );
-    }
-
-    public PageResult<MyPaymentListItemResponse> getMyPayments(Long memberId, PageRequest pageRequest) {
-        org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
-
-        Page<MyPaymentListItemDto> page = paymentRepository.findMyPayments(memberId, springPageRequest);
-
-        List<MyPaymentListItemResponse> content = page.getContent().stream()
-            .map(MyPaymentListItemResponse::from)
             .collect(Collectors.toList());
 
         return new PageResult<>(

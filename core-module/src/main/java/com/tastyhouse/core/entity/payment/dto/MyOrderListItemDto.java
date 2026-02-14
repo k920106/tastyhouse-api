@@ -7,8 +7,8 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class MyPaymentListItemDto {
-    private final Long paymentId;
+public class MyOrderListItemDto {
+    private final Long id;
     private final String placeName;
     private final String placeThumbnailImageUrl;
     private final String firstProductName;
@@ -18,11 +18,11 @@ public class MyPaymentListItemDto {
     private final LocalDateTime paymentDate;
 
     @QueryProjection
-    public MyPaymentListItemDto(Long paymentId, String placeName,
+    public MyOrderListItemDto(Long id, String placeName,
                                 String placeThumbnailImageUrl, String firstProductName,
                                 Integer totalItemCount, Integer amount,
                                 PaymentStatus paymentStatus, LocalDateTime paymentDate) {
-        this.paymentId = paymentId;
+        this.id = id;
         this.placeName = placeName;
         this.placeThumbnailImageUrl = placeThumbnailImageUrl;
         this.firstProductName = firstProductName;

@@ -1,11 +1,14 @@
 package com.tastyhouse.webapi.order;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.member.response.OrderListItemResponse;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
-import com.tastyhouse.webapi.order.response.OrderListItem;
 import com.tastyhouse.webapi.order.response.OrderResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,15 +55,25 @@ public class OrderApiController {
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     @GetMapping("/v1")
-    public ResponseEntity<CommonResponse<List<OrderListItem>>> getOrderList(
-        @AuthenticationPrincipal CustomUserDetails userDetails
+    public ResponseEntity<CommonResponse<List<OrderListItemResponse>>> getOrderList(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(401).build();
         }
 
-        List<OrderListItem> response = orderService.getOrderList(userDetails.getMemberId());
-        return ResponseEntity.ok(CommonResponse.success(response));
+        Long memberId = userDetails.getMemberId();
+        PageRequest pageRequest = new PageRequest(page, size);
+        PageResult<OrderListItemResponse> pageResult = orderService.getOrderList(memberId, pageRequest);
+        CommonResponse<List<OrderListItemResponse>> response = CommonResponse.success(
+            pageResult.getContent(),
+            pageResult.getCurrentPage(),
+            pageResult.getPageSize(),
+            pageResult.getTotalElements()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "주문 상세 조회", description = "주문 상세 정보를 조회합니다.")

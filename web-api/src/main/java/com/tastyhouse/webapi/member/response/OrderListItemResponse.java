@@ -1,7 +1,7 @@
 package com.tastyhouse.webapi.member.response;
 
 import com.tastyhouse.core.entity.payment.PaymentStatus;
-import com.tastyhouse.core.entity.payment.dto.MyPaymentListItemDto;
+import com.tastyhouse.core.entity.payment.dto.MyOrderListItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class MyPaymentListItemResponse {
-    private Long paymentId;
+public class OrderListItemResponse {
+    private Long id;
     private String placeName;
     private String placeThumbnailImageUrl;
     private String firstProductName;
@@ -21,9 +21,9 @@ public class MyPaymentListItemResponse {
     private PaymentStatus paymentStatus;
     private LocalDateTime paymentDate;
 
-    public static MyPaymentListItemResponse from(MyPaymentListItemDto dto) {
-        return MyPaymentListItemResponse.builder()
-            .paymentId(dto.getPaymentId())
+    public static OrderListItemResponse from(MyOrderListItemDto dto) {
+        return OrderListItemResponse.builder()
+            .id(dto.getId())
             .placeName(dto.getPlaceName())
             .placeThumbnailImageUrl(dto.getPlaceThumbnailImageUrl())
             .firstProductName(dto.getFirstProductName())
