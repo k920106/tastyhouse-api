@@ -2,15 +2,11 @@ package com.tastyhouse.webapi.file;
 
 import com.tastyhouse.core.entity.file.UploadedFile;
 import com.tastyhouse.core.service.FileCoreService;
+import com.tastyhouse.webapi.file.storage.FileStorageStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
@@ -21,6 +17,7 @@ import java.util.UUID;
 public class FileService {
 
     private final FileCoreService fileCoreService;
+    private final FileStorageStrategy fileStorageStrategy;
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
@@ -29,9 +26,6 @@ public class FileService {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
-    @Value("${file.upload.path}")
-    private String uploadPath;
-
     public Long upload(MultipartFile file) {
         validateFile(file);
 
@@ -39,26 +33,31 @@ public class FileService {
         String extension = extractExtension(originalFilename);
         String storedFilename = UUID.randomUUID() + "." + extension;
         String datePath = LocalDate.now().format(DATE_FORMATTER);
-        Path directoryPath = Paths.get(uploadPath, datePath);
-        Path filePath = directoryPath.resolve(storedFilename);
 
-        try {
-            Files.createDirectories(directoryPath);
-            file.transferTo(filePath.toFile());
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장에 실패했습니다.", e);
-        }
+        // 파일 저장소에 저장 (Strategy 패턴 사용)
+        String filePath = fileStorageStrategy.store(file, storedFilename, datePath);
 
         UploadedFile uploadedFile = UploadedFile.builder()
             .originalFilename(originalFilename)
             .storedFilename(storedFilename)
-            .filePath(datePath + "/" + storedFilename)
+            .filePath(filePath)
             .fileSize(file.getSize())
             .contentType(file.getContentType())
             .build();
 
         UploadedFile saved = fileCoreService.save(uploadedFile);
         return saved.getId();
+    }
+
+    /**
+     * 파일 URL 조회
+     *
+     * @param fileId 파일 ID
+     * @return 파일 접근 URL
+     */
+    public String getFileUrl(Long fileId) {
+        UploadedFile file = fileCoreService.findById(fileId);
+        return fileStorageStrategy.getFileUrl(file.getFilePath());
     }
 
     private void validateFile(MultipartFile file) {

@@ -13,6 +13,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
+import com.tastyhouse.webapi.file.FileService;
 import com.tastyhouse.webapi.member.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,13 +29,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class MemberService {
 
+    private final FileService fileService;
+
     private final MemberJpaRepository memberJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PlaceRepository placeRepository;
-    private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
@@ -66,9 +68,7 @@ public class MemberService {
             .map(member -> {
                 String profileImageUrl = null;
                 if (member.getProfileImageFileId() != null) {
-                    profileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
-                        .map(file -> file.getFilePath())
-                        .orElse(null);
+                    profileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
                 }
 
                 return MemberProfileResponse.builder()

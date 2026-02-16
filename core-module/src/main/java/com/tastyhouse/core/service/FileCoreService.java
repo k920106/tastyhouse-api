@@ -16,4 +16,10 @@ public class FileCoreService {
     public UploadedFile save(UploadedFile uploadedFile) {
         return uploadedFileJpaRepository.save(uploadedFile);
     }
+
+    @Transactional(readOnly = true)
+    public UploadedFile findById(Long id) {
+        return uploadedFileJpaRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다. ID: " + id));
+    }
 }
