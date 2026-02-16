@@ -1,6 +1,7 @@
 package com.tastyhouse.core.repository.rank;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tastyhouse.core.entity.file.QUploadedFile;
 import com.tastyhouse.core.entity.rank.QMemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.rank.dto.MemberRankDto;
@@ -23,18 +24,20 @@ public class MemberReviewRankRepositoryImpl implements MemberReviewRankRepositor
     public List<MemberRankDto> findMemberRankList(RankType rankType, LocalDate baseDate, int limit) {
         QMemberReviewRank rank = QMemberReviewRank.memberReviewRank;
         QMember member = QMember.member;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         return queryFactory
             .select(new QMemberRankDto(
                 rank.memberId,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 rank.reviewCount,
                 rank.rankNo,
                 member.memberGrade
             ))
             .from(rank)
             .innerJoin(member).on(rank.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .where(
                 rank.rankType.eq(rankType),
                 rank.baseDate.eq(baseDate)
@@ -48,18 +51,20 @@ public class MemberReviewRankRepositoryImpl implements MemberReviewRankRepositor
     public Optional<MemberRankDto> findMemberRank(Long memberId, RankType rankType, LocalDate baseDate) {
         QMemberReviewRank rank = QMemberReviewRank.memberReviewRank;
         QMember member = QMember.member;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         return Optional.ofNullable(queryFactory
             .select(new QMemberRankDto(
                 rank.memberId,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 rank.reviewCount,
                 rank.rankNo,
                 member.memberGrade
             ))
             .from(rank)
             .innerJoin(member).on(rank.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .where(
                 rank.memberId.eq(memberId),
                 rank.rankType.eq(rankType),

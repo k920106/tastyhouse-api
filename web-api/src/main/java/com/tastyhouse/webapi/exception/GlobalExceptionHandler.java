@@ -19,6 +19,14 @@ public class GlobalExceptionHandler {
             .body(CommonResponse.error(e.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CommonResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("IllegalArgumentException: {}", e.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error(e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CommonResponse<Void>> handleException(Exception e) {
         log.error("Unexpected error occurred", e);

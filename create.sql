@@ -147,7 +147,7 @@ CREATE TABLE MEMBER
     gender                    VARCHAR(10)  NOT NULL,
     phone_number              VARCHAR(20),
     member_grade              VARCHAR(20)  NOT NULL DEFAULT 'NEWCOMER',
-    profile_image_url         VARCHAR(500),
+    profile_image_file_id     BIGINT,
     status_message            VARCHAR(200),
     push_notification_enabled TINYINT(1)   NOT NULL DEFAULT 1,
     marketing_info_enabled    TINYINT(1)   NOT NULL DEFAULT 0,
@@ -751,6 +751,19 @@ CREATE TABLE PAYMENT_REFUND
     updated_at    DATETIME    NOT NULL,
     INDEX idx_payment_refund_payment_id (payment_id),
     INDEX idx_payment_refund_refund_status (refund_status)
+);
+
+CREATE TABLE UPLOADED_FILE
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    original_filename VARCHAR(500)  NOT NULL,
+    stored_filename   VARCHAR(500)  NOT NULL,
+    file_path         VARCHAR(1000) NOT NULL,
+    file_size         BIGINT        NOT NULL,
+    content_type      VARCHAR(100)  NOT NULL,
+    created_at        DATETIME      NOT NULL,
+    updated_at        DATETIME      NOT NULL,
+    INDEX idx_uploaded_file_created_at (created_at)
 );
 
 CREATE TABLE TOSS_PAYMENT_RECORD

@@ -34,6 +34,7 @@ public class MemberService {
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PlaceRepository placeRepository;
+    private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
@@ -62,20 +63,29 @@ public class MemberService {
 
     public Optional<MemberProfileResponse> getMemberProfile(Long memberId) {
         return memberJpaRepository.findById(memberId)
-            .map(member -> MemberProfileResponse.builder()
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .grade(member.getMemberGrade())
-                .statusMessage(member.getStatusMessage())
-                .profileImageUrl(member.getProfileImageUrl())
-                .fullName(member.getFullName())
-                .phoneNumber(member.getPhoneNumber())
-                .email(member.getUsername())
-                .build());
+            .map(member -> {
+                String profileImageUrl = null;
+                if (member.getProfileImageFileId() != null) {
+                    profileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
+                        .map(file -> file.getFilePath())
+                        .orElse(null);
+                }
+
+                return MemberProfileResponse.builder()
+                    .id(member.getId())
+                    .nickname(member.getNickname())
+                    .grade(member.getMemberGrade())
+                    .statusMessage(member.getStatusMessage())
+                    .profileImageUrl(profileImageUrl)
+                    .fullName(member.getFullName())
+                    .phoneNumber(member.getPhoneNumber())
+                    .email(member.getUsername())
+                    .build();
+            });
     }
 
     @Transactional
-    public void updateMemberProfile(Long memberId, String nickname, String statusMessage, String profileImageUrl) {
+    public void updateMemberProfile(Long memberId, String nickname, String statusMessage, Long profileImageFileId) {
         memberJpaRepository.findById(memberId).ifPresent(member -> {
             if (nickname != null) {
                 member.setNickname(nickname);
@@ -83,8 +93,8 @@ public class MemberService {
             if (statusMessage != null) {
                 member.setStatusMessage(statusMessage);
             }
-            if (profileImageUrl != null) {
-                member.setProfileImageUrl(profileImageUrl);
+            if (profileImageFileId != null) {
+                member.setProfileImageFileId(profileImageFileId);
             }
         });
     }

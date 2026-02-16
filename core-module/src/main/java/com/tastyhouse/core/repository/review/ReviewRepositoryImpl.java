@@ -3,6 +3,7 @@ package com.tastyhouse.core.repository.review;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tastyhouse.core.entity.file.QUploadedFile;
 import com.tastyhouse.core.entity.place.QPlace;
 import com.tastyhouse.core.entity.place.QPlaceStation;
 import com.tastyhouse.core.entity.product.QProduct;
@@ -86,6 +87,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QReviewImage reviewImage = QReviewImage.reviewImage;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -95,7 +97,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -104,6 +106,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(review.isHidden.eq(false))
             .orderBy(review.createdAt.desc());
@@ -148,6 +151,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -157,7 +161,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -166,6 +170,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(
                 review.memberId.in(followingMemberIds),
@@ -237,6 +242,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
         }
 
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
                 review.id,
@@ -245,7 +252,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -254,6 +261,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(whereClause);
 
@@ -264,7 +272,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             QReviewLike subReviewLike = new QReviewLike("subReviewLike");
             query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
                 .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
-                    member.id, member.nickname, member.profileImageUrl, review.createdAt,
+                    member.id, member.nickname, uploadedFile.filePath, review.createdAt,
                     product.id, product.name)
                 .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
         } else if ("OLDEST".equals(sortType)) {
@@ -324,6 +332,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         ReviewDetailDto result = queryFactory
             .select(new QReviewDetailDto(
@@ -342,13 +351,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.willRevisit,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .where(
                 review.id.eq(reviewId),
                 review.isHidden.eq(false)
@@ -370,6 +380,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
 
@@ -392,7 +403,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -401,6 +412,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(whereClause)
             .orderBy(review.createdAt.desc())
@@ -459,6 +471,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
         }
 
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
                 review.id,
@@ -467,7 +481,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -476,6 +490,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(whereClause);
 
@@ -483,7 +498,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             QReviewLike subReviewLike = new QReviewLike("subReviewLike");
             query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
                 .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
-                    member.id, member.nickname, member.profileImageUrl, review.createdAt,
+                    member.id, member.nickname, uploadedFile.filePath, review.createdAt,
                     product.id, product.name)
                 .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
         } else if ("OLDEST".equals(sortType)) {
@@ -515,6 +530,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         var whereClause = review.productId.eq(productId).and(review.isHidden.eq(false));
 
@@ -535,7 +551,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 review.content,
                 member.id,
                 member.nickname,
-                member.profileImageUrl,
+                uploadedFile.filePath,
                 review.createdAt,
                 product.id,
                 product.name
@@ -544,6 +560,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .innerJoin(place).on(review.placeId.eq(place.id))
             .innerJoin(placeStation).on(place.stationId.eq(placeStation.id))
             .innerJoin(member).on(review.memberId.eq(member.id))
+            .leftJoin(uploadedFile).on(member.profileImageFileId.eq(uploadedFile.id))
             .leftJoin(product).on(review.productId.eq(product.id))
             .where(whereClause)
             .orderBy(review.createdAt.desc())

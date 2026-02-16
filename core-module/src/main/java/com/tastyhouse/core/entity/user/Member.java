@@ -41,8 +41,8 @@ public class Member extends BaseEntity {
     @Column(name = "member_grade", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private MemberGrade memberGrade = MemberGrade.NEWCOMER;
 
-    @Column(name = "profile_image_url", length = 500)
-    private String profileImageUrl;
+    @Column(name = "profile_image_file_id")
+    private Long profileImageFileId;
 
     @Column(name = "status_message", length = 200)
     private String statusMessage;

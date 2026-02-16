@@ -78,7 +78,7 @@ public class MemberApiController {
             userDetails.getMemberId(),
             request.getNickname(),
             request.getStatusMessage(),
-            request.getProfileImageUrl()
+            request.getProfileImageFileId()
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));

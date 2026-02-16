@@ -40,6 +40,7 @@ public class ReviewService {
     private final ProductCoreService productCoreService;
     private final MemberJpaRepository memberJpaRepository;
     private final ProductImageJpaRepository productImageJpaRepository;
+    private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
         ReviewCoreService.ReviewPageResult coreResult = reviewCoreService.findBestReviewsWithPagination(
@@ -217,12 +218,19 @@ public class ReviewService {
     }
 
     private CommentResponse convertToCommentResponse(ReviewComment comment, Member member, List<ReplyResponse> replies) {
+        String memberProfileImageUrl = null;
+        if (member != null && member.getProfileImageFileId() != null) {
+            memberProfileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
+                .map(file -> file.getFilePath())
+                .orElse(null);
+        }
+
         return CommentResponse.builder()
             .id(comment.getId())
             .reviewId(comment.getReviewId())
             .memberId(comment.getMemberId())
             .memberNickname(member != null ? member.getNickname() : null)
-            .memberProfileImageUrl(member != null ? member.getProfileImageUrl() : null)
+            .memberProfileImageUrl(memberProfileImageUrl)
             .content(comment.getContent())
             .createdAt(comment.getCreatedAt())
             .replies(replies)
@@ -230,12 +238,19 @@ public class ReviewService {
     }
 
     private ReplyResponse convertToReplyResponse(ReviewReply reply, Member member, Member replyToMember) {
+        String memberProfileImageUrl = null;
+        if (member != null && member.getProfileImageFileId() != null) {
+            memberProfileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
+                .map(file -> file.getFilePath())
+                .orElse(null);
+        }
+
         return ReplyResponse.builder()
             .id(reply.getId())
             .commentId(reply.getCommentId())
             .memberId(reply.getMemberId())
             .memberNickname(member != null ? member.getNickname() : null)
-            .memberProfileImageUrl(member != null ? member.getProfileImageUrl() : null)
+            .memberProfileImageUrl(memberProfileImageUrl)
             .replyToMemberId(reply.getReplyToMemberId())
             .replyToMemberNickname(replyToMember != null ? replyToMember.getNickname() : null)
             .content(reply.getContent())
