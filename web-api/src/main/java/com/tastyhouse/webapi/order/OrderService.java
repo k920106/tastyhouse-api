@@ -258,7 +258,7 @@ public class OrderService {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
 
-        Page<Order> page = orderJpaRepository.findByMemberIdOrderByCreatedAtDesc(memberId, springPageRequest);
+        Page<Order> page = orderJpaRepository.findCompletedOrCancelledOrdersByMemberId(memberId, springPageRequest);
 
         List<OrderListItemResponse> content = page.getContent().stream().map(order -> {
             Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
