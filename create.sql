@@ -124,6 +124,19 @@ CREATE TABLE EVENT
     INDEX idx_event_period (start_at, end_at)
 );
 
+CREATE TABLE EVENT_ANNOUNCEMENT
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id     BIGINT       NOT NULL UNIQUE,
+    name         VARCHAR(200) NOT NULL,
+    content      VARCHAR(1000) NOT NULL,
+    announced_at DATETIME     NOT NULL,
+    created_at   DATETIME     NOT NULL,
+    updated_at   DATETIME     NOT NULL,
+    INDEX idx_event_announcement_event_id (event_id),
+    INDEX idx_event_announcement_announced_at (announced_at)
+);
+
 CREATE TABLE FOLLOW
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,

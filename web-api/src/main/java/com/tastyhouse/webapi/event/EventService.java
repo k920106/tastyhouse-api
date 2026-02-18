@@ -1,9 +1,9 @@
 package com.tastyhouse.webapi.event;
 
 import com.tastyhouse.core.entity.event.Event;
+import com.tastyhouse.core.entity.event.EventAnnouncement;
 import com.tastyhouse.core.entity.event.EventPrize;
 import com.tastyhouse.core.entity.event.EventStatus;
-import com.tastyhouse.core.entity.event.EventWinner;
 import com.tastyhouse.core.service.EventCoreService;
 import com.tastyhouse.webapi.event.response.*;
 import com.tastyhouse.webapi.exception.NotFoundException;
@@ -12,9 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,51 +67,11 @@ public class EventService {
         return convertToEventDetailResponse(event);
     }
 
-    public List<EventWinnerListResponse> getAllEventWinners() {
-        List<EventWinner> winners = eventCoreService.findAllEventWinners();
-
-        // 이벤트 ID별로 그룹화
-        Map<Long, List<EventWinner>> winnersByEvent = winners.stream()
-            .collect(Collectors.groupingBy(EventWinner::getEventId));
-
-        return winnersByEvent.entrySet().stream()
-            .map(entry -> {
-                Long eventId = entry.getKey();
-                List<EventWinner> eventWinners = entry.getValue();
-
-                Event event = eventCoreService.findEventById(eventId).orElse(null);
-                String eventName = event != null ? event.getName() + " 당첨자 발표" : "이벤트 당첨자 발표";
-                LocalDateTime announcedAt = eventWinners.isEmpty() ? null : eventWinners.get(0).getAnnouncedAt();
-
-                return EventWinnerListResponse.builder()
-                    .eventId(eventId)
-                    .eventName(eventName)
-                    .announcedAt(announcedAt)
-                    .winners(eventWinners.stream()
-                        .map(this::convertToEventWinnerItemResponse)
-                        .toList())
-                    .build();
-            })
-            .sorted(Comparator.comparing(EventWinnerListResponse::getAnnouncedAt,
-                Comparator.nullsLast(Comparator.reverseOrder())))
+    public List<EventAnnouncementListItemResponse> getEventAnnouncementList() {
+        List<EventAnnouncement> announcements = eventCoreService.findAllEventAnnouncements();
+        return announcements.stream()
+            .map(this::convertToEventAnnouncementListItemResponse)
             .toList();
-    }
-
-    public EventWinnerListResponse getEventWinners(Long eventId) {
-        Event event = eventCoreService.findEventById(eventId)
-            .orElseThrow(() -> new NotFoundException("이벤트를 찾을 수 없습니다."));
-
-        List<EventWinner> winners = eventCoreService.findEventWinnersByEventId(eventId);
-        LocalDateTime announcedAt = winners.isEmpty() ? null : winners.get(0).getAnnouncedAt();
-
-        return EventWinnerListResponse.builder()
-            .eventId(eventId)
-            .eventName(event.getName() + " 당첨자 발표")
-            .announcedAt(announcedAt)
-            .winners(winners.stream()
-                .map(this::convertToEventWinnerItemResponse)
-                .toList())
-            .build();
     }
 
     private EventListItemResponse convertToEventListItemResponse(Event event) {
@@ -130,14 +90,12 @@ public class EventService {
             .build();
     }
 
-    private EventWinnerItemResponse convertToEventWinnerItemResponse(EventWinner winner) {
-        return EventWinnerItemResponse.builder()
-            .id(winner.getId())
-            .eventId(winner.getEventId())
-            .rankNo(winner.getRankNo())
-            .winnerName(winner.getMaskedName())
-            .phoneNumber(winner.getMaskedPhoneNumber())
-            .announcedAt(winner.getAnnouncedAt())
+    private EventAnnouncementListItemResponse convertToEventAnnouncementListItemResponse(EventAnnouncement announcement) {
+        return EventAnnouncementListItemResponse.builder()
+            .id(announcement.getId())
+            .name(announcement.getName())
+            .content(announcement.getContent())
+            .announcedAt(announcement.getAnnouncedAt())
             .build();
     }
 }

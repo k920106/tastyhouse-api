@@ -67,27 +67,14 @@ public class EventApiController {
         return ResponseEntity.ok(CommonResponse.success(event));
     }
 
-    @Operation(summary = "전체 이벤트 당첨자 발표 목록 조회", description = "모든 이벤트의 당첨자 발표 목록을 조회합니다.")
+    @Operation(summary = "당첨자 발표 목록 조회", description = "모든 이벤트의 당첨자 발표 목록을 조회합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
-    @GetMapping("/v1/winners")
-    public ResponseEntity<CommonResponse<List<EventWinnerListResponse>>> getAllEventWinners() {
-        List<EventWinnerListResponse> winners = eventService.getAllEventWinners();
-        return ResponseEntity.ok(CommonResponse.success(winners));
+    @GetMapping("/v1/announcements")
+    public ResponseEntity<CommonResponse<List<EventAnnouncementListItemResponse>>> getEventAnnouncementList() {
+        List<EventAnnouncementListItemResponse> announcements = eventService.getEventAnnouncementList();
+        return ResponseEntity.ok(CommonResponse.success(announcements));
     }
 
-    @Operation(summary = "특정 이벤트 당첨자 발표 조회", description = "특정 이벤트의 당첨자 발표를 조회합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-        @ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    })
-    @GetMapping("/v1/winners/{eventId}")
-    public ResponseEntity<CommonResponse<EventWinnerListResponse>> getEventWinners(
-        @Parameter(description = "이벤트 ID", example = "1")
-        @PathVariable Long eventId
-    ) {
-        EventWinnerListResponse winners = eventService.getEventWinners(eventId);
-        return ResponseEntity.ok(CommonResponse.success(winners));
-    }
 }
