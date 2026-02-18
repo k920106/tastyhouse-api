@@ -7,6 +7,7 @@ import com.tastyhouse.core.entity.event.EventWinner;
 import com.tastyhouse.core.service.EventCoreService;
 import com.tastyhouse.webapi.event.response.*;
 import com.tastyhouse.webapi.exception.NotFoundException;
+import com.tastyhouse.webapi.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final EventCoreService eventCoreService;
+    private final FileService fileService;
 
     public Optional<EventDurationResponse> getRankingEventDuration() {
         return eventCoreService.getActiveRankingEvent()
@@ -47,7 +49,7 @@ public class EventService {
             .prizeRank(eventPrize.getPrizeRank())
             .name(eventPrize.getName())
             .brand(eventPrize.getBrand())
-            .imageUrl(eventPrize.getImageUrl())
+            .imageUrl(fileService.getFileUrl(eventPrize.getImageFileId()))
             .build();
     }
 
@@ -118,7 +120,7 @@ public class EventService {
             .name(event.getName())
             .description(event.getDescription())
             .subtitle(event.getSubtitle())
-            .thumbnailImageUrl(event.getThumbnailImageUrl())
+            .thumbnailImageUrl(fileService.getFileUrl(event.getThumbnailImageFileId()))
             .type(event.getType().name())
             .status(event.getStatus().name())
             .startAt(event.getStartAt())
@@ -132,8 +134,8 @@ public class EventService {
             .name(event.getName())
             .description(event.getDescription())
             .subtitle(event.getSubtitle())
-            .thumbnailImageUrl(event.getThumbnailImageUrl())
-            .bannerImageUrl(event.getBannerImageUrl())
+            .thumbnailImageUrl(fileService.getFileUrl(event.getThumbnailImageFileId()))
+            .bannerImageUrl(fileService.getFileUrl(event.getBannerImageFileId()))
             .contentHtml(event.getContentHtml())
             .type(event.getType().name())
             .status(event.getStatus().name())

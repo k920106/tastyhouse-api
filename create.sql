@@ -77,14 +77,14 @@ CREATE TABLE MEMBER_COUPON
 
 CREATE TABLE EVENT_PRIZE
 (
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    event_id   BIGINT       NOT NULL,
-    prize_rank INT          NOT NULL,
-    name       VARCHAR(200) NOT NULL,
-    brand      VARCHAR(100) NOT NULL,
-    image_url  VARCHAR(500),
-    created_at DATETIME     NOT NULL,
-    updated_at DATETIME     NOT NULL,
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id       BIGINT       NOT NULL,
+    prize_rank     INT          NOT NULL,
+    name           VARCHAR(200) NOT NULL,
+    brand          VARCHAR(100) NOT NULL,
+    image_file_id  BIGINT,
+    created_at     DATETIME     NOT NULL,
+    updated_at     DATETIME     NOT NULL,
     UNIQUE KEY uk_event_prize_rank (event_id, prize_rank),
     INDEX idx_event_prize (event_id, prize_rank),
     INDEX idx_prize_brand (brand),
@@ -107,13 +107,13 @@ CREATE TABLE EVENT_WINNER
 
 CREATE TABLE EVENT
 (
-    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name                VARCHAR(200) NOT NULL,
-    description         VARCHAR(1000),
-    subtitle            VARCHAR(200),
-    thumbnail_image_url VARCHAR(500),
-    banner_image_url    VARCHAR(500),
-    content_html        TEXT,
+    id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name                    VARCHAR(200) NOT NULL,
+    description             VARCHAR(1000),
+    subtitle                VARCHAR(200),
+    thumbnail_image_file_id BIGINT,
+    banner_image_file_id    BIGINT,
+    content_html            TEXT,
     type                VARCHAR(50)  NOT NULL DEFAULT 'RANKING',
     status              VARCHAR(20)  NOT NULL,
     start_at            DATETIME     NOT NULL,

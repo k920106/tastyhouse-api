@@ -42,8 +42,8 @@ public class EventPrize extends BaseEntity {
     @Column(name = "brand", nullable = false, length = 100)
     private String brand;
 
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
+    @Column(name = "image_file_id")
+    private Long imageFileId;
 
     @Builder
     public EventPrize(
@@ -51,12 +51,12 @@ public class EventPrize extends BaseEntity {
         Integer prizeRank,
         String name,
         String brand,
-        String imageUrl
+        Long imageFileId
     ) {
         this.eventId = eventId;
         this.prizeRank = prizeRank;
         this.name = name;
         this.brand = brand;
-        this.imageUrl = imageUrl;
+        this.imageFileId = imageFileId;
     }
 }

@@ -34,11 +34,11 @@ public class Event extends BaseEntity {
     @Column(name = "subtitle", length = 200)
     private String subtitle;
 
-    @Column(name = "thumbnail_image_url", length = 500)
-    private String thumbnailImageUrl;
+    @Column(name = "thumbnail_image_file_id")
+    private Long thumbnailImageFileId;
 
-    @Column(name = "banner_image_url", length = 500)
-    private String bannerImageUrl;
+    @Column(name = "banner_image_file_id")
+    private Long bannerImageFileId;
 
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
@@ -62,8 +62,8 @@ public class Event extends BaseEntity {
         String name,
         String description,
         String subtitle,
-        String thumbnailImageUrl,
-        String bannerImageUrl,
+        Long thumbnailImageFileId,
+        Long bannerImageFileId,
         String contentHtml,
         EventType type,
         EventStatus status,
@@ -73,8 +73,8 @@ public class Event extends BaseEntity {
         this.name = name;
         this.description = description;
         this.subtitle = subtitle;
-        this.thumbnailImageUrl = thumbnailImageUrl;
-        this.bannerImageUrl = bannerImageUrl;
+        this.thumbnailImageFileId = thumbnailImageFileId;
+        this.bannerImageFileId = bannerImageFileId;
         this.contentHtml = contentHtml;
         this.type = type;
         this.status = status;
