@@ -6,6 +6,7 @@ import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
+import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
@@ -33,6 +34,7 @@ public class MemberService {
 
     private final MemberJpaRepository memberJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
+    private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
@@ -45,6 +47,22 @@ public class MemberService {
                 .availablePoints(0)
                 .expiredThisMonth(0)
                 .build());
+    }
+
+    public PointHistoryResponse getPointHistory(Long memberId) {
+        PointResponse pointResponse = getMemberPoint(memberId);
+
+        List<PointHistoryItemResponse> histories = memberPointHistoryJpaRepository
+            .findByMemberIdOrderByCreatedAtDesc(memberId)
+            .stream()
+            .map(PointHistoryItemResponse::from)
+            .collect(Collectors.toList());
+
+        return PointHistoryResponse.builder()
+            .availablePoints(pointResponse.getAvailablePoints())
+            .expiredThisMonth(pointResponse.getExpiredThisMonth())
+            .histories(histories)
+            .build();
     }
 
     public List<MemberCouponListItemResponse> getMemberCoupons(Long memberId) {

@@ -9,6 +9,7 @@ import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
+import com.tastyhouse.webapi.member.response.PointHistoryResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
@@ -139,6 +140,20 @@ public class MemberApiController {
         Long memberId = userDetails.getMemberId();
         List<MemberCouponListItemResponse> coupons = memberService.getAvailableMemberCoupons(memberId);
         return ResponseEntity.ok(CommonResponse.success(coupons));
+    }
+
+    @Operation(summary = "포인트 내역 조회", description = "사용 가능 포인트, 이번달 소멸 예정 포인트, 포인트 적립/사용 내역 목록을 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/point/history")
+    public ResponseEntity<CommonResponse<PointHistoryResponse>> getMyPointHistory(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        PointHistoryResponse pointHistory = memberService.getPointHistory(memberId);
+        return ResponseEntity.ok(CommonResponse.success(pointHistory));
     }
 
     @Operation(summary = "사용 가능 포인트 조회 (주문용)", description = "주문 시 사용 가능한 포인트를 조회합니다.")
