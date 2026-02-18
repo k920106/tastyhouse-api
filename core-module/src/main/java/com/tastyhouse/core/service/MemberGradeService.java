@@ -29,16 +29,16 @@ public class MemberGradeService {
 
     /**
      * 등급 기준 (리뷰 개수)
-     * - NEWCOMER: 0~4개
-     * - ACTIVE: 5~19개
-     * - INSIDER: 20~49개
-     * - GOURMET: 50~99개
-     * - TEHA: 100개 이상
+     * - NEWCOMER: 0~99개
+     * - ACTIVE: 100~499개
+     * - INSIDER: 500~699개
+     * - GOURMET: 700~999개
+     * - TEHA: 1,000개 이상
      */
-    private static final int ACTIVE_THRESHOLD = 5;
-    private static final int INSIDER_THRESHOLD = 20;
-    private static final int GOURMET_THRESHOLD = 50;
-    private static final int TEHA_THRESHOLD = 100;
+    public static final int ACTIVE_THRESHOLD = 100;
+    public static final int INSIDER_THRESHOLD = 500;
+    public static final int GOURMET_THRESHOLD = 700;
+    public static final int TEHA_THRESHOLD = 1000;
 
     /**
      * 모든 회원의 등급을 리뷰 개수 기준으로 업데이트
@@ -130,5 +130,23 @@ public class MemberGradeService {
      */
     public MemberGrade calculateGrade(int reviewCount) {
         return determineGrade(reviewCount);
+    }
+
+    /**
+     * 리뷰 개수로 등급을 결정하는 static 유틸리티 메서드
+     * - 서비스 빈 없이 등급 계산이 필요한 경우 사용
+     */
+    public static MemberGrade fromReviewCount(int reviewCount) {
+        if (reviewCount >= TEHA_THRESHOLD) {
+            return MemberGrade.TEHA;
+        } else if (reviewCount >= GOURMET_THRESHOLD) {
+            return MemberGrade.GOURMET;
+        } else if (reviewCount >= INSIDER_THRESHOLD) {
+            return MemberGrade.INSIDER;
+        } else if (reviewCount >= ACTIVE_THRESHOLD) {
+            return MemberGrade.ACTIVE;
+        } else {
+            return MemberGrade.NEWCOMER;
+        }
     }
 }

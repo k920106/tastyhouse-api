@@ -6,7 +6,9 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.grade.GradeService;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
+import com.tastyhouse.webapi.member.response.MyGradeResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointHistoryResponse;
@@ -41,6 +43,7 @@ import java.util.Optional;
 public class MemberApiController {
 
     private final MemberService memberService;
+    private final GradeService gradeService;
 
     @Operation(summary = "내 프로필 조회", description = "로그인한 회원의 프로필 정보를 조회합니다. (마이페이지용)")
     @ApiResponses({
@@ -83,6 +86,20 @@ public class MemberApiController {
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
+    }
+
+    @Operation(summary = "내 등급 조회", description = "로그인한 회원의 현재 등급, 다음 등급, 현재 리뷰 수, 다음 등급까지 필요한 리뷰 수를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
+    })
+    @GetMapping("/v1/me/grade")
+    public ResponseEntity<CommonResponse<MyGradeResponse>> getMyGrade(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        MyGradeResponse myGrade = gradeService.getMyGrade(memberId);
+        return ResponseEntity.ok(CommonResponse.success(myGrade));
     }
 
     @Operation(summary = "내 리뷰 통계 조회", description = "로그인한 회원의 리뷰 통계(전체 리뷰 개수)를 조회합니다.")
