@@ -101,4 +101,9 @@ public class JwtTokenProvider {
         Authentication authentication = getAuthentication(refreshToken);
         return createRefreshToken(authentication);
     }
+
+    public long getExpirationMillis(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        return claims.getExpiration().getTime();
+    }
 }

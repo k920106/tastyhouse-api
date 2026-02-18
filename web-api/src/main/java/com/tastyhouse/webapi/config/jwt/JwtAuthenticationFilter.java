@@ -24,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenBlacklist tokenBlacklist;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -37,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
-                if (jwtTokenProvider.validateToken(jwt)) {
+                if (jwtTokenProvider.validateToken(jwt) && !tokenBlacklist.contains(jwt)) {
                     String username = jwtTokenProvider.getUsernameFromJWT(jwt);
 
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
