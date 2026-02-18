@@ -126,17 +126,7 @@ public class EventService {
 
     private EventDetailResponse convertToEventDetailResponse(Event event) {
         return EventDetailResponse.builder()
-            .id(event.getId())
-            .name(event.getName())
-            .description(event.getDescription())
-            .subtitle(event.getSubtitle())
-            .thumbnailImageUrl(fileService.getFileUrl(event.getThumbnailImageFileId()))
             .bannerImageUrl(fileService.getFileUrl(event.getBannerImageFileId()))
-            .contentHtml(event.getContentHtml())
-            .type(event.getType().name())
-            .status(event.getStatus().name())
-            .startAt(event.getStartAt())
-            .endAt(event.getEndAt())
             .build();
     }
 
