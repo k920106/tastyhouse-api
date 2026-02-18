@@ -335,7 +335,7 @@ public class PaymentService {
         payment.complete(null, LocalDateTime.now(), null);
         order.confirm();
 
-        if (payment.getPaymentMethod() == PaymentMethod.CASH_ON_SITE) {
+        if (isOnSitePayment(payment.getPaymentMethod())) {
             int earnedPoint = (int) (payment.getAmount() * CASH_POINT_EARN_RATE / 100.0);
 
             MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
