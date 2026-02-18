@@ -361,11 +361,11 @@ CREATE TABLE MEMBER_POINT_HISTORY
 CREATE TABLE NOTICE
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    title      VARCHAR(200) NOT NULL,
-    content    TEXT         NOT NULL,
-    is_active  TINYINT(1)   NOT NULL DEFAULT 1,
-    created_at DATETIME     NOT NULL,
-    updated_at DATETIME     NOT NULL,
+    title      VARCHAR(200)  NOT NULL,
+    content    VARCHAR(1000) NOT NULL,
+    is_active  TINYINT(1)    NOT NULL DEFAULT 1,
+    created_at DATETIME      NOT NULL,
+    updated_at DATETIME      NOT NULL,
     INDEX idx_notice_active (is_active),
     INDEX idx_notice_created_at (created_at)
 );

@@ -38,6 +38,7 @@ public class NoticeService {
         return NoticeListItem.builder()
             .id(dto.getId())
             .title(dto.getTitle())
+            .content(dto.getContent())
             .createdAt(dto.getCreatedAt())
             .build();
     }

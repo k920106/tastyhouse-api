@@ -1,6 +1,5 @@
 package com.tastyhouse.core.repository.notice;
 
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.notice.QNotice;
 import com.tastyhouse.core.entity.notice.dto.NoticeListItemDto;
@@ -23,23 +22,26 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     public Page<NoticeListItemDto> findAllWithFilter(Pageable pageable) {
         QNotice notice = QNotice.notice;
 
-        JPAQuery<NoticeListItemDto> query = queryFactory
+        Long total = queryFactory
+            .select(notice.id.count())
+            .from(notice)
+            .where(notice.active.isTrue())
+            .fetchOne();
+
+        List<NoticeListItemDto> notices = queryFactory
             .select(new QNoticeListItemDto(
                 notice.id,
                 notice.title,
+                notice.content,
                 notice.createdAt
             ))
             .from(notice)
             .where(notice.active.isTrue())
-            .orderBy(notice.createdAt.desc());
-
-        long total = query.fetch().size();
-
-        List<NoticeListItemDto> notices = query
+            .orderBy(notice.id.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
 
-        return new PageImpl<>(notices, pageable, total);
+        return new PageImpl<>(notices, pageable, total != null ? total : 0L);
     }
 }

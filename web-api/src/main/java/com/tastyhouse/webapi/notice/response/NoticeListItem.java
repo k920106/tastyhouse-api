@@ -10,5 +10,6 @@ import java.time.LocalDateTime;
 public class NoticeListItem {
     private final Long id;
     private final String title;
+    private final String content;
     private final LocalDateTime createdAt;
 }

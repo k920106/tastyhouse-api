@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
 public class NoticeListItemDto {
     private final Long id;
     private final String title;
+    private final String content;
     private final LocalDateTime createdAt;
 
     @QueryProjection
-    public NoticeListItemDto(Long id, String title, LocalDateTime createdAt) {
+    public NoticeListItemDto(Long id, String title, String content, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
+        this.content = content;
         this.createdAt = createdAt;
     }
 }

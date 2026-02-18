@@ -16,7 +16,7 @@ public class Notice extends BaseEntity {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, length = 1000)
     private String content;
 
     @Column(name = "is_active", nullable = false)
