@@ -118,11 +118,7 @@ public class EventService {
         return EventListItemResponse.builder()
             .id(event.getId())
             .name(event.getName())
-            .description(event.getDescription())
-            .subtitle(event.getSubtitle())
             .thumbnailImageUrl(fileService.getFileUrl(event.getThumbnailImageFileId()))
-            .type(event.getType().name())
-            .status(event.getStatus().name())
             .startAt(event.getStartAt())
             .endAt(event.getEndAt())
             .build();
