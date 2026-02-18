@@ -348,6 +348,7 @@ public class PaymentService {
                 });
 
             memberPoint.addPoints(earnedPoint);
+            order.updateEarnedPoint(earnedPoint);
 
             MemberPointHistory pointHistory = MemberPointHistory.builder()
                 .memberId(memberId)
