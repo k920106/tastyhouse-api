@@ -5,6 +5,8 @@ import com.tastyhouse.core.entity.event.EventAnnouncement;
 import com.tastyhouse.core.entity.event.EventPrize;
 import com.tastyhouse.core.entity.event.EventStatus;
 import com.tastyhouse.core.service.EventCoreService;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.event.response.*;
 import com.tastyhouse.webapi.exception.NotFoundException;
 import com.tastyhouse.webapi.file.FileService;
@@ -53,11 +55,12 @@ public class EventService {
             .build();
     }
 
-    public List<EventListItemResponse> getEventList(EventStatus status) {
-        List<Event> events = eventCoreService.getEventsByStatus(status);
-        return events.stream()
+    public PageResult<EventListItemResponse> getEventList(EventStatus status, PageRequest pageRequest) {
+        EventCoreService.EventPageResult coreResult = eventCoreService.getEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize());
+        List<EventListItemResponse> events = coreResult.getContent().stream()
             .map(this::convertToEventListItemResponse)
             .toList();
+        return new PageResult<>(events, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
     }
 
     public EventDetailResponse getEventDetail(Long eventId) {
@@ -67,11 +70,12 @@ public class EventService {
         return convertToEventDetailResponse(event);
     }
 
-    public List<EventAnnouncementListItemResponse> getEventAnnouncementList() {
-        List<EventAnnouncement> announcements = eventCoreService.findAllEventAnnouncements();
-        return announcements.stream()
+    public PageResult<EventAnnouncementListItemResponse> getEventAnnouncementList(PageRequest pageRequest) {
+        EventCoreService.EventAnnouncementPageResult coreResult = eventCoreService.findAllEventAnnouncements(pageRequest.getPage(), pageRequest.getSize());
+        List<EventAnnouncementListItemResponse> announcements = coreResult.getContent().stream()
             .map(this::convertToEventAnnouncementListItemResponse)
             .toList();
+        return new PageResult<>(announcements, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
     }
 
     private EventListItemResponse convertToEventListItemResponse(Event event) {

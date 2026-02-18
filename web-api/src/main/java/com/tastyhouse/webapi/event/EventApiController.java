@@ -2,6 +2,8 @@ package com.tastyhouse.webapi.event;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.entity.event.EventStatus;
+import com.tastyhouse.webapi.common.PageRequest;
+import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.event.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,10 +49,14 @@ public class EventApiController {
     @GetMapping("/v1/list")
     public ResponseEntity<CommonResponse<List<EventListItemResponse>>> getEventList(
         @Parameter(description = "이벤트 상태 (ACTIVE: 진행중, ENDED: 종료)", example = "ACTIVE")
-        @RequestParam EventStatus status
+        @RequestParam EventStatus status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
     ) {
-        List<EventListItemResponse> events = eventService.getEventList(status);
-        return ResponseEntity.ok(CommonResponse.success(events));
+        PageRequest pageRequest = new PageRequest(page, size);
+        PageResult<EventListItemResponse> pageResult = eventService.getEventList(status, pageRequest);
+        CommonResponse<List<EventListItemResponse>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "이벤트 상세 조회", description = "이벤트의 상세 정보를 조회합니다.")
@@ -72,9 +78,14 @@ public class EventApiController {
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
     @GetMapping("/v1/announcements")
-    public ResponseEntity<CommonResponse<List<EventAnnouncementListItemResponse>>> getEventAnnouncementList() {
-        List<EventAnnouncementListItemResponse> announcements = eventService.getEventAnnouncementList();
-        return ResponseEntity.ok(CommonResponse.success(announcements));
+    public ResponseEntity<CommonResponse<List<EventAnnouncementListItemResponse>>> getEventAnnouncementList(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        PageRequest pageRequest = new PageRequest(page, size);
+        PageResult<EventAnnouncementListItemResponse> pageResult = eventService.getEventAnnouncementList(pageRequest);
+        CommonResponse<List<EventAnnouncementListItemResponse>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
+        return ResponseEntity.ok(response);
     }
 
 }
