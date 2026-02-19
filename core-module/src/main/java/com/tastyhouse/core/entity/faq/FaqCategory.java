@@ -1,0 +1,24 @@
+package com.tastyhouse.core.entity.faq;
+
+import com.tastyhouse.core.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+
+@Getter
+@Entity
+@Table(name = "FAQ_CATEGORY")
+public class FaqCategory extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
+
+    @Column(name = "sort", nullable = false)
+    private Integer sort;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean active = true;
+}
