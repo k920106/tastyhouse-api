@@ -4,7 +4,11 @@ import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import com.tastyhouse.core.entity.rank.MemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
+import com.tastyhouse.core.entity.user.MemberStatus;
+import com.tastyhouse.core.entity.user.MemberWithdrawal;
+import com.tastyhouse.core.entity.user.WithdrawalReason;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
+import com.tastyhouse.core.repository.member.MemberWithdrawalJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
@@ -33,12 +37,28 @@ public class MemberService {
     private final FileService fileService;
 
     private final MemberJpaRepository memberJpaRepository;
+    private final MemberWithdrawalJpaRepository memberWithdrawalJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PlaceRepository placeRepository;
+
+    @Transactional
+    public void withdrawMember(Long memberId, WithdrawalReason reason, String reasonDetail) {
+        memberJpaRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."))
+            .setMemberStatus(MemberStatus.DELETED);
+
+        memberWithdrawalJpaRepository.save(
+            MemberWithdrawal.builder()
+                .memberId(memberId)
+                .reason(reason)
+                .reasonDetail(reasonDetail)
+                .build()
+        );
+    }
 
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
@@ -113,6 +133,36 @@ public class MemberService {
             }
             if (profileImageFileId != null) {
                 member.setProfileImageFileId(profileImageFileId);
+            }
+        });
+    }
+
+    @Transactional
+    public void updatePersonalInfo(Long memberId, String fullName, String phoneNumber, Integer birthDate,
+                                   com.tastyhouse.core.entity.user.Gender gender,
+                                   Boolean pushNotificationEnabled, Boolean marketingInfoEnabled,
+                                   Boolean eventInfoEnabled) {
+        memberJpaRepository.findById(memberId).ifPresent(member -> {
+            if (fullName != null) {
+                member.setFullName(fullName);
+            }
+            if (phoneNumber != null) {
+                member.setPhoneNumber(phoneNumber);
+            }
+            if (birthDate != null) {
+                member.setBirthDate(birthDate);
+            }
+            if (gender != null) {
+                member.setGender(gender);
+            }
+            if (pushNotificationEnabled != null) {
+                member.setPushNotificationEnabled(pushNotificationEnabled);
+            }
+            if (marketingInfoEnabled != null) {
+                member.setMarketingInfoEnabled(marketingInfoEnabled);
+            }
+            if (eventInfoEnabled != null) {
+                member.setEventInfoEnabled(eventInfoEnabled);
             }
         });
     }

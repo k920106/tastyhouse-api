@@ -879,3 +879,14 @@ CREATE TABLE TOSS_PAYMENT_RECORD
     INDEX idx_toss_payment_record_order_id (order_id),
     INDEX idx_toss_payment_record_status (status)
 );
+
+CREATE TABLE MEMBER_WITHDRAWAL
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id     BIGINT       NOT NULL,
+    reason        VARCHAR(50)  NOT NULL,
+    reason_detail VARCHAR(500),
+    created_at    DATETIME     NOT NULL,
+    updated_at    DATETIME     NOT NULL,
+    INDEX idx_member_withdrawal_member_id (member_id)
+);

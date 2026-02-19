@@ -17,6 +17,7 @@ public record BugReportCreateRequest(
     @NotBlank(message = "내용은 필수입니다")
     String content,
 
+    @Size(max = 5, message = "사진은 최대 5장까지 첨부할 수 있습니다")
     List<String> imageUrls
 ) {
 }

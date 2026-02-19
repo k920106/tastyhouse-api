@@ -4,7 +4,9 @@ import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
+import com.tastyhouse.webapi.member.request.UpdatePersonalInfoRequest;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
+import com.tastyhouse.webapi.member.request.WithdrawMemberRequest;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
 import com.tastyhouse.webapi.grade.GradeService;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
@@ -14,8 +16,9 @@ import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointHistoryResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
+import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
+import com.tastyhouse.webapi.config.jwt.TokenBlacklist;
 import com.tastyhouse.webapi.service.CustomUserDetails;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,12 +26,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,6 +51,8 @@ public class MemberApiController {
 
     private final MemberService memberService;
     private final GradeService gradeService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     @Operation(summary = "내 프로필 조회", description = "로그인한 회원의 프로필 정보를 조회합니다. (마이페이지용)")
     @ApiResponses({
@@ -83,6 +92,35 @@ public class MemberApiController {
             request.getNickname(),
             request.getStatusMessage(),
             request.getProfileImageFileId()
+        );
+
+        return ResponseEntity.ok(CommonResponse.success(null));
+    }
+
+    @Operation(summary = "개인정보 수정", description = "로그인한 회원의 개인정보를 수정합니다. (이름, 휴대폰번호, 생년월일, 성별, 알림 수신 동의)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "수정 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)")
+    })
+    @PutMapping("/v1/me/personal-info")
+    public ResponseEntity<CommonResponse<Void>> updateMyPersonalInfo(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody UpdatePersonalInfoRequest request
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        memberService.updatePersonalInfo(
+            userDetails.getMemberId(),
+            request.getFullName(),
+            request.getPhoneNumber(),
+            request.getBirthDate(),
+            request.getGender(),
+            request.getPushNotificationEnabled(),
+            request.getMarketingInfoEnabled(),
+            request.getEventInfoEnabled()
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
@@ -231,5 +269,34 @@ public class MemberApiController {
             pageResult.getTotalElements()
         );
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "탈퇴 사유를 선택하여 회원 탈퇴를 처리합니다. 탈퇴 즉시 Access Token이 무효화됩니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "탈퇴 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (탈퇴 사유 미선택 등)"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @DeleteMapping("/v1/me")
+    public ResponseEntity<CommonResponse<Void>> withdrawMember(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody WithdrawMemberRequest request,
+        @RequestHeader("Authorization") String bearerToken
+    ) {
+        memberService.withdrawMember(
+            userDetails.getMemberId(),
+            request.getReason(),
+            request.getReasonDetail()
+        );
+
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            String accessToken = bearerToken.substring(7).trim();
+            if (jwtTokenProvider.validateToken(accessToken)) {
+                long expirationMillis = jwtTokenProvider.getExpirationMillis(accessToken);
+                tokenBlacklist.add(accessToken, expirationMillis);
+            }
+        }
+
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 }
