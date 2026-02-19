@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.member.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,13 +9,17 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "프로필 수정 요청")
 public class UpdateProfileRequest {
 
     @Size(max = 50, message = "닉네임은 최대 50자까지 입력 가능합니다.")
+    @Schema(description = "닉네임", example = "맛집탐험가")
     private String nickname;
 
     @Size(max = 200, message = "상태메시지는 최대 200자까지 입력 가능합니다.")
+    @Schema(description = "상태메시지", example = "오늘도 맛있는 하루!")
     private String statusMessage;
 
+    @Schema(description = "프로필 이미지 파일 ID", example = "42")
     private Long profileImageFileId;
 }

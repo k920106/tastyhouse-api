@@ -35,11 +35,15 @@ public class AuthController {
     private final TokenBlacklist tokenBlacklist;
 
     @Operation(summary = "로그인", description = "사용자 인증을 통해 JWT 토큰을 발급합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class))), @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true)))})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> authenticateUser(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "로그인 요청 정보", required = true, content = @Content(schema = @Schema(implementation = LoginRequest.class))) @RequestBody LoginRequest loginRequest) {
-
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -50,7 +54,10 @@ public class AuthController {
     }
 
     @Operation(summary = "로그아웃", description = "Access Token을 블랙리스트에 등록하여 로그아웃 처리합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "로그아웃 성공", content = @Content(schema = @Schema(hidden = true))), @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰", content = @Content(schema = @Schema(hidden = true)))})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = @Content(schema = @Schema(hidden = true))),
+        @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰", content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
@@ -66,10 +73,12 @@ public class AuthController {
     }
 
     @Operation(summary = "토큰 갱신", description = "Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급합니다.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class))), @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token", content = @Content(schema = @Schema(hidden = true)))})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class))),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token", content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/refresh")
-    public ResponseEntity<JwtResponse> refreshToken(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Refresh Token", required = true, content = @Content(schema = @Schema(implementation = RefreshTokenRequest.class))) @RequestBody RefreshTokenRequest request) {
-
+    public ResponseEntity<JwtResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
         String newAccessToken = jwtTokenProvider.createAccessTokenFromRefreshToken(request.getRefreshToken());
         String newRefreshToken = jwtTokenProvider.createRefreshTokenFromRefreshToken(request.getRefreshToken());
 
