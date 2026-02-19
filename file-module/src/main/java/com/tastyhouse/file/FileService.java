@@ -1,8 +1,8 @@
-package com.tastyhouse.webapi.file;
+package com.tastyhouse.file;
 
 import com.tastyhouse.core.entity.file.UploadedFile;
 import com.tastyhouse.core.service.FileCoreService;
-import com.tastyhouse.webapi.file.storage.FileStorageStrategy;
+import com.tastyhouse.file.storage.FileStorageStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +34,6 @@ public class FileService {
         String storedFilename = UUID.randomUUID() + "." + extension;
         String datePath = LocalDate.now().format(DATE_FORMATTER);
 
-        // 파일 저장소에 저장 (Strategy 패턴 사용)
         String filePath = fileStorageStrategy.store(file, storedFilename, datePath);
 
         UploadedFile uploadedFile = UploadedFile.builder()
@@ -49,12 +48,6 @@ public class FileService {
         return saved.getId();
     }
 
-    /**
-     * 파일 URL 조회
-     *
-     * @param fileId 파일 ID
-     * @return 파일 접근 URL
-     */
     public String getFileUrl(Long fileId) {
         UploadedFile file = fileCoreService.findById(fileId);
         return fileStorageStrategy.getFileUrl(file.getFilePath());

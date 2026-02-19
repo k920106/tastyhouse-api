@@ -9,7 +9,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.event.response.*;
 import com.tastyhouse.webapi.exception.NotFoundException;
-import com.tastyhouse.webapi.file.FileService;
+import com.tastyhouse.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

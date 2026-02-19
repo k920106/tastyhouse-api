@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.file.storage;
+package com.tastyhouse.file.storage;
 
 import lombok.Getter;
 import lombok.Setter;

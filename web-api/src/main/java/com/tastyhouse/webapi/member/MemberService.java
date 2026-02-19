@@ -18,7 +18,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
-import com.tastyhouse.webapi.file.FileService;
+import com.tastyhouse.file.FileService;
 import com.tastyhouse.webapi.member.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

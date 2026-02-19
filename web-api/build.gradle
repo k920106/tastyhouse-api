@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':core-module')
     implementation project(':external-api')
+    implementation project(':file-module')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-security'

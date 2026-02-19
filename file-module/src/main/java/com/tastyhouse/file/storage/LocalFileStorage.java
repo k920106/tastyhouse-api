@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.file.storage;
+package com.tastyhouse.file.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,6 @@ public class LocalFileStorage implements FileStorageStrategy {
 
     @Override
     public String getFileUrl(String filePath) {
-        // 로컬 환경에서는 baseUrl + filePath 조합
         return properties.getBaseUrl() + "/" + filePath;
     }
 
