@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.report.request;
+package com.tastyhouse.webapi.bug.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -23,7 +23,7 @@ public record BugReportCreateRequest(
     String content,
 
     @Size(max = 5, message = "사진은 최대 5장까지 첨부할 수 있습니다")
-    @Schema(description = "첨부 이미지 URL 목록 (최대 5장)", example = "[\"https://cdn.example.com/img1.jpg\"]")
-    List<String> imageUrls
+    @Schema(description = "첨부 이미지 파일 ID 목록 (최대 5장)", example = "[1, 2, 3]")
+    List<Long> uploadedFileIds
 ) {
 }

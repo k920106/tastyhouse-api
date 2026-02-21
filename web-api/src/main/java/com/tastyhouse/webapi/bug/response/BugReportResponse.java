@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.report.response;
+package com.tastyhouse.webapi.bug.response;
 
 import lombok.Builder;
 
@@ -11,7 +11,7 @@ public record BugReportResponse(
     String device,
     String title,
     String content,
-    List<String> imageUrls,
+    List<Long> uploadedFileIds,
     LocalDateTime createdAt
 ) {
 }

@@ -25,16 +25,16 @@ public class BugReportImage extends BaseEntity {
     @Column(name = "bug_report_id", nullable = false)
     private Long bugReportId;
 
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl; // 이미지 URL
+    @Column(name = "uploaded_file_id", nullable = false)
+    private Long uploadedFileId; // UploadedFile PK
 
     @Column(name = "sort", nullable = false)
     private Integer sort; // 이미지 정렬 순서
 
     @Builder
-    public BugReportImage(Long bugReportId, String imageUrl, Integer sort) {
+    public BugReportImage(Long bugReportId, Long uploadedFileId, Integer sort) {
         this.bugReportId = bugReportId;
-        this.imageUrl = imageUrl;
+        this.uploadedFileId = uploadedFileId;
         this.sort = sort;
     }
 }

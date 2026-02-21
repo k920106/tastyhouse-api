@@ -1,11 +1,11 @@
-package com.tastyhouse.webapi.report;
+package com.tastyhouse.webapi.bug;
 
 import com.tastyhouse.core.entity.report.BugReport;
 import com.tastyhouse.core.entity.report.BugReportImage;
 import com.tastyhouse.core.repository.report.BugReportImageJpaRepository;
 import com.tastyhouse.core.repository.report.BugReportJpaRepository;
-import com.tastyhouse.webapi.report.request.BugReportCreateRequest;
-import com.tastyhouse.webapi.report.response.BugReportResponse;
+import com.tastyhouse.webapi.bug.request.BugReportCreateRequest;
+import com.tastyhouse.webapi.bug.response.BugReportResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +30,12 @@ public class BugReportService {
 
         BugReport savedReport = bugReportJpaRepository.save(bugReport);
 
-        List<String> imageUrls = request.imageUrls();
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            for (int i = 0; i < imageUrls.size(); i++) {
+        List<Long> uploadedFileIds = request.uploadedFileIds();
+        if (uploadedFileIds != null && !uploadedFileIds.isEmpty()) {
+            for (int i = 0; i < uploadedFileIds.size(); i++) {
                 BugReportImage image = BugReportImage.builder()
                     .bugReportId(savedReport.getId())
-                    .imageUrl(imageUrls.get(i))
+                    .uploadedFileId(uploadedFileIds.get(i))
                     .sort(i)
                     .build();
                 bugReportImageJpaRepository.save(image);
@@ -47,7 +47,7 @@ public class BugReportService {
             .device(savedReport.getDevice())
             .title(savedReport.getTitle())
             .content(savedReport.getContent())
-            .imageUrls(imageUrls)
+            .uploadedFileIds(uploadedFileIds)
             .createdAt(savedReport.getCreatedAt())
             .build();
     }

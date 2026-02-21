@@ -28,12 +28,12 @@ CREATE TABLE BUG_REPORT
 
 CREATE TABLE BUG_REPORT_IMAGE
 (
-    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
-    bug_report_id BIGINT       NOT NULL,
-    image_url     VARCHAR(255) NOT NULL,
-    sort          INT          NOT NULL,
-    created_at    DATETIME     NOT NULL,
-    updated_at    DATETIME     NOT NULL,
+    id               BIGINT   AUTO_INCREMENT PRIMARY KEY,
+    bug_report_id    BIGINT   NOT NULL,
+    uploaded_file_id BIGINT   NOT NULL,
+    sort             INT      NOT NULL,
+    created_at       DATETIME NOT NULL,
+    updated_at       DATETIME NOT NULL,
     INDEX idx_bug_report_image_bug_report_id (bug_report_id)
 );
 

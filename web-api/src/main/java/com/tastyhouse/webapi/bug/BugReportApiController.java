@@ -1,8 +1,8 @@
-package com.tastyhouse.webapi.report;
+package com.tastyhouse.webapi.bug;
 
 import com.tastyhouse.core.common.CommonResponse;
-import com.tastyhouse.webapi.report.request.BugReportCreateRequest;
-import com.tastyhouse.webapi.report.response.BugReportResponse;
+import com.tastyhouse.webapi.bug.request.BugReportCreateRequest;
+import com.tastyhouse.webapi.bug.response.BugReportResponse;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +14,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "BugReport", description = "버그 제보 API")
 @RestController
