@@ -3,10 +3,8 @@ package com.tastyhouse.core.repository.report;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tastyhouse.core.entity.report.BugReport;
 import com.tastyhouse.core.entity.report.BugReportImage;
-import com.tastyhouse.core.entity.report.PlaceReport;
 import com.tastyhouse.core.entity.report.QBugReport;
 import com.tastyhouse.core.entity.report.QBugReportImage;
-import com.tastyhouse.core.entity.report.QPlaceReport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -37,16 +35,6 @@ public class ReportRepositoryImpl implements ReportRepository {
             .selectFrom(bugReportImage)
             .where(bugReportImage.bugReportId.eq(bugReportId))
             .orderBy(bugReportImage.sort.asc())
-            .fetch();
-    }
-
-    @Override
-    public List<PlaceReport> findAllPlaceReportsOrderByCreatedAtDesc() {
-        QPlaceReport placeReport = QPlaceReport.placeReport;
-
-        return queryFactory
-            .selectFrom(placeReport)
-            .orderBy(placeReport.createdAt.desc())
             .fetch();
     }
 }

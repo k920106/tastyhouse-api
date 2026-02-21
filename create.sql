@@ -405,17 +405,6 @@ CREATE TABLE PARTNERSHIP_REQUEST
     INDEX idx_partnership_request_consultation_date (consultation_requested_at)
 );
 
-CREATE TABLE PLACE_REPORT
-(
-    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
-    business_name  VARCHAR(200) NOT NULL,
-    address        VARCHAR(500) NOT NULL,
-    address_detail VARCHAR(500),
-    created_at     DATETIME     NOT NULL,
-    updated_at     DATETIME     NOT NULL,
-    INDEX idx_place_report_business_name (business_name)
-);
-
 CREATE TABLE PLACE_OWNER_MESSAGE_HISTORY
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
