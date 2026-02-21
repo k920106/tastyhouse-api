@@ -8,6 +8,7 @@ import com.tastyhouse.core.entity.order.OrderItem;
 import com.tastyhouse.core.entity.order.OrderItemOption;
 import com.tastyhouse.core.entity.order.OrderStatus;
 import com.tastyhouse.core.entity.payment.Payment;
+import com.tastyhouse.core.entity.payment.dto.OrderListItemDto;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.core.entity.point.MemberPoint;
 import com.tastyhouse.core.entity.point.MemberPointHistory;
@@ -258,25 +259,11 @@ public class OrderService {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
 
-        Page<Order> page = orderJpaRepository.findCompletedOrCancelledOrdersByMemberId(memberId, springPageRequest);
+        Page<OrderListItemDto> page = orderJpaRepository.findOrderListByMemberId(memberId, springPageRequest);
 
-        List<OrderListItemResponse> content = page.getContent().stream().map(order -> {
-            Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
-            List<OrderItem> items = orderItemJpaRepository.findByOrderId(order.getId());
-            OrderItem firstItem = items.isEmpty() ? null : items.getFirst();
-            Payment payment = paymentJpaRepository.findByOrderId(order.getId()).orElse(null);
-
-            return OrderListItemResponse.builder()
-                .id(order.getId())
-                .placeName(place != null ? place.getName() : null)
-                .placeThumbnailImageUrl(place != null ? place.getThumbnailImageUrl() : null)
-                .firstProductName(firstItem != null ? firstItem.getProductName() : null)
-                .totalItemCount(items.size())
-                .amount(order.getFinalAmount())
-                .paymentStatus(payment != null ? payment.getPaymentStatus() : null)
-                .paymentDate(payment != null ? payment.getApprovedAt() : null)
-                .build();
-        }).toList();
+        List<OrderListItemResponse> content = page.getContent().stream()
+            .map(OrderListItemResponse::from)
+            .toList();
 
         return new PageResult<>(
             content,
