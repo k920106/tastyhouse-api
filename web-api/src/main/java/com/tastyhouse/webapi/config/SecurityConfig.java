@@ -37,7 +37,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                // 인증 없이 접근 가능한 공개 API
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/policies/**").permitAll()
+                .requestMatchers("/api/faqs/**").permitAll()
+                .requestMatchers("/api/notices/**").permitAll()
+                .requestMatchers("/api/banners/**").permitAll()
+                .requestMatchers("/api/places/**").permitAll()
+                .requestMatchers("/api/event/**").permitAll()
+                .requestMatchers("/api/ranks/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
+                // Swagger UI
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                // 나머지 API는 인증 필요
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

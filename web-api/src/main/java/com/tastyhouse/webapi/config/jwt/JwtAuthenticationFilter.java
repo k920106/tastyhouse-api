@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -26,10 +27,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService customUserDetailsService;
     private final TokenBlacklist tokenBlacklist;
 
+    private static final List<String> PUBLIC_PATHS = List.of(
+        "/api/auth/",
+        "/api/policies/",
+        "/api/faqs/",
+        "/api/notices/",
+        "/api/banners/",
+        "/api/places/",
+        "/api/event/",
+        "/api/ranks/",
+        "/api/products/",
+        "/swagger-ui/",
+        "/v3/api-docs"
+    );
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/");
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
     @Override
@@ -37,21 +52,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt)) {
-                if (jwtTokenProvider.validateToken(jwt) && !tokenBlacklist.contains(jwt)) {
-                    String username = jwtTokenProvider.getUsernameFromJWT(jwt);
+            if (!StringUtils.hasText(jwt)) {
+                // 토큰이 없는 요청은 인증 정보 없이 다음 필터로 전달
+                // SecurityConfig의 authenticated() 설정에 의해 보호된 엔드포인트는 자동으로 401 반환
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            if (jwtTokenProvider.validateToken(jwt) && !tokenBlacklist.contains(jwt)) {
+                String username = jwtTokenProvider.getUsernameFromJWT(jwt);
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
-                    return;
-                }
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
+                return;
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
