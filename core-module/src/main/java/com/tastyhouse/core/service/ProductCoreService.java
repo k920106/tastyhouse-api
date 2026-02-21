@@ -60,6 +60,14 @@ public class ProductCoreService {
         return productOptionGroupJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId);
     }
 
+    public Optional<ProductOptionGroup> findProductOptionGroupById(Long optionGroupId) {
+        return productOptionGroupJpaRepository.findById(optionGroupId);
+    }
+
+    public Optional<ProductOption> findProductOptionById(Long optionId) {
+        return productOptionJpaRepository.findById(optionId);
+    }
+
     public List<ProductOption> findProductOptionsByOptionGroupIds(List<Long> optionGroupIds) {
         return productOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
     }

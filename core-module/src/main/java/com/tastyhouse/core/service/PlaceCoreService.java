@@ -39,29 +39,20 @@ public class PlaceCoreService {
         return placeRepository.findNearbyPlaces(lat, lon);
     }
 
-    public BestPlacePageResult findBestPlaces(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<BestPlaceItemDto> bestPlacePage = placeRepository.findBestPlaces(pageRequest);
-
-        return new BestPlacePageResult(bestPlacePage.getContent(), bestPlacePage.getTotalElements(), bestPlacePage.getTotalPages(), bestPlacePage.getNumber(), bestPlacePage.getSize());
+    public Page<BestPlaceItemDto> findBestPlaces(int page, int size) {
+        return placeRepository.findBestPlaces(PageRequest.of(page, size));
     }
 
-    public LatestPlacePageResult findLatestPlaces(int page, int size, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<LatestPlaceItemDto> latestPlacePage = placeRepository.findLatestPlaces(pageRequest, stationId, foodTypes, amenities);
-
-        return new LatestPlacePageResult(latestPlacePage.getContent(), latestPlacePage.getTotalElements(), latestPlacePage.getTotalPages(), latestPlacePage.getNumber(), latestPlacePage.getSize());
+    public Page<LatestPlaceItemDto> findLatestPlaces(int page, int size, Long stationId, List<FoodType> foodTypes, List<Amenity> amenities) {
+        return placeRepository.findLatestPlaces(PageRequest.of(page, size), stationId, foodTypes, amenities);
     }
 
     public List<EditorChoiceDto> findEditorChoices() {
         return placeChoiceRepository.findEditorChoice();
     }
 
-    public EditorChoicePageResult findEditorChoices(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<EditorChoiceDto> editorChoicePage = placeChoiceRepository.findEditorChoice(pageRequest);
-
-        return new EditorChoicePageResult(editorChoicePage.getContent(), editorChoicePage.getTotalElements(), editorChoicePage.getTotalPages(), editorChoicePage.getNumber(), editorChoicePage.getSize());
+    public Page<EditorChoiceDto> findEditorChoices(int page, int size) {
+        return placeChoiceRepository.findEditorChoice(PageRequest.of(page, size));
     }
 
     public List<PlaceStation> findAllStations() {
@@ -128,167 +119,12 @@ public class PlaceCoreService {
         return placePhotoCategoryImageJpaRepository.findAll(Sort.by("sort").ascending());
     }
 
-    public PhotoCategoryImagePageResult findPlacePhotoCategoryImages(Long placePhotoCategoryId, int page, int size) {
+    public Page<PlacePhotoCategoryImage> findPlacePhotoCategoryImages(Long placePhotoCategoryId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("sort").ascending());
-        Page<PlacePhotoCategoryImage> photoPage;
-        
+
         if (placePhotoCategoryId != null) {
-            photoPage = placePhotoCategoryImageJpaRepository.findByPlacePhotoCategoryIdOrderBySortAsc(placePhotoCategoryId, pageRequest);
-        } else {
-            photoPage = placePhotoCategoryImageJpaRepository.findAll(pageRequest);
+            return placePhotoCategoryImageJpaRepository.findByPlacePhotoCategoryIdOrderBySortAsc(placePhotoCategoryId, pageRequest);
         }
-        
-        return new PhotoCategoryImagePageResult(
-                photoPage.getContent(),
-                photoPage.getTotalElements(),
-                photoPage.getTotalPages(),
-                photoPage.getNumber(),
-                photoPage.getSize()
-        );
-    }
-
-
-    public static class BestPlacePageResult {
-        private final List<BestPlaceItemDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public BestPlacePageResult(List<BestPlaceItemDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<BestPlaceItemDto> getContent() {
-            return content;
-        }
-
-        public long getTotalElements() {
-            return totalElements;
-        }
-
-        public int getTotalPages() {
-            return totalPages;
-        }
-
-        public int getCurrentPage() {
-            return currentPage;
-        }
-
-        public int getPageSize() {
-            return pageSize;
-        }
-    }
-
-    public static class EditorChoicePageResult {
-        private final List<EditorChoiceDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public EditorChoicePageResult(List<EditorChoiceDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<EditorChoiceDto> getContent() {
-            return content;
-        }
-
-        public long getTotalElements() {
-            return totalElements;
-        }
-
-        public int getTotalPages() {
-            return totalPages;
-        }
-
-        public int getCurrentPage() {
-            return currentPage;
-        }
-
-        public int getPageSize() {
-            return pageSize;
-        }
-    }
-
-    public static class LatestPlacePageResult {
-        private final List<LatestPlaceItemDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public LatestPlacePageResult(List<LatestPlaceItemDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<LatestPlaceItemDto> getContent() {
-            return content;
-        }
-
-        public long getTotalElements() {
-            return totalElements;
-        }
-
-        public int getTotalPages() {
-            return totalPages;
-        }
-
-        public int getCurrentPage() {
-            return currentPage;
-        }
-
-        public int getPageSize() {
-            return pageSize;
-        }
-    }
-
-    public static class PhotoCategoryImagePageResult {
-        private final List<PlacePhotoCategoryImage> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public PhotoCategoryImagePageResult(List<PlacePhotoCategoryImage> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<PlacePhotoCategoryImage> getContent() {
-            return content;
-        }
-
-        public long getTotalElements() {
-            return totalElements;
-        }
-
-        public int getTotalPages() {
-            return totalPages;
-        }
-
-        public int getCurrentPage() {
-            return currentPage;
-        }
-
-        public int getPageSize() {
-            return pageSize;
-        }
+        return placePhotoCategoryImageJpaRepository.findAll(pageRequest);
     }
 }

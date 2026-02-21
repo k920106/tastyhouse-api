@@ -47,15 +47,16 @@ public class PlaceService {
     }
 
     public PageResult<BestPlaceListItem> findBestPlaces(PageRequest pageRequest) {
-        PlaceCoreService.BestPlacePageResult coreResult = placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
+        org.springframework.data.domain.Page<BestPlaceItemDto> page =
+            placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
 
-        List<BestPlaceListItem> bestPlaceListItems = coreResult.getContent().stream().map(this::convertToBestPlaceListItem).toList();
+        List<BestPlaceListItem> bestPlaceListItems = page.getContent().stream().map(this::convertToBestPlaceListItem).toList();
 
-        return new PageResult<>(bestPlaceListItems, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
+        return new PageResult<>(bestPlaceListItems, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
     public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
-        PlaceCoreService.LatestPlacePageResult coreResult = placeCoreService.findLatestPlaces(
+        org.springframework.data.domain.Page<LatestPlaceItemDto> page = placeCoreService.findLatestPlaces(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
                 filterRequest.stationId(),
@@ -63,21 +64,18 @@ public class PlaceService {
                 filterRequest.amenities()
         );
 
-        List<LatestPlaceListItem> latestPlaceListItems = coreResult.getContent().stream().map(this::convertToLatestPlaceListItem).toList();
+        List<LatestPlaceListItem> latestPlaceListItems = page.getContent().stream().map(this::convertToLatestPlaceListItem).toList();
 
-        return new PageResult<>(latestPlaceListItems, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
+        return new PageResult<>(latestPlaceListItems, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
     public List<EditorChoiceResponse> findEditorChoices() {
-        List<EditorChoiceDto> editorChoices = placeCoreService.findEditorChoices();
-
-        return editorChoices.stream().map(this::convertToEditorChoiceResponse).toList();
+        return placeCoreService.findEditorChoices().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     public List<EditorChoiceResponse> findEditorChoices(PageRequest pageRequest) {
-        PlaceCoreService.EditorChoicePageResult coreResult = placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize());
-
-        return coreResult.getContent().stream().map(this::convertToEditorChoiceResponse).toList();
+        return placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize())
+            .getContent().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {

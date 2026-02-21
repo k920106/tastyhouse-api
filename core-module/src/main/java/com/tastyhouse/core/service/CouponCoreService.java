@@ -44,6 +44,10 @@ public class CouponCoreService {
         return memberCouponJpaRepository.findAvailableCouponsByMemberId(memberId, LocalDateTime.now());
     }
 
+    public Optional<MemberCoupon> findMemberCouponById(Long memberCouponId) {
+        return memberCouponJpaRepository.findById(memberCouponId);
+    }
+
     public Optional<MemberCoupon> findMemberCoupon(Long memberId, Long couponId) {
         return memberCouponJpaRepository.findByMemberIdAndCouponId(memberId, couponId);
     }

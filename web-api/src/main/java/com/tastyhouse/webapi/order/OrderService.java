@@ -10,26 +10,16 @@ import com.tastyhouse.core.entity.order.OrderStatus;
 import com.tastyhouse.core.entity.payment.Payment;
 import com.tastyhouse.core.entity.payment.dto.OrderListItemDto;
 import com.tastyhouse.core.entity.place.Place;
-import com.tastyhouse.core.entity.point.MemberPoint;
-import com.tastyhouse.core.entity.point.MemberPointHistory;
-import com.tastyhouse.core.entity.point.PointType;
 import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.product.ProductOption;
 import com.tastyhouse.core.entity.product.ProductOptionGroup;
-import com.tastyhouse.core.repository.coupon.CouponJpaRepository;
-import com.tastyhouse.core.repository.coupon.MemberCouponJpaRepository;
-import com.tastyhouse.core.repository.order.OrderItemJpaRepository;
-import com.tastyhouse.core.repository.order.OrderItemOptionJpaRepository;
-import com.tastyhouse.core.repository.order.OrderJpaRepository;
-import com.tastyhouse.core.repository.payment.PaymentJpaRepository;
-import com.tastyhouse.core.repository.place.PlaceJpaRepository;
-import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
-import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
-import com.tastyhouse.core.repository.product.ProductJpaRepository;
-import com.tastyhouse.core.repository.product.ProductOptionGroupJpaRepository;
-import com.tastyhouse.core.repository.product.ProductOptionJpaRepository;
+import com.tastyhouse.core.service.CouponCoreService;
+import com.tastyhouse.core.service.OrderCoreService;
+import com.tastyhouse.core.service.PlaceCoreService;
+import com.tastyhouse.core.service.PointCoreService;
+import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.member.MemberService;
@@ -53,25 +43,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final OrderJpaRepository orderJpaRepository;
-    private final OrderItemJpaRepository orderItemJpaRepository;
-    private final OrderItemOptionJpaRepository orderItemOptionJpaRepository;
-    private final PaymentJpaRepository paymentJpaRepository;
-    private final ProductJpaRepository productJpaRepository;
+    private final OrderCoreService orderCoreService;
+    private final PointCoreService pointCoreService;
+    private final CouponCoreService couponCoreService;
+    private final ProductCoreService productCoreService;
+    private final PlaceCoreService placeCoreService;
     private final ProductImageJpaRepository productImageJpaRepository;
-    private final ProductOptionGroupJpaRepository productOptionGroupJpaRepository;
-    private final ProductOptionJpaRepository productOptionJpaRepository;
-    private final PlaceJpaRepository placeJpaRepository;
-    private final MemberCouponJpaRepository memberCouponJpaRepository;
-    private final CouponJpaRepository couponJpaRepository;
-    private final MemberPointJpaRepository memberPointJpaRepository;
-    private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
     private final MemberService memberService;
 
     @Transactional
     public OrderResponse createOrder(Long memberId, OrderCreateRequest request) {
-        Place place = placeJpaRepository.findById(request.placeId())
-            .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+        Place place = placeCoreService.findPlaceById(request.placeId());
 
         MemberProfileResponse contact = memberService.getMemberProfile(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
@@ -89,10 +71,10 @@ public class OrderService {
             .ordererEmail(contact.getEmail())
             .build();
 
-        Order savedOrder = orderJpaRepository.save(order);
+        Order savedOrder = orderCoreService.saveOrder(order);
 
         for (OrderItemRequest itemRequest : request.orderItems()) {
-            Product product = productJpaRepository.findById(itemRequest.productId())
+            Product product = productCoreService.findProductById(itemRequest.productId())
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + itemRequest.productId()));
 
             if (product.getIsSoldOut()) {
@@ -116,26 +98,24 @@ public class OrderService {
                 .discountPrice(discountPrice)
                 .build();
 
-            OrderItem savedOrderItem = orderItemJpaRepository.save(orderItem);
+            OrderItem savedOrderItem = orderCoreService.saveOrderItem(orderItem);
 
             if (itemRequest.selectedOptions() != null) {
                 for (OrderItemOptionRequest optionRequest : itemRequest.selectedOptions()) {
-                    ProductOptionGroup optionGroup = productOptionGroupJpaRepository.findById(optionRequest.groupId())
+                    ProductOptionGroup optionGroup = productCoreService.findProductOptionGroupById(optionRequest.groupId())
                         .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
 
-                    ProductOption option = productOptionJpaRepository.findById(optionRequest.optionId())
+                    ProductOption option = productCoreService.findProductOptionById(optionRequest.optionId())
                         .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다."));
 
-                    OrderItemOption orderItemOption = OrderItemOption.builder()
+                    orderCoreService.saveOrderItemOption(OrderItemOption.builder()
                         .orderItemId(savedOrderItem.getId())
                         .optionGroupId(optionGroup.getId())
                         .optionGroupName(optionGroup.getName())
                         .optionId(option.getId())
                         .optionName(option.getName())
                         .additionalPrice(option.getAdditionalPrice())
-                        .build();
-
-                    orderItemOptionJpaRepository.save(orderItemOption);
+                        .build());
 
                     optionTotalPrice += option.getAdditionalPrice();
                 }
@@ -154,7 +134,7 @@ public class OrderService {
         int couponDiscountAmount = 0;
         Long memberCouponId = null;
         if (request.memberCouponId() != null) {
-            MemberCoupon memberCoupon = memberCouponJpaRepository.findById(request.memberCouponId())
+            MemberCoupon memberCoupon = couponCoreService.findMemberCouponById(request.memberCouponId())
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다."));
 
             if (!memberCoupon.getMemberId().equals(memberId)) {
@@ -165,7 +145,7 @@ public class OrderService {
                 throw new IllegalStateException("사용할 수 없는 쿠폰입니다.");
             }
 
-            Coupon coupon = couponJpaRepository.findById(memberCoupon.getCouponId())
+            Coupon coupon = couponCoreService.findCouponById(memberCoupon.getCouponId())
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰 정보를 찾을 수 없습니다."));
 
             int orderAmountAfterProductDiscount = totalProductAmount - productDiscountAmount;
@@ -173,14 +153,10 @@ public class OrderService {
                 throw new IllegalStateException("최소 주문 금액을 충족하지 않습니다.");
             }
 
-            // 쿠폰 타입에 따라 할인 금액 계산
             if (coupon.getDiscountType() == DiscountType.AMOUNT) {
-                // 정액 할인
                 couponDiscountAmount = coupon.getDiscountAmount();
             } else if (coupon.getDiscountType() == DiscountType.RATE) {
-                // 정률 할인 - 상품 할인 후 금액 기준으로 계산
                 couponDiscountAmount = (int) Math.round(orderAmountAfterProductDiscount * coupon.getDiscountAmount() / 100.0);
-                // 최대 할인 금액 제한 적용
                 if (coupon.getMaxDiscountAmount() != null && couponDiscountAmount > coupon.getMaxDiscountAmount()) {
                     couponDiscountAmount = coupon.getMaxDiscountAmount();
                 }
@@ -192,23 +168,8 @@ public class OrderService {
 
         int pointDiscountAmount = 0;
         if (request.usePoint() > 0) {
-            MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("포인트 정보를 찾을 수 없습니다."));
-
-            if (memberPoint.getAvailablePoints() < request.usePoint()) {
-                throw new IllegalStateException("포인트가 부족합니다.");
-            }
-
             pointDiscountAmount = request.usePoint();
-            memberPoint.deductPoints(pointDiscountAmount);
-
-            MemberPointHistory pointHistory = MemberPointHistory.builder()
-                .memberId(memberId)
-                .pointType(PointType.USE)
-                .pointAmount(-pointDiscountAmount)
-                .reason("주문 결제 사용")
-                .build();
-            memberPointHistoryJpaRepository.save(pointHistory);
+            pointCoreService.usePoints(memberId, pointDiscountAmount);
         }
 
         int totalDiscountAmount = productDiscountAmount + couponDiscountAmount + pointDiscountAmount;
@@ -256,10 +217,11 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public PageResult<OrderListItemResponse> getOrderList(Long memberId, PageRequest pageRequest) {
-        org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+        org.springframework.data.domain.PageRequest springPageRequest = org.springframework.data.domain.PageRequest
+            .of(pageRequest.getPage(), pageRequest.getSize());
 
-        Page<OrderListItemDto> page = orderJpaRepository.findOrderListByMemberId(memberId, springPageRequest);
+        Page<OrderListItemDto> page =
+            orderCoreService.findOrderListByMemberId(memberId, springPageRequest);
 
         List<OrderListItemResponse> content = page.getContent().stream()
             .map(OrderListItemResponse::from)
@@ -276,14 +238,14 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderResponse getOrderDetail(Long memberId, Long orderId) {
-        Order order = orderJpaRepository.findById(orderId)
+        Order order = orderCoreService.findOrderById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         if (!order.getMemberId().equals(memberId)) {
             throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
         }
 
-        Place place = placeJpaRepository.findById(order.getPlaceId()).orElse(null);
+        Place place = placeCoreService.findPlaceById(order.getPlaceId());
         return buildOrderResponse(order, place);
     }
 
@@ -294,10 +256,10 @@ public class OrderService {
     }
 
     private OrderResponse buildOrderResponse(Order order, Place place) {
-        List<OrderItem> items = orderItemJpaRepository.findByOrderId(order.getId());
+        List<OrderItem> items = orderCoreService.findOrderItemsByOrderId(order.getId());
 
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
-            List<OrderItemOption> options = orderItemOptionJpaRepository.findByOrderItemId(item.getId());
+            List<OrderItemOption> options = orderCoreService.findOrderItemOptionsByOrderItemId(item.getId());
 
             List<OrderItemOptionResponse> optionResponses = options.stream()
                 .map(opt -> OrderItemOptionResponse.builder()
@@ -323,7 +285,7 @@ public class OrderService {
         }).toList();
 
         PaymentSummaryResponse paymentSummary = null;
-        Payment payment = paymentJpaRepository.findByOrderId(order.getId()).orElse(null);
+        Payment payment = orderCoreService.findPaymentByOrderId(order.getId()).orElse(null);
         if (payment != null) {
             paymentSummary = PaymentSummaryResponse.builder()
                 .id(payment.getId())
