@@ -106,4 +106,38 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         return claims.getExpiration().getTime();
     }
+
+    public String createPersonalInfoVerifyToken(Long memberId) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + 5 * 60 * 1000L); // 5분
+
+        return Jwts.builder()
+                .subject(String.valueOf(memberId))
+                .claim("type", "PERSONAL_INFO_VERIFY")
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(key)
+                .compact();
+    }
+
+    public Long getMemberIdFromVerifyToken(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        String type = claims.get("type", String.class);
+        if (!"PERSONAL_INFO_VERIFY".equals(type)) {
+            throw new JwtException("유효하지 않은 인증 토큰입니다.");
+        }
+
+        return Long.parseLong(claims.getSubject());
+    }
+
+    public boolean validateVerifyToken(String token) {
+        try {
+            Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            return "PERSONAL_INFO_VERIFY".equals(claims.get("type", String.class));
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid verify token.", e);
+            return false;
+        }
+    }
 }

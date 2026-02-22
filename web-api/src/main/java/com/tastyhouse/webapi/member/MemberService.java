@@ -4,6 +4,7 @@ import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
 import com.tastyhouse.core.entity.rank.MemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
+import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.entity.user.MemberStatus;
 import com.tastyhouse.core.entity.user.MemberWithdrawal;
 import com.tastyhouse.core.entity.user.WithdrawalReason;
@@ -22,6 +23,7 @@ import com.tastyhouse.file.FileService;
 import com.tastyhouse.webapi.member.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final FileService fileService;
+    private final PasswordEncoder passwordEncoder;
 
     private final MemberJpaRepository memberJpaRepository;
     private final MemberWithdrawalJpaRepository memberWithdrawalJpaRepository;
@@ -44,6 +47,22 @@ public class MemberService {
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PlaceRepository placeRepository;
+
+    public void verifyPassword(Long memberId, String rawPassword) {
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!passwordEncoder.matches(rawPassword, member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    public PersonalInfoResponse getPersonalInfo(Long memberId) {
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        return PersonalInfoResponse.from(member);
+    }
 
     @Transactional
     public void withdrawMember(Long memberId, WithdrawalReason reason, String reasonDetail) {

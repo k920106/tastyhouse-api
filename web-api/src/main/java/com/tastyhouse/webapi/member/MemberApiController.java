@@ -6,8 +6,11 @@ import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.member.request.UpdatePersonalInfoRequest;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
+import com.tastyhouse.webapi.member.request.VerifyPasswordRequest;
 import com.tastyhouse.webapi.member.request.WithdrawMemberRequest;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.member.response.PersonalInfoResponse;
+import com.tastyhouse.webapi.member.response.VerifyPasswordResponse;
 import com.tastyhouse.webapi.grade.GradeService;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyGradeResponse;
@@ -33,6 +36,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -97,19 +101,60 @@ public class MemberApiController {
         return ResponseEntity.ok(CommonResponse.success(null));
     }
 
-    @Operation(summary = "개인정보 수정", description = "로그인한 회원의 개인정보를 수정합니다. (이름, 휴대폰번호, 생년월일, 성별, 알림 수신 동의)")
+    @Operation(summary = "비밀번호 인증 (개인정보 수정 진입)", description = "개인정보 수정 화면 진입 전 현재 비밀번호를 검증합니다. 검증 성공 시 5분간 유효한 verifyToken을 반환합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "인증 성공 - verifyToken 반환", content = @Content(schema = @Schema(implementation = VerifyPasswordResponse.class))),
+        @ApiResponse(responseCode = "400", description = "비밀번호 불일치"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @PostMapping("/v1/me/verify-password")
+    public ResponseEntity<CommonResponse<VerifyPasswordResponse>> verifyPassword(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Valid @RequestBody VerifyPasswordRequest request
+    ) {
+        memberService.verifyPassword(userDetails.getMemberId(), request.getPassword());
+
+        String verifyToken = jwtTokenProvider.createPersonalInfoVerifyToken(userDetails.getMemberId());
+
+        return ResponseEntity.ok(CommonResponse.success(
+            VerifyPasswordResponse.builder().verifyToken(verifyToken).build()
+        ));
+    }
+
+    @Operation(summary = "개인정보 조회", description = "개인정보 수정 화면에 표시할 현재 개인정보를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PersonalInfoResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @GetMapping("/v1/me/personal-info")
+    public ResponseEntity<CommonResponse<PersonalInfoResponse>> getMyPersonalInfo(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        PersonalInfoResponse response = memberService.getPersonalInfo(userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "개인정보 수정", description = "개인정보를 수정합니다. 비밀번호 인증으로 발급받은 X-Verify-Token 헤더가 필요합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "수정 성공"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패)")
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패 또는 verifyToken 누락/만료)"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     @PutMapping("/v1/me/personal-info")
     public ResponseEntity<CommonResponse<Void>> updateMyPersonalInfo(
         @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestHeader("X-Verify-Token") String verifyToken,
         @Valid @RequestBody UpdatePersonalInfoRequest request
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
+        if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
+            return ResponseEntity.badRequest()
+                .body(CommonResponse.error("개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요."));
+        }
+
+        Long verifiedMemberId = jwtTokenProvider.getMemberIdFromVerifyToken(verifyToken);
+        if (!verifiedMemberId.equals(userDetails.getMemberId())) {
+            return ResponseEntity.status(401)
+                .body(CommonResponse.error("인증 정보가 일치하지 않습니다."));
         }
 
         memberService.updatePersonalInfo(
