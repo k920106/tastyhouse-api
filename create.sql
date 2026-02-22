@@ -879,3 +879,16 @@ CREATE TABLE MEMBER_WITHDRAWAL
     updated_at    DATETIME     NOT NULL,
     INDEX idx_member_withdrawal_member_id (member_id)
 );
+
+CREATE TABLE PHONE_VERIFICATION
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    phone_number      VARCHAR(20)  NOT NULL,
+    verification_code VARCHAR(6)   NOT NULL,
+    status            VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    expires_at        DATETIME     NOT NULL,
+    verified_at       DATETIME,
+    created_at        DATETIME     NOT NULL,
+    INDEX idx_phone_verification_phone_number (phone_number),
+    INDEX idx_phone_verification_expires_at (expires_at)
+);

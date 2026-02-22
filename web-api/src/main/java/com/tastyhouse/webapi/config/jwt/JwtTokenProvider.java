@@ -140,4 +140,50 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    public String createPhoneVerifyToken(Long memberId, String phoneNumber) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + 10 * 60 * 1000L); // 10분
+
+        return Jwts.builder()
+                .subject(String.valueOf(memberId))
+                .claim("type", "PHONE_VERIFY")
+                .claim("phoneNumber", phoneNumber)
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(key)
+                .compact();
+    }
+
+    public boolean validatePhoneVerifyToken(String token) {
+        try {
+            Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            return "PHONE_VERIFY".equals(claims.get("type", String.class));
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid phone verify token.", e);
+            return false;
+        }
+    }
+
+    public String getPhoneNumberFromPhoneVerifyToken(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        String type = claims.get("type", String.class);
+        if (!"PHONE_VERIFY".equals(type)) {
+            throw new JwtException("유효하지 않은 휴대폰 인증 토큰입니다.");
+        }
+
+        return claims.get("phoneNumber", String.class);
+    }
+
+    public Long getMemberIdFromPhoneVerifyToken(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        String type = claims.get("type", String.class);
+        if (!"PHONE_VERIFY".equals(type)) {
+            throw new JwtException("유효하지 않은 휴대폰 인증 토큰입니다.");
+        }
+
+        return Long.parseLong(claims.getSubject());
+    }
 }
