@@ -4,6 +4,7 @@ import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
+import com.tastyhouse.webapi.exception.NotFoundException;
 import com.tastyhouse.webapi.member.request.UpdatePersonalInfoRequest;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.request.VerifyPasswordRequest;
@@ -20,7 +21,6 @@ import com.tastyhouse.webapi.member.response.PointHistoryResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
 import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
-import com.tastyhouse.webapi.config.jwt.TokenBlacklist;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +33,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(name = "Member", description = "회원 관리 API")
 @RestController
@@ -56,7 +54,6 @@ public class MemberApiController {
     private final MemberService memberService;
     private final GradeService gradeService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final TokenBlacklist tokenBlacklist;
 
     @Operation(summary = "내 프로필 조회", description = "로그인한 회원의 프로필 정보를 조회합니다. (마이페이지용)")
     @ApiResponses({
@@ -66,14 +63,9 @@ public class MemberApiController {
     })
     @GetMapping("/v1/me")
     public ResponseEntity<CommonResponse<MemberProfileResponse>> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        Optional<MemberProfileResponse> memberProfile = memberService.getMemberProfile(userDetails.getMemberId());
-        return memberProfile
-            .map(profile -> ResponseEntity.ok(CommonResponse.success(profile)))
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        MemberProfileResponse profile = memberService.getMemberProfile(userDetails.getMemberId())
+            .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+        return ResponseEntity.ok(CommonResponse.success(profile));
     }
 
     @Operation(summary = "프로필 수정", description = "로그인한 회원의 프로필 정보를 수정합니다. (닉네임, 상태메시지, 프로필 이미지)")
@@ -87,10 +79,6 @@ public class MemberApiController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Valid @RequestBody UpdateProfileRequest request
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         memberService.updateMemberProfile(
             userDetails.getMemberId(),
             request.getNickname(),
@@ -152,41 +140,11 @@ public class MemberApiController {
         @RequestHeader(value = "X-Phone-Verify-Token", required = false) String phoneVerifyToken,
         @Valid @RequestBody UpdatePersonalInfoRequest request
     ) {
-        if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
-            return ResponseEntity.badRequest()
-                .body(CommonResponse.error("개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요."));
-        }
+        memberService.verifyPersonalInfoToken(userDetails.getMemberId(), verifyToken);
 
-        Long verifiedMemberId = jwtTokenProvider.getMemberIdFromVerifyToken(verifyToken);
-        if (!verifiedMemberId.equals(userDetails.getMemberId())) {
-            return ResponseEntity.status(401)
-                .body(CommonResponse.error("인증 정보가 일치하지 않습니다."));
-        }
-
-        // 휴대폰번호 변경 시 SMS 인증 토큰 검증
         String phoneNumberToUpdate = request.getPhoneNumber();
         if (phoneNumberToUpdate != null) {
-            if (phoneVerifyToken == null || phoneVerifyToken.isBlank()) {
-                return ResponseEntity.badRequest()
-                    .body(CommonResponse.error("휴대폰번호 변경 시 SMS 인증이 필요합니다."));
-            }
-
-            if (!jwtTokenProvider.validatePhoneVerifyToken(phoneVerifyToken)) {
-                return ResponseEntity.badRequest()
-                    .body(CommonResponse.error("휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요."));
-            }
-
-            Long phoneVerifiedMemberId = jwtTokenProvider.getMemberIdFromPhoneVerifyToken(phoneVerifyToken);
-            if (!phoneVerifiedMemberId.equals(userDetails.getMemberId())) {
-                return ResponseEntity.status(401)
-                    .body(CommonResponse.error("휴대폰 인증 정보가 일치하지 않습니다."));
-            }
-
-            String verifiedPhoneNumber = jwtTokenProvider.getPhoneNumberFromPhoneVerifyToken(phoneVerifyToken);
-            if (!verifiedPhoneNumber.equals(phoneNumberToUpdate)) {
-                return ResponseEntity.badRequest()
-                    .body(CommonResponse.error("인증된 휴대폰번호와 입력한 휴대폰번호가 일치하지 않습니다."));
-            }
+            memberService.verifyPhoneToken(userDetails.getMemberId(), phoneVerifyToken, phoneNumberToUpdate);
         }
 
         memberService.updatePersonalInfo(
@@ -212,8 +170,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<MyGradeResponse>> getMyGrade(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        MyGradeResponse myGrade = gradeService.getMyGrade(memberId);
+        MyGradeResponse myGrade = gradeService.getMyGrade(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(myGrade));
     }
 
@@ -226,8 +183,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<MyReviewStatsResponse>> getMyReviewStats(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        MyReviewStatsResponse stats = memberService.getMyReviewStats(memberId);
+        MyReviewStatsResponse stats = memberService.getMyReviewStats(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(stats));
     }
 
@@ -240,11 +196,9 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<PointResponse>> getMyPoint(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        PointResponse pointResponse = memberService.getMemberPoint(memberId);
+        PointResponse pointResponse = memberService.getMemberPoint(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(pointResponse));
     }
-
 
     @Operation(summary = "보유 쿠폰 목록 조회", description = "현재 로그인한 회원이 보유한 모든 쿠폰을 조회합니다. (사용 여부 무관)")
     @ApiResponses({
@@ -255,8 +209,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<List<MemberCouponListItemResponse>>> getMyCoupons(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        List<MemberCouponListItemResponse> coupons = memberService.getMemberCoupons(memberId);
+        List<MemberCouponListItemResponse> coupons = memberService.getMemberCoupons(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(coupons));
     }
 
@@ -269,8 +222,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<List<MemberCouponListItemResponse>>> getMyAvailableCoupons(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        List<MemberCouponListItemResponse> coupons = memberService.getAvailableMemberCoupons(memberId);
+        List<MemberCouponListItemResponse> coupons = memberService.getAvailableMemberCoupons(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(coupons));
     }
 
@@ -283,8 +235,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<PointHistoryResponse>> getMyPointHistory(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        PointHistoryResponse pointHistory = memberService.getPointHistory(memberId);
+        PointHistoryResponse pointHistory = memberService.getPointHistory(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(pointHistory));
     }
 
@@ -297,8 +248,7 @@ public class MemberApiController {
     public ResponseEntity<CommonResponse<UsablePointResponse>> getMyUsablePoint(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long memberId = userDetails.getMemberId();
-        UsablePointResponse usablePoint = memberService.getUsablePoint(memberId);
+        UsablePointResponse usablePoint = memberService.getUsablePoint(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(usablePoint));
     }
 
@@ -313,9 +263,8 @@ public class MemberApiController {
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
-        Long memberId = userDetails.getMemberId();
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<MyReviewListItemResponse> pageResult = memberService.getMyReviews(memberId, pageRequest);
+        PageResult<MyReviewListItemResponse> pageResult = memberService.getMyReviews(userDetails.getMemberId(), pageRequest);
         CommonResponse<List<MyReviewListItemResponse>> response = CommonResponse.success(
             pageResult.getContent(),
             pageResult.getCurrentPage(),
@@ -336,9 +285,8 @@ public class MemberApiController {
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
-        Long memberId = userDetails.getMemberId();
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<MyBookmarkedPlaceListItemResponse> pageResult = memberService.getMyBookmarkedPlaces(memberId, pageRequest);
+        PageResult<MyBookmarkedPlaceListItemResponse> pageResult = memberService.getMyBookmarkedPlaces(userDetails.getMemberId(), pageRequest);
         CommonResponse<List<MyBookmarkedPlaceListItemResponse>> response = CommonResponse.success(
             pageResult.getContent(),
             pageResult.getCurrentPage(),
@@ -366,13 +314,7 @@ public class MemberApiController {
             request.getReasonDetail()
         );
 
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            String accessToken = bearerToken.substring(7).trim();
-            if (jwtTokenProvider.validateToken(accessToken)) {
-                long expirationMillis = jwtTokenProvider.getExpirationMillis(accessToken);
-                tokenBlacklist.add(accessToken, expirationMillis);
-            }
-        }
+        memberService.invalidateToken(bearerToken);
 
         return ResponseEntity.ok(CommonResponse.success(null));
     }

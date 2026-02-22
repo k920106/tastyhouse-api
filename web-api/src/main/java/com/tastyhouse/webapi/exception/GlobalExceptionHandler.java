@@ -19,6 +19,14 @@ public class GlobalExceptionHandler {
             .body(CommonResponse.error(e.getMessage()));
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<CommonResponse<Void>> handleUnauthorizedException(UnauthorizedException e) {
+        log.warn("UnauthorizedException: {}", e.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(CommonResponse.error(e.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<CommonResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("IllegalArgumentException: {}", e.getMessage());

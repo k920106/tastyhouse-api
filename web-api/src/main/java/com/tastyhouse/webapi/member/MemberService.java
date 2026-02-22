@@ -17,8 +17,11 @@ import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
+import com.tastyhouse.webapi.config.jwt.TokenBlacklist;
 import com.tastyhouse.webapi.coupon.CouponService;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
+import com.tastyhouse.webapi.exception.UnauthorizedException;
 import com.tastyhouse.file.FileService;
 import com.tastyhouse.webapi.member.response.*;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,8 @@ public class MemberService {
 
     private final FileService fileService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     private final MemberJpaRepository memberJpaRepository;
     private final MemberWithdrawalJpaRepository memberWithdrawalJpaRepository;
@@ -47,6 +53,47 @@ public class MemberService {
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final PlaceRepository placeRepository;
+
+    public void verifyPersonalInfoToken(Long memberId, String verifyToken) {
+        if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
+            throw new IllegalArgumentException("개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요.");
+        }
+
+        Long verifiedMemberId = jwtTokenProvider.getMemberIdFromVerifyToken(verifyToken);
+        if (!verifiedMemberId.equals(memberId)) {
+            throw new UnauthorizedException("인증 정보가 일치하지 않습니다.");
+        }
+    }
+
+    public void verifyPhoneToken(Long memberId, String phoneVerifyToken, String phoneNumber) {
+        if (!StringUtils.hasText(phoneVerifyToken)) {
+            throw new IllegalArgumentException("휴대폰번호 변경 시 SMS 인증이 필요합니다.");
+        }
+
+        if (!jwtTokenProvider.validatePhoneVerifyToken(phoneVerifyToken)) {
+            throw new IllegalArgumentException("휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요.");
+        }
+
+        Long phoneVerifiedMemberId = jwtTokenProvider.getMemberIdFromPhoneVerifyToken(phoneVerifyToken);
+        if (!phoneVerifiedMemberId.equals(memberId)) {
+            throw new UnauthorizedException("휴대폰 인증 정보가 일치하지 않습니다.");
+        }
+
+        String verifiedPhoneNumber = jwtTokenProvider.getPhoneNumberFromPhoneVerifyToken(phoneVerifyToken);
+        if (!verifiedPhoneNumber.equals(phoneNumber)) {
+            throw new IllegalArgumentException("인증된 휴대폰번호와 입력한 휴대폰번호가 일치하지 않습니다.");
+        }
+    }
+
+    public void invalidateToken(String bearerToken) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            String accessToken = bearerToken.substring(7).trim();
+            if (jwtTokenProvider.validateToken(accessToken)) {
+                long expirationMillis = jwtTokenProvider.getExpirationMillis(accessToken);
+                tokenBlacklist.add(accessToken, expirationMillis);
+            }
+        }
+    }
 
     public void verifyPassword(Long memberId, String rawPassword) {
         Member member = memberJpaRepository.findById(memberId)
