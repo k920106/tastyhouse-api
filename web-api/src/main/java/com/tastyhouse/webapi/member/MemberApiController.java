@@ -134,16 +134,22 @@ public class MemberApiController {
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
-    @Operation(summary = "개인정보 수정", description = "개인정보를 수정합니다. 비밀번호 인증으로 발급받은 X-Verify-Token 헤더가 필요합니다.")
+    @Operation(
+        summary = "개인정보 수정",
+        description = "개인정보를 수정합니다. " +
+                      "비밀번호 인증으로 발급받은 X-Verify-Token 헤더가 필요합니다. " +
+                      "휴대폰번호를 변경하는 경우 SMS 인증으로 발급받은 X-Phone-Verify-Token 헤더도 함께 필요합니다."
+    )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "수정 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패 또는 verifyToken 누락/만료)"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패 또는 토큰 누락/만료)"),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     @PutMapping("/v1/me/personal-info")
     public ResponseEntity<CommonResponse<Void>> updateMyPersonalInfo(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestHeader("X-Verify-Token") String verifyToken,
+        @RequestHeader(value = "X-Phone-Verify-Token", required = false) String phoneVerifyToken,
         @Valid @RequestBody UpdatePersonalInfoRequest request
     ) {
         if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
@@ -157,10 +163,36 @@ public class MemberApiController {
                 .body(CommonResponse.error("인증 정보가 일치하지 않습니다."));
         }
 
+        // 휴대폰번호 변경 시 SMS 인증 토큰 검증
+        String phoneNumberToUpdate = request.getPhoneNumber();
+        if (phoneNumberToUpdate != null) {
+            if (phoneVerifyToken == null || phoneVerifyToken.isBlank()) {
+                return ResponseEntity.badRequest()
+                    .body(CommonResponse.error("휴대폰번호 변경 시 SMS 인증이 필요합니다."));
+            }
+
+            if (!jwtTokenProvider.validatePhoneVerifyToken(phoneVerifyToken)) {
+                return ResponseEntity.badRequest()
+                    .body(CommonResponse.error("휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요."));
+            }
+
+            Long phoneVerifiedMemberId = jwtTokenProvider.getMemberIdFromPhoneVerifyToken(phoneVerifyToken);
+            if (!phoneVerifiedMemberId.equals(userDetails.getMemberId())) {
+                return ResponseEntity.status(401)
+                    .body(CommonResponse.error("휴대폰 인증 정보가 일치하지 않습니다."));
+            }
+
+            String verifiedPhoneNumber = jwtTokenProvider.getPhoneNumberFromPhoneVerifyToken(phoneVerifyToken);
+            if (!verifiedPhoneNumber.equals(phoneNumberToUpdate)) {
+                return ResponseEntity.badRequest()
+                    .body(CommonResponse.error("인증된 휴대폰번호와 입력한 휴대폰번호가 일치하지 않습니다."));
+            }
+        }
+
         memberService.updatePersonalInfo(
             userDetails.getMemberId(),
             request.getFullName(),
-            request.getPhoneNumber(),
+            phoneNumberToUpdate,
             request.getBirthDate(),
             request.getGender(),
             request.getPushNotificationEnabled(),
