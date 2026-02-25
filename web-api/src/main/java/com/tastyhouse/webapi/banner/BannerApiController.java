@@ -3,7 +3,7 @@ package com.tastyhouse.webapi.banner;
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.banner.response.BannerListItem;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

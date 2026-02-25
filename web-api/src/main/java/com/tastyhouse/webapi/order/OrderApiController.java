@@ -2,7 +2,7 @@ package com.tastyhouse.webapi.order;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.member.response.OrderListItemResponse;
 import com.tastyhouse.webapi.order.request.OrderCreateRequest;
 import com.tastyhouse.webapi.order.response.OrderResponse;

@@ -1,5 +1,6 @@
 package com.tastyhouse.core.service;
 
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.policy.PolicyDocument;
 import com.tastyhouse.core.entity.policy.PolicyType;
 import com.tastyhouse.core.entity.policy.dto.PolicyDocumentDto;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -32,17 +32,10 @@ public class PolicyDocumentCoreService {
         return policyDocumentRepository.findByTypeAndVersion(type, version);
     }
 
-    public PolicyPageResult findAllByTypeWithPagination(PolicyType type, int page, int size) {
+    public PageResult<PolicyListItemDto> findAllByTypeWithPagination(PolicyType type, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<PolicyListItemDto> policyPage = policyDocumentRepository.findAllByType(type, pageRequest);
-
-        return new PolicyPageResult(
-            policyPage.getContent(),
-            policyPage.getTotalElements(),
-            policyPage.getTotalPages(),
-            policyPage.getNumber(),
-            policyPage.getSize()
-        );
+        return PageResult.from(policyPage);
     }
 
     @Transactional
@@ -82,28 +75,5 @@ public class PolicyDocumentCoreService {
             .orElseThrow(() -> new IllegalArgumentException("정책 문서를 찾을 수 없습니다."));
 
         policyDocument.update(title, content, mandatory, effectiveDate, updatedBy);
-    }
-
-    public static class PolicyPageResult {
-        private final List<PolicyListItemDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public PolicyPageResult(List<PolicyListItemDto> content, long totalElements,
-                              int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<PolicyListItemDto> getContent() { return content; }
-        public long getTotalElements() { return totalElements; }
-        public int getTotalPages() { return totalPages; }
-        public int getCurrentPage() { return currentPage; }
-        public int getPageSize() { return pageSize; }
     }
 }

@@ -3,7 +3,7 @@ package com.tastyhouse.webapi.event;
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.entity.event.EventStatus;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.event.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

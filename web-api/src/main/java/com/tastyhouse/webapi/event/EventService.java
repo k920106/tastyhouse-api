@@ -1,12 +1,12 @@
 package com.tastyhouse.webapi.event;
 
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.event.Event;
 import com.tastyhouse.core.entity.event.EventAnnouncement;
 import com.tastyhouse.core.entity.event.EventPrize;
 import com.tastyhouse.core.entity.event.EventStatus;
 import com.tastyhouse.core.service.EventCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.event.response.*;
 import com.tastyhouse.webapi.exception.NotFoundException;
 import com.tastyhouse.file.FileService;
@@ -56,11 +56,8 @@ public class EventService {
     }
 
     public PageResult<EventListItemResponse> getEventList(EventStatus status, PageRequest pageRequest) {
-        EventCoreService.EventPageResult coreResult = eventCoreService.getEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize());
-        List<EventListItemResponse> events = coreResult.getContent().stream()
-            .map(this::convertToEventListItemResponse)
-            .toList();
-        return new PageResult<>(events, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
+        return eventCoreService.getEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize())
+            .map(this::convertToEventListItemResponse);
     }
 
     public EventDetailResponse getEventDetail(Long eventId) {
@@ -71,11 +68,8 @@ public class EventService {
     }
 
     public PageResult<EventAnnouncementListItemResponse> getEventAnnouncementList(PageRequest pageRequest) {
-        EventCoreService.EventAnnouncementPageResult coreResult = eventCoreService.findAllEventAnnouncements(pageRequest.getPage(), pageRequest.getSize());
-        List<EventAnnouncementListItemResponse> announcements = coreResult.getContent().stream()
-            .map(this::convertToEventAnnouncementListItemResponse)
-            .toList();
-        return new PageResult<>(announcements, coreResult.getTotalElements(), coreResult.getTotalPages(), coreResult.getCurrentPage(), coreResult.getPageSize());
+        return eventCoreService.findAllEventAnnouncements(pageRequest.getPage(), pageRequest.getSize())
+            .map(this::convertToEventAnnouncementListItemResponse);
     }
 
     private EventListItemResponse convertToEventListItemResponse(Event event) {

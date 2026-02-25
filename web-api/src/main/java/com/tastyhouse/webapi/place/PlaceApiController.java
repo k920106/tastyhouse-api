@@ -5,7 +5,7 @@ import com.tastyhouse.core.entity.place.Amenity;
 import com.tastyhouse.core.entity.place.FoodType;
 import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.*;

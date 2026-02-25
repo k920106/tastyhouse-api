@@ -1,5 +1,7 @@
 package com.tastyhouse.webapi.product;
 
+import com.tastyhouse.core.common.PageResult;
+import com.tastyhouse.core.common.ReviewsByRatingResult;
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
@@ -8,7 +10,6 @@ import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.product.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,21 +27,9 @@ public class ProductService {
     private final ReviewCoreService reviewCoreService;
 
     public PageResult<TodayDiscountProductItem> findTodayDiscountProducts(PageRequest pageRequest) {
-        ProductCoreService.TodayDiscountProductPageResult coreResult = productCoreService.findTodayDiscountProducts(
+        return productCoreService.findTodayDiscountProducts(
             pageRequest.getPage(), pageRequest.getSize()
-        );
-
-        List<TodayDiscountProductItem> todayDiscountProductItems = coreResult.getContent().stream()
-            .map(this::convertToTodayDiscountProductItem)
-            .toList();
-
-        return new PageResult<>(
-            todayDiscountProductItems,
-            coreResult.getTotalElements(),
-            coreResult.getTotalPages(),
-            coreResult.getCurrentPage(),
-            coreResult.getPageSize()
-        );
+        ).map(this::convertToTodayDiscountProductItem);
     }
 
     private TodayDiscountProductItem convertToTodayDiscountProductItem(TodayDiscountProductDto dto) {
@@ -127,7 +116,6 @@ public class ProductService {
 
         List<String> imageUrls = getAllImageUrls(product.getId());
 
-        // 실제 리뷰 총 개수 조회
         Map<String, Object> reviewStatistics = reviewCoreService.getProductReviewStatistics(product.getId());
         Long totalReviewCount = (Long) reviewStatistics.get("totalReviewCount");
         Integer reviewCount = totalReviewCount != null ? totalReviewCount.intValue() : 0;
@@ -154,7 +142,6 @@ public class ProductService {
     private List<ProductDetailResponse.OptionGroupResponse> buildOptionGroups(Product product) {
         List<ProductDetailResponse.OptionGroupResponse> result = new ArrayList<>();
 
-        // 상품별 옵션 그룹
         List<ProductOptionGroup> productOptionGroups = productCoreService.findProductOptionGroupsByProductId(product.getId());
         if (!productOptionGroups.isEmpty()) {
             List<Long> optionGroupIds = productOptionGroups.stream()
@@ -185,7 +172,6 @@ public class ProductService {
             }
         }
 
-        // 공통 옵션 그룹
         List<ProductCommonOptionGroup> productCommonOptionGroups = productCoreService.findProductCommonOptionGroupsByProductId(product.getId());
         if (!productCommonOptionGroups.isEmpty()) {
             List<Long> commonOptionGroupIds = productCommonOptionGroups.stream()
@@ -253,7 +239,7 @@ public class ProductService {
     }
 
     public ProductReviewsByRatingWithPagination getProductReviewsByRatingWithPagination(Long productId, int page, int size) {
-        ReviewCoreService.PlaceReviewsByRatingResult result = reviewCoreService.getProductReviewsByRating(productId, page, size);
+        ReviewsByRatingResult result = reviewCoreService.getProductReviewsByRating(productId, page, size);
 
         Map<Integer, List<ProductReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
                 .collect(Collectors.toMap(

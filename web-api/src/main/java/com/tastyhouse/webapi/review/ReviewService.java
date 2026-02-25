@@ -10,10 +10,10 @@ import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
 import com.tastyhouse.webapi.review.response.CommentListResponse;
@@ -43,21 +43,9 @@ public class ReviewService {
     private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
-        ReviewCoreService.ReviewPageResult coreResult = reviewCoreService.findBestReviewsWithPagination(
+        return reviewCoreService.findBestReviewsWithPagination(
             pageRequest.getPage(), pageRequest.getSize()
-        );
-
-        List<BestReviewListItem> reviewListItems = coreResult.getContent().stream()
-            .map(this::convertToBestReviewListItem)
-            .toList();
-
-        return new PageResult<>(
-            reviewListItems,
-            coreResult.getTotalElements(),
-            coreResult.getTotalPages(),
-            coreResult.getCurrentPage(),
-            coreResult.getPageSize()
-        );
+        ).map(this::convertToBestReviewListItem);
     }
 
     private BestReviewListItem convertToBestReviewListItem(BestReviewListItemDto dto) {
@@ -75,7 +63,7 @@ public class ReviewService {
         ReviewType type,
         Long memberId
     ) {
-        ReviewCoreService.LatestReviewPageResult coreResult;
+        PageResult<LatestReviewListItemDto> coreResult;
 
         if (type == ReviewType.FOLLOWING && memberId != null) {
             coreResult = reviewCoreService.findLatestReviewsByFollowingWithPagination(
@@ -90,17 +78,7 @@ public class ReviewService {
             );
         }
 
-        List<LatestReviewListItem> reviewListItems = coreResult.getContent().stream()
-            .map(this::convertToLatestReviewListItem)
-            .toList();
-
-        return new PageResult<>(
-            reviewListItems,
-            coreResult.getTotalElements(),
-            coreResult.getTotalPages(),
-            coreResult.getCurrentPage(),
-            coreResult.getPageSize()
-        );
+        return coreResult.map(this::convertToLatestReviewListItem);
     }
 
     private LatestReviewListItem convertToLatestReviewListItem(LatestReviewListItemDto dto) {

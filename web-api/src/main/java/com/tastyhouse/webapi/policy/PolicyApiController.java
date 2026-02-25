@@ -3,7 +3,7 @@ package com.tastyhouse.webapi.policy;
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.entity.policy.PolicyType;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.policy.response.PolicyDetailResponse;
 import com.tastyhouse.webapi.policy.response.PolicyListItemResponse;
 import io.swagger.v3.oas.annotations.Operation;

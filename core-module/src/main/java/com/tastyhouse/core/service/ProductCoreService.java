@@ -1,5 +1,6 @@
 package com.tastyhouse.core.service;
 
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
 import com.tastyhouse.core.repository.product.*;
@@ -23,17 +24,10 @@ public class ProductCoreService {
     private final ProductCommonOptionGroupJpaRepository productCommonOptionGroupJpaRepository;
     private final ProductCommonOptionJpaRepository productCommonOptionJpaRepository;
 
-    public TodayDiscountProductPageResult findTodayDiscountProducts(int page, int size) {
+    public PageResult<TodayDiscountProductDto> findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<TodayDiscountProductDto> productPage = productRepository.findTodayDiscountProducts(pageRequest);
-
-        return new TodayDiscountProductPageResult(
-            productPage.getContent(),
-            productPage.getTotalElements(),
-            productPage.getTotalPages(),
-            productPage.getNumber(),
-            productPage.getSize()
-        );
+        return PageResult.from(productPage);
     }
 
     public List<Product> findProductsByPlaceId(Long placeId) {
@@ -78,27 +72,5 @@ public class ProductCoreService {
 
     public List<ProductCommonOption> findProductCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
         return productCommonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
-    }
-
-    public static class TodayDiscountProductPageResult {
-        private final List<TodayDiscountProductDto> content;
-        private final long totalElements;
-        private final int totalPages;
-        private final int currentPage;
-        private final int pageSize;
-
-        public TodayDiscountProductPageResult(List<TodayDiscountProductDto> content, long totalElements, int totalPages, int currentPage, int pageSize) {
-            this.content = content;
-            this.totalElements = totalElements;
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            this.pageSize = pageSize;
-        }
-
-        public List<TodayDiscountProductDto> getContent() { return content; }
-        public long getTotalElements() { return totalElements; }
-        public int getTotalPages() { return totalPages; }
-        public int getCurrentPage() { return currentPage; }
-        public int getPageSize() { return pageSize; }
     }
 }

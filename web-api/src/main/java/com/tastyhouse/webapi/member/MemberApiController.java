@@ -2,7 +2,7 @@ package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.exception.NotFoundException;
 import com.tastyhouse.webapi.member.request.UpdatePasswordRequest;

@@ -14,11 +14,12 @@ import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
+import com.tastyhouse.core.common.PageResult;
+import com.tastyhouse.core.common.ReviewsByRatingResult;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
 import com.tastyhouse.webapi.place.response.*;
 import lombok.RequiredArgsConstructor;
@@ -270,7 +271,7 @@ public class PlaceService {
     }
 
     public PlaceReviewsByRatingWithPagination getPlaceReviewsByRatingWithPagination(Long placeId, int page, int size) {
-        ReviewCoreService.PlaceReviewsByRatingResult result = reviewCoreService.getPlaceReviewsByRating(placeId, page, size);
+        ReviewsByRatingResult result = reviewCoreService.getPlaceReviewsByRating(placeId, page, size);
 
         Map<Integer, List<PlaceReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
                 .collect(Collectors.toMap(

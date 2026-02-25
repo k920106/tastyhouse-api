@@ -2,7 +2,7 @@ package com.tastyhouse.webapi.review;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.review.request.CommentCreateRequest;
 import com.tastyhouse.webapi.review.request.ReplyCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;

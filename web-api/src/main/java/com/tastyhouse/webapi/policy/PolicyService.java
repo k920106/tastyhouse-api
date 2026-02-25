@@ -1,19 +1,17 @@
 package com.tastyhouse.webapi.policy;
 
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.policy.PolicyType;
 import com.tastyhouse.core.entity.policy.dto.PolicyDocumentDto;
 import com.tastyhouse.core.entity.policy.dto.PolicyListItemDto;
 import com.tastyhouse.core.service.PolicyDocumentCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.policy.request.PolicyCreateRequest;
 import com.tastyhouse.webapi.policy.request.PolicyUpdateRequest;
 import com.tastyhouse.webapi.policy.response.PolicyDetailResponse;
 import com.tastyhouse.webapi.policy.response.PolicyListItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,20 +34,9 @@ public class PolicyService {
     }
 
     public PageResult<PolicyListItemResponse> findAllByType(PolicyType type, PageRequest pageRequest) {
-        PolicyDocumentCoreService.PolicyPageResult coreResult = policyDocumentCoreService
-            .findAllByTypeWithPagination(type, pageRequest.getPage(), pageRequest.getSize());
-
-        List<PolicyListItemResponse> policyListItems = coreResult.getContent().stream()
-            .map(this::convertToPolicyListItemResponse)
-            .toList();
-
-        return new PageResult<>(
-            policyListItems,
-            coreResult.getTotalElements(),
-            coreResult.getTotalPages(),
-            coreResult.getCurrentPage(),
-            coreResult.getPageSize()
-        );
+        return policyDocumentCoreService
+            .findAllByTypeWithPagination(type, pageRequest.getPage(), pageRequest.getSize())
+            .map(this::convertToPolicyListItemResponse);
     }
 
     private PolicyDetailResponse convertToPolicyDetailResponse(PolicyDocumentDto dto) {
