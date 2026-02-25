@@ -5,6 +5,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
 import com.tastyhouse.webapi.exception.NotFoundException;
+import com.tastyhouse.webapi.member.request.UpdatePasswordRequest;
 import com.tastyhouse.webapi.member.request.UpdatePersonalInfoRequest;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.request.VerifyPasswordRequest;
@@ -294,6 +295,26 @@ public class MemberApiController {
             pageResult.getTotalElements()
         );
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "비밀번호 변경",
+        description = "비밀번호를 변경합니다. 비밀번호 인증으로 발급받은 X-Verify-Token 헤더가 필요합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "변경 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효성 검증 실패, 비밀번호 불일치, 토큰 만료)"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    @PutMapping("/v1/me/password")
+    public ResponseEntity<CommonResponse<Void>> updateMyPassword(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestHeader("X-Verify-Token") String verifyToken,
+        @Valid @RequestBody UpdatePasswordRequest request
+    ) {
+        memberService.verifyPersonalInfoToken(userDetails.getMemberId(), verifyToken);
+        memberService.updatePassword(userDetails.getMemberId(), request.getNewPassword(), request.getNewPasswordConfirm());
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 
     @Operation(summary = "회원 탈퇴", description = "탈퇴 사유를 선택하여 회원 탈퇴를 처리합니다. 탈퇴 즉시 Access Token이 무효화됩니다.")

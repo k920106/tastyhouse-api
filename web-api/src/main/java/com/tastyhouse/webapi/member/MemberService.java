@@ -189,6 +189,22 @@ public class MemberService {
     }
 
     @Transactional
+    public void updatePassword(Long memberId, String newPassword, String newPasswordConfirm) {
+        if (!newPassword.equals(newPasswordConfirm)) {
+            throw new IllegalStateException("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        }
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalStateException("인증된 회원을 찾을 수 없습니다."));
+
+        if (passwordEncoder.matches(newPassword, member.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로 변경할 수 없습니다.");
+        }
+
+        member.setPassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Transactional
     public void updateMemberProfile(Long memberId, String nickname, String statusMessage, Long profileImageFileId) {
         memberJpaRepository.findById(memberId).ifPresent(member -> {
             if (nickname != null) {
