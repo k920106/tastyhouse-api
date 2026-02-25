@@ -17,36 +17,21 @@ tastyhouse-api/
 
 ## 2. 잘 되어 있는 점
 
-| 항목 | 설명 |
-|------|------|
-| 멀티 모듈 분리 | core, web-api, admin-api, external-api, file-module로 관심사가 명확히 분리됨 |
-| Repository 패턴 | JpaRepository(단순 CRUD) + Custom Repository + QueryDSL Impl 3계층 구조가 일관적 |
-| BaseEntity | `createdAt`, `updatedAt` 감사(Audit) 필드가 공통화되어 있음 |
-| CommonResponse | 통일된 API 응답 포맷 (success, message, data, pagination) |
-| JWT 인증 | Access/Refresh Token 분리, Token Blacklist 로그아웃 처리 |
-| 토스 결제 연동 | 결제 승인/취소/환불 플로우가 체계적으로 구현됨 |
-| Swagger 문서화 | OpenAPI 3.0 기반 API 문서화 적용 |
-| record 클래스 활용 | Request/Response DTO에 Java record 적극 활용 |
-| 파일 저장소 전략 패턴 | `FileStorageStrategy` 인터페이스로 저장소 교체 가능 |
+| 항목                  | 설명                                                                             |
+| --------------------- | -------------------------------------------------------------------------------- |
+| 멀티 모듈 분리        | core, web-api, admin-api, external-api, file-module로 관심사가 명확히 분리됨     |
+| Repository 패턴       | JpaRepository(단순 CRUD) + Custom Repository + QueryDSL Impl 3계층 구조가 일관적 |
+| BaseEntity            | `createdAt`, `updatedAt` 감사(Audit) 필드가 공통화되어 있음                      |
+| CommonResponse        | 통일된 API 응답 포맷 (success, message, data, pagination)                        |
+| JWT 인증              | Access/Refresh Token 분리, Token Blacklist 로그아웃 처리                         |
+| 토스 결제 연동        | 결제 승인/취소/환불 플로우가 체계적으로 구현됨                                   |
+| Swagger 문서화        | OpenAPI 3.0 기반 API 문서화 적용                                                 |
+| record 클래스 활용    | Request/Response DTO에 Java record 적극 활용                                     |
+| 파일 저장소 전략 패턴 | `FileStorageStrategy` 인터페이스로 저장소 교체 가능                              |
 
 ---
 
 ## 3. 개선이 필요한 항목
-
-#### 3.2.3 core-module에 비즈니스 로직과 데이터 접근이 혼재
-
-- `core-module`에 `CoreService`와 `Repository`가 함께 있어, 두 API 모듈(web-api, admin-api)이 공유하기 좋으나, CoreService의 책임 범위가 모호한 경우가 있음
-- `PlaceCoreService`에 `BestPlacePageResult` 같은 inner class가 있어 web-api의 관심사가 core로 누출됨
-- **개선:** CoreService의 반환 타입을 `Page<Entity>` 또는 `Page<DTO>`로 통일하고, 페이지 래핑은 각 API 모듈에서 수행
-
----
-
-### 3.3 [중요] 코드 중복
-
-#### 3.3.1 `mapIssuerCodeToCardCompany()` 메서드 중복
-
-- `PaymentService.java:527-557`와 `TossPaymentClient.java:222-252`에 **완전히 동일한 코드**가 존재
-- **개선:** `external-api` 모듈의 유틸리티 클래스로 통합하거나, `TossPaymentClient`의 메서드를 public으로 노출하여 재사용
 
 #### 3.3.2 `parseDateTime()` 메서드 중복
 
@@ -211,36 +196,40 @@ webClientBuilder.build()  // 매 호출마다 새 WebClient 인스턴스 생성
 
 ### 3.11 [경미] 기타 개선 사항
 
-| 항목 | 현재 | 개선안 |
-|------|------|--------|
-| Lombok 로거 | `JwtTokenProvider`에서 `LoggerFactory` 직접 사용 | `@Slf4j` 통일 |
-| SQL 로깅 | `show_sql: true` + DEBUG 레벨 | 운영 환경에서는 반드시 비활성화 필요, Profile 분리 필요 |
-| `sql.init.mode: always` | 매 시작시 SQL 초기화 실행 | 운영 환경에서 위험, Profile별 분기 필요 |
-| 파일 업로드 경로 | 절대 경로 하드코딩(`/Users/god/...`) | 환경 변수로 외부화 |
-| `.gitignore` | 설정 파일이 커밋됨 | 민감 정보가 포함된 yml 파일 관리 검토 |
+| 항목                    | 현재                                             | 개선안                                                  |
+| ----------------------- | ------------------------------------------------ | ------------------------------------------------------- |
+| Lombok 로거             | `JwtTokenProvider`에서 `LoggerFactory` 직접 사용 | `@Slf4j` 통일                                           |
+| SQL 로깅                | `show_sql: true` + DEBUG 레벨                    | 운영 환경에서는 반드시 비활성화 필요, Profile 분리 필요 |
+| `sql.init.mode: always` | 매 시작시 SQL 초기화 실행                        | 운영 환경에서 위험, Profile별 분기 필요                 |
+| 파일 업로드 경로        | 절대 경로 하드코딩(`/Users/god/...`)             | 환경 변수로 외부화                                      |
+| `.gitignore`            | 설정 파일이 커밋됨                               | 민감 정보가 포함된 yml 파일 관리 검토                   |
 
 ---
 
 ## 4. 우선순위별 개선 로드맵
 
 ### Phase 1 - 즉시 (보안)
+
 1. 민감 정보 환경 변수 외부화 (DB 비밀번호, JWT 시크릿, 토스 키)
 2. SecurityConfig에서 `permitAll()` → `authenticated()` 설정 변경
 3. Profile 분리 (`application-dev.yml`, `application-prod.yml`)
 
 ### Phase 2 - 단기 (품질)
+
 4. Request DTO에 Bean Validation 적용
 5. 커스텀 예외 클래스 도입 및 GlobalExceptionHandler 보강
 6. 코드 중복 제거 (`mapIssuerCodeToCardCompany`, `parseDateTime`, `getFirstImageUrl`)
 7. 핵심 비즈니스 로직 단위 테스트 추가
 
 ### Phase 3 - 중기 (성능/구조)
+
 8. N+1 쿼리 문제 해결 (Fetch Join 또는 DTO Projection)
 9. TokenBlacklist Redis 전환
 10. 서비스 계층 책임 분리 (OrderService 리팩토링)
 11. 조회 메서드에 `@Transactional(readOnly = true)` 일괄 적용
 
 ### Phase 4 - 장기 (확장성)
+
 12. JPA 연관관계 매핑 도입 검토
 13. admin-api 기능 구현 또는 모듈 정리
 14. API 응답 타입 통일

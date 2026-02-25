@@ -17,6 +17,7 @@ import com.tastyhouse.core.repository.payment.TossPaymentRecordJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.external.payment.toss.TossPaymentClient;
+import com.tastyhouse.external.payment.toss.TossPaymentUtils;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResponse;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResult;
 import com.tastyhouse.core.entity.payment.TossPaymentRecord;
@@ -153,7 +154,7 @@ public class PaymentService {
 
         if (response.getCard() != null) {
             payment.updateCardInfo(
-                mapIssuerCodeToCardCompany(response.getCard().getIssuerCode()),
+                TossPaymentUtils.mapIssuerCodeToCardCompany(response.getCard().getIssuerCode()),
                 response.getCard().getNumber(),
                 response.getCard().getInstallmentPlanMonths()
             );
@@ -522,37 +523,5 @@ public class PaymentService {
             log.warn("Failed to parse datetime: {}", dateTimeStr, e);
             return null;
         }
-    }
-
-    private String mapIssuerCodeToCardCompany(String issuerCode) {
-        if (issuerCode == null) {
-            return null;
-        }
-        return switch (issuerCode) {
-            case "3K" -> "기업BC";
-            case "46" -> "광주";
-            case "71" -> "롯데";
-            case "30" -> "KDB산업";
-            case "31" -> "BC";
-            case "51" -> "삼성";
-            case "38" -> "새마을";
-            case "41" -> "신한";
-            case "62" -> "신협";
-            case "36" -> "씨티";
-            case "33" -> "우리";
-            case "37" -> "우체국";
-            case "39" -> "저축";
-            case "35" -> "전북";
-            case "42" -> "제주";
-            case "15" -> "카카오뱅크";
-            case "3A" -> "케이뱅크";
-            case "24" -> "토스뱅크";
-            case "21" -> "하나";
-            case "61" -> "현대";
-            case "11" -> "KB국민";
-            case "91" -> "NH농협";
-            case "34" -> "Sh수협";
-            default -> issuerCode;
-        };
     }
 }
