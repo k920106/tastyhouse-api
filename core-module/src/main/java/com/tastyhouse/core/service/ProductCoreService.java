@@ -23,6 +23,7 @@ public class ProductCoreService {
     private final ProductOptionJpaRepository productOptionJpaRepository;
     private final ProductCommonOptionGroupJpaRepository productCommonOptionGroupJpaRepository;
     private final ProductCommonOptionJpaRepository productCommonOptionJpaRepository;
+    private final ProductImageJpaRepository productImageJpaRepository;
 
     public PageResult<TodayDiscountProductDto> findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -72,5 +73,13 @@ public class ProductCoreService {
 
     public List<ProductCommonOption> findProductCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
         return productCommonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
+    }
+
+    public String getFirstImageUrl(Long productId) {
+        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
+            .stream()
+            .findFirst()
+            .map(ProductImage::getImageUrl)
+            .orElse(null);
     }
 }

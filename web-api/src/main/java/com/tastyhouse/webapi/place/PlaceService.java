@@ -6,9 +6,7 @@ import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
 import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.ProductCategory;
-import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
-import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
@@ -41,7 +39,6 @@ public class PlaceService {
     private final ReviewCoreService reviewCoreService;
     private final PlaceBookmarkJpaRepository placeBookmarkJpaRepository;
     private final PlaceOwnerMessageHistoryJpaRepository placeOwnerMessageHistoryJpaRepository;
-    private final ProductImageJpaRepository productImageJpaRepository;
 
     public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude);
@@ -394,11 +391,7 @@ public class PlaceService {
     }
 
     private String getFirstImageUrl(Long productId) {
-        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
-            .stream()
-            .findFirst()
-            .map(ProductImage::getImageUrl)
-            .orElse(null);
+        return productCoreService.getFirstImageUrl(productId);
     }
 
     private PlacePhotoResponse convertToPlacePhotoResponse(PlacePhotoCategoryImage image) {

@@ -1,6 +1,5 @@
 package com.tastyhouse.webapi.review;
 
-import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewComment;
 import com.tastyhouse.core.entity.review.ReviewReply;
@@ -9,7 +8,6 @@ import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
-import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
@@ -39,7 +37,6 @@ public class ReviewService {
     private final ReviewCoreService reviewCoreService;
     private final ProductCoreService productCoreService;
     private final MemberJpaRepository memberJpaRepository;
-    private final ProductImageJpaRepository productImageJpaRepository;
     private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
@@ -306,10 +303,6 @@ public class ReviewService {
     }
 
     private String getFirstImageUrl(Long productId) {
-        return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
-            .stream()
-            .findFirst()
-            .map(ProductImage::getImageUrl)
-            .orElse(null);
+        return productCoreService.getFirstImageUrl(productId);
     }
 }
