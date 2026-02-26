@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -41,7 +42,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true)))
     })
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<JwtResponse>> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<CommonResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
@@ -79,7 +80,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token", content = @Content(schema = @Schema(hidden = true)))
     })
     @PostMapping("/refresh")
-    public ResponseEntity<CommonResponse<JwtResponse>> refreshToken(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<CommonResponse<JwtResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         String newAccessToken = jwtTokenProvider.createAccessTokenFromRefreshToken(request.getRefreshToken());
         String newRefreshToken = jwtTokenProvider.createRefreshTokenFromRefreshToken(request.getRefreshToken());
 

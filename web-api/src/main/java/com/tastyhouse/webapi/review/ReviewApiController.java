@@ -34,7 +34,7 @@ public class ReviewApiController {
 
     @PostMapping
 //    public void create(@RequestBody ReviewCreateRequest reviewCreateRequest) {
-    public void create(@ModelAttribute ReviewCreateRequest reviewCreateRequest) {
+    public void create(@Valid @ModelAttribute ReviewCreateRequest reviewCreateRequest) {
 
     }
 

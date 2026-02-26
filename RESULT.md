@@ -59,32 +59,6 @@ private final Map<String, Long> blacklistedTokens = new ConcurrentHashMap<>();
   - 토큰이 많아지면 메모리 누수 가능 (`purgeExpired()`가 `add()` 시에만 호출됨)
 - **개선:** Redis를 활용한 분산 Token Blacklist 구현
 
----
-
-### 3.7 [보통] 입력값 검증(Validation) 부재
-
-- Request DTO에 Bean Validation 어노테이션이 없음
-- 컨트롤러에서 `@Valid` 어노테이션 미사용
-
-```java
-// 현재 - 검증 없이 바로 사용
-public record OrderCreateRequest(
-    Long placeId,
-    List<OrderItemRequest> orderItems,
-    ...
-) {}
-```
-
-- **개선:**
-
-```java
-public record OrderCreateRequest(
-    @NotNull(message = "매장 ID는 필수입니다") Long placeId,
-    @NotEmpty(message = "주문 상품은 최소 1개 이상이어야 합니다") List<@Valid OrderItemRequest> orderItems,
-    ...
-) {}
-```
-
 ### 3.11 [경미] 기타 개선 사항
 
 | 항목                    | 현재                                             | 개선안                                                  |
