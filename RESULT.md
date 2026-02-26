@@ -85,23 +85,6 @@ public record OrderCreateRequest(
 ) {}
 ```
 
----
-
-### 3.10 [보통] 코드 품질
-
-#### 3.10.1 Map<String, Object> 반환 타입
-
-**파일:** `ReviewCoreService` > `getPlaceReviewStatistics()`
-
-```java
-Map<String, Object> statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
-// 타입 안전하지 않은 캐스팅
-(Double) statistics.get("averageTasteRating")
-```
-
-- 타입 안전성이 없고, 키 이름이 변경되면 런타임 에러 발생
-- **개선:** 전용 DTO 클래스로 대체
-
 #### 3.10.2 사용되지 않는 코드
 
 - `PlaceService.convertToPlacePhotoResponse()`는 private 메서드이나 실제 호출되는 곳이 없음

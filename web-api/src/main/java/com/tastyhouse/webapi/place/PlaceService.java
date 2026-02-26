@@ -10,6 +10,7 @@ import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
 import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.PlaceReviewStatisticsDto;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceOwnerMessageHistoryJpaRepository;
 import com.tastyhouse.core.common.PageResult;
@@ -313,24 +314,23 @@ public class PlaceService {
                 .build();
     }
 
-    @SuppressWarnings("unchecked")
     public PlaceReviewStatisticsResponse getPlaceReviewStatistics(Long placeId) {
-        Map<String, Object> statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
+        PlaceReviewStatisticsDto statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
 
         Place place = placeCoreService.findPlaceById(placeId);
 
         return PlaceReviewStatisticsResponse.builder()
                 .totalRating(place.getRating())
-                .totalReviewCount((Long) statistics.get("totalReviewCount"))
-                .averageTasteRating((Double) statistics.get("averageTasteRating"))
-                .averageAmountRating((Double) statistics.get("averageAmountRating"))
-                .averagePriceRating((Double) statistics.get("averagePriceRating"))
-                .averageAtmosphereRating((Double) statistics.get("averageAtmosphereRating"))
-                .averageKindnessRating((Double) statistics.get("averageKindnessRating"))
-                .averageHygieneRating((Double) statistics.get("averageHygieneRating"))
-                .willRevisitPercentage((Double) statistics.get("willRevisitPercentage"))
-                .monthlyReviewCounts((Map<Integer, Long>) statistics.get("monthlyReviewCounts"))
-                .ratingCounts((Map<Integer, Long>) statistics.get("ratingCounts"))
+                .totalReviewCount(statistics.getTotalReviewCount())
+                .averageTasteRating(statistics.getAverageTasteRating())
+                .averageAmountRating(statistics.getAverageAmountRating())
+                .averagePriceRating(statistics.getAveragePriceRating())
+                .averageAtmosphereRating(statistics.getAverageAtmosphereRating())
+                .averageKindnessRating(statistics.getAverageKindnessRating())
+                .averageHygieneRating(statistics.getAverageHygieneRating())
+                .willRevisitPercentage(statistics.getWillRevisitPercentage())
+                .monthlyReviewCounts(statistics.getMonthlyReviewCounts())
+                .ratingCounts(statistics.getRatingCounts())
                 .build();
     }
 

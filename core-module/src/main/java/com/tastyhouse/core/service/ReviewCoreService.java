@@ -8,6 +8,7 @@ import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.PlaceReviewStatisticsDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.repository.follow.FollowJpaRepository;
@@ -247,11 +248,8 @@ public class ReviewCoreService {
         return reviewImageJpaRepository.findByReviewIdInOrderBySortAsc(reviewIds);
     }
 
-    public Map<String, Object> getPlaceReviewStatistics(Long placeId) {
-        Map<String, Object> statistics = new HashMap<>();
-
+    public PlaceReviewStatisticsDto getPlaceReviewStatistics(Long placeId) {
         Long totalCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
-        statistics.put("totalReviewCount", totalCount);
 
         Object[][] ratingData = reviewJpaRepository.getRatingCounts(placeId);
         Map<Integer, Long> ratingMap = new HashMap<>();
@@ -261,19 +259,14 @@ public class ReviewCoreService {
         for (int r = 1; r <= 5; r++) {
             ratingMap.putIfAbsent(r, 0L);
         }
-        statistics.put("ratingCounts", ratingMap);
+
+        PlaceReviewStatisticsDto.PlaceReviewStatisticsDtoBuilder builder = PlaceReviewStatisticsDto.builder()
+                .totalReviewCount(totalCount)
+                .ratingCounts(ratingMap);
 
         if (totalCount > 0) {
-            statistics.put("averageTasteRating", reviewJpaRepository.getAverageTasteRating(placeId));
-            statistics.put("averageAmountRating", reviewJpaRepository.getAverageAmountRating(placeId));
-            statistics.put("averagePriceRating", reviewJpaRepository.getAveragePriceRating(placeId));
-            statistics.put("averageAtmosphereRating", reviewJpaRepository.getAverageAtmosphereRating(placeId));
-            statistics.put("averageKindnessRating", reviewJpaRepository.getAverageKindnessRating(placeId));
-            statistics.put("averageHygieneRating", reviewJpaRepository.getAverageHygieneRating(placeId));
-
             Long willRevisitCount = reviewJpaRepository.countWillRevisit(placeId);
             double willRevisitPercentage = (willRevisitCount * 100.0) / totalCount;
-            statistics.put("willRevisitPercentage", willRevisitPercentage);
 
             int currentYear = LocalDateTime.now().getYear();
             Object[][] monthlyData = reviewJpaRepository.getMonthlyReviewCounts(placeId, currentYear);
@@ -281,10 +274,18 @@ public class ReviewCoreService {
             for (Object[] row : monthlyData) {
                 monthlyMap.put((Integer) row[0], (Long) row[1]);
             }
-            statistics.put("monthlyReviewCounts", monthlyMap);
+
+            builder.averageTasteRating(reviewJpaRepository.getAverageTasteRating(placeId))
+                    .averageAmountRating(reviewJpaRepository.getAverageAmountRating(placeId))
+                    .averagePriceRating(reviewJpaRepository.getAveragePriceRating(placeId))
+                    .averageAtmosphereRating(reviewJpaRepository.getAverageAtmosphereRating(placeId))
+                    .averageKindnessRating(reviewJpaRepository.getAverageKindnessRating(placeId))
+                    .averageHygieneRating(reviewJpaRepository.getAverageHygieneRating(placeId))
+                    .willRevisitPercentage(willRevisitPercentage)
+                    .monthlyReviewCounts(monthlyMap);
         }
 
-        return statistics;
+        return builder.build();
     }
 
     public ReviewsByRatingResult getProductReviewsByRating(Long productId, int page, int size) {
