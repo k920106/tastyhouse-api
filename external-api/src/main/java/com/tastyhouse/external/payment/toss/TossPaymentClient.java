@@ -5,6 +5,7 @@ import com.tastyhouse.external.payment.toss.dto.TossPaymentCancelResult;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmRequest;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResponse;
 import com.tastyhouse.external.payment.toss.dto.TossPaymentConfirmResult;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,15 @@ public class TossPaymentClient {
     private final WebClient.Builder webClientBuilder;
     private final TossPaymentProperties tossPaymentProperties;
 
+    private WebClient webClient;
+
+    @PostConstruct
+    private void init() {
+        this.webClient = webClientBuilder
+            .baseUrl(tossPaymentProperties.getBaseUrl())
+            .build();
+    }
+
     public TossPaymentConfirmResponse confirmPayment(String paymentKey, String pgOrderId, Integer amount) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.builder()
             .paymentKey(paymentKey)
@@ -34,9 +44,9 @@ public class TossPaymentClient {
         log.info("토스 결제 승인하기 API 요청. paymentKey: {}, pgOrderId: {}, amount: {}", paymentKey, pgOrderId, amount);
 
         try {
-            TossPaymentConfirmResponse response = webClientBuilder.build()
+            TossPaymentConfirmResponse response = webClient
                 .post()
-                .uri(tossPaymentProperties.getBaseUrl() + tossPaymentProperties.getConfirmPath())
+                .uri(tossPaymentProperties.getConfirmPath())
                 .header(HttpHeaders.AUTHORIZATION, createAuthorizationHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
@@ -85,13 +95,12 @@ public class TossPaymentClient {
             .cancelReason(cancelReason)
             .build();
 
-        String cancelUrl = tossPaymentProperties.getBaseUrl()
-            + tossPaymentProperties.getCancelPath().replace("{paymentKey}", paymentKey);
+        String cancelUrl = tossPaymentProperties.getCancelPath().replace("{paymentKey}", paymentKey);
 
         log.info("토스 전액 취소하기 API 요청. paymentKey: {}, cancelReason: {}", paymentKey, cancelReason);
 
         try {
-            TossPaymentConfirmResponse response = webClientBuilder.build()
+            TossPaymentConfirmResponse response = webClient
                 .post()
                 .uri(cancelUrl)
                 .header(HttpHeaders.AUTHORIZATION, createAuthorizationHeader())

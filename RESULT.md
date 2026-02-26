@@ -85,20 +85,6 @@ public record OrderCreateRequest(
 ) {}
 ```
 
-#### 3.10.3 WebClient를 매 요청마다 새로 생성
-
-**파일:** `TossPaymentClient.java`
-
-```java
-webClientBuilder.build()  // 매 호출마다 새 WebClient 인스턴스 생성
-    .post()
-    ...
-```
-
-- **개선:** WebClient 인스턴스를 빈으로 등록하고 재사용
-
----
-
 ### 3.11 [경미] 기타 개선 사항
 
 | 항목                    | 현재                                             | 개선안                                                  |
