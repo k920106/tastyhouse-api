@@ -7,8 +7,6 @@ import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
 import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.ProductCategory;
 import com.tastyhouse.core.entity.product.dto.ProductSimpleDto;
-import com.tastyhouse.core.entity.review.Review;
-import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.PlaceReviewStatisticsDto;
 import com.tastyhouse.core.repository.place.PlaceBookmarkJpaRepository;
@@ -400,48 +398,6 @@ public class PlaceService {
 
     private String getFirstImageUrl(Long productId) {
         return productCoreService.getFirstImageUrl(productId);
-    }
-
-    private PlacePhotoResponse convertToPlacePhotoResponse(PlacePhotoCategoryImage image) {
-        String categoryName = null;
-        if (image.getPlacePhotoCategoryId() != null) {
-            PlacePhotoCategory category = placeCoreService.findPlaceImageCategoryById(image.getPlacePhotoCategoryId());
-            categoryName = category.getName();
-        }
-        return PlacePhotoResponse.builder()
-                .id(image.getId())
-                .imageUrl(image.getImageUrl())
-                .categoryCode(null) // Entity 기반으로 변경되어 code는 사용하지 않음
-                .categoryName(categoryName)
-                .sort(image.getSort())
-                .build();
-    }
-
-    private PlaceReviewResponse convertToPlaceReviewResponse(Review review, List<ReviewImage> images) {
-        List<PlaceReviewResponse.ReviewImageItem> imageItems = images.stream()
-                .map(img -> PlaceReviewResponse.ReviewImageItem.builder()
-                        .id(img.getId())
-                        .imageUrl(img.getImageUrl())
-                        .sort(img.getSort())
-                        .build())
-                .toList();
-
-        return PlaceReviewResponse.builder()
-                .id(review.getId())
-                .memberId(review.getMemberId())
-                .memberNickname(null)
-                .content(review.getContent())
-                .totalRating(review.getTotalRating())
-                .tasteRating(review.getTasteRating())
-                .amountRating(review.getAmountRating())
-                .priceRating(review.getPriceRating())
-                .atmosphereRating(review.getAtmosphereRating())
-                .kindnessRating(review.getKindnessRating())
-                .hygieneRating(review.getHygieneRating())
-                .willRevisit(review.getWillRevisit())
-                .images(imageItems)
-                .createdAt(review.getCreatedAt())
-                .build();
     }
 
     public PlaceBookmarkResponse isBookmarked(Long placeId, Long memberId) {

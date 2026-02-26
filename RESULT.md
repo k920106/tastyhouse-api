@@ -85,12 +85,6 @@ public record OrderCreateRequest(
 ) {}
 ```
 
-#### 3.10.2 사용되지 않는 코드
-
-- `PlaceService.convertToPlacePhotoResponse()`는 private 메서드이나 실제 호출되는 곳이 없음
-- `PlaceService.convertToPlaceReviewResponse()`도 동일
-- **개선:** Dead code 제거
-
 #### 3.10.3 WebClient를 매 요청마다 새로 생성
 
 **파일:** `TossPaymentClient.java`
