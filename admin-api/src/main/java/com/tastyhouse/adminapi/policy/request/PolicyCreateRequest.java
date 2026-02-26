@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.policy.request;
+package com.tastyhouse.adminapi.policy.request;
 
 import com.tastyhouse.core.entity.policy.PolicyType;
 import io.swagger.v3.oas.annotations.media.Schema;

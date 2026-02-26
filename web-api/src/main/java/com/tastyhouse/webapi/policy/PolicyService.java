@@ -6,8 +6,6 @@ import com.tastyhouse.core.entity.policy.dto.PolicyDocumentDto;
 import com.tastyhouse.core.entity.policy.dto.PolicyListItemDto;
 import com.tastyhouse.core.service.PolicyDocumentCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.webapi.policy.request.PolicyCreateRequest;
-import com.tastyhouse.webapi.policy.request.PolicyUpdateRequest;
 import com.tastyhouse.webapi.policy.response.PolicyDetailResponse;
 import com.tastyhouse.webapi.policy.response.PolicyListItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -64,32 +62,5 @@ public class PolicyService {
             .effectiveDate(dto.getEffectiveDate())
             .createdAt(dto.getCreatedAt())
             .build();
-    }
-
-    public Long createPolicy(PolicyCreateRequest request) {
-        return policyDocumentCoreService.create(
-            request.getType(),
-            request.getVersion(),
-            request.getTitle(),
-            request.getContent(),
-            request.getMandatory(),
-            request.getEffectiveDate(),
-            request.getCreatedBy()
-        ).getId();
-    }
-
-    public void updatePolicy(Long id, PolicyUpdateRequest request) {
-        policyDocumentCoreService.update(
-            id,
-            request.getTitle(),
-            request.getContent(),
-            request.getMandatory(),
-            request.getEffectiveDate(),
-            request.getUpdatedBy()
-        );
-    }
-
-    public void updateCurrentPolicy(Long policyId) {
-        policyDocumentCoreService.updateCurrentPolicy(policyId);
     }
 }

@@ -1,8 +1,8 @@
-package com.tastyhouse.webapi.policy;
+package com.tastyhouse.adminapi.policy;
 
 import com.tastyhouse.core.common.CommonResponse;
-import com.tastyhouse.webapi.policy.request.PolicyCreateRequest;
-import com.tastyhouse.webapi.policy.request.PolicyUpdateRequest;
+import com.tastyhouse.adminapi.policy.request.PolicyCreateRequest;
+import com.tastyhouse.adminapi.policy.request.PolicyUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin/policies")
 public class PolicyAdminApiController {
 
-    private final PolicyService policyService;
+    private final PolicyAdminService policyAdminService;
 
     @Operation(summary = "약관 생성", description = "새로운 약관을 생성합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "생성 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @PostMapping("/v1")
     public ResponseEntity<CommonResponse<Long>> createPolicy(@Valid @RequestBody PolicyCreateRequest request) {
-        Long policyId = policyService.createPolicy(request);
+        Long policyId = policyAdminService.createPolicy(request);
         return ResponseEntity.ok(CommonResponse.success(policyId));
     }
 
@@ -36,7 +36,7 @@ public class PolicyAdminApiController {
     public ResponseEntity<CommonResponse<Void>> updatePolicy(
         @PathVariable Long id,
         @Valid @RequestBody PolicyUpdateRequest request) {
-        policyService.updatePolicy(id, request);
+        policyAdminService.updatePolicy(id, request);
         return ResponseEntity.ok(CommonResponse.success(null));
     }
 
@@ -44,7 +44,7 @@ public class PolicyAdminApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "변경 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @PatchMapping("/v1/{id}/current")
     public ResponseEntity<CommonResponse<Void>> updateCurrentPolicy(@PathVariable Long id) {
-        policyService.updateCurrentPolicy(id);
+        policyAdminService.updateCurrentPolicy(id);
         return ResponseEntity.ok(CommonResponse.success(null));
     }
 }

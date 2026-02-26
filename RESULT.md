@@ -87,17 +87,6 @@ public record OrderCreateRequest(
 
 ---
 
-### 3.9 [보통] API 설계 개선
-
-#### 3.9.1 admin-api 모듈이 사실상 비어있음
-
-- `AdminApiApplication.java` 1개만 존재
-- **개선:** 관리자 기능을 admin-api에 구현하거나, 아직 필요 없다면 모듈 제거하여 불필요한 복잡성 해소
-
-#### 3.9.2 PolicyAdminApiController가 web-api에 위치
-
-- `web-api/policy/PolicyAdminApiController.java`는 관리자용 API이므로 `admin-api`에 위치해야 함
-
 #### 3.9.3 일관되지 않은 응답 타입
 
 - 일부 API는 `CommonResponse<T>`로 감싸고, 일부는 `ResponseEntity<T>`를 직접 반환

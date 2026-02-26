@@ -1,4 +1,4 @@
-package com.tastyhouse.webapi.policy.request;
+package com.tastyhouse.adminapi.policy.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
