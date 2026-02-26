@@ -30,6 +30,7 @@ application-*.yml
 
 # Claude
 .claude/settings.local.json
+RESULT.md
 
 # Cursor
 .vscode/
