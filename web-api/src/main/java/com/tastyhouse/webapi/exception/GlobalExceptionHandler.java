@@ -5,8 +5,15 @@ import com.tastyhouse.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -30,6 +37,52 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .body(CommonResponse.error(e.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<CommonResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+        log.warn("MethodArgumentNotValidException: {}", message);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error(message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CommonResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.warn("HttpMessageNotReadableException: {}", e.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error("요청 본문을 읽을 수 없습니다. JSON 형식을 확인해주세요."));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<CommonResponse<Void>> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        String message = String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName());
+        log.warn("MissingServletRequestParameterException: {}", message);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error(message));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CommonResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        String message = String.format("파라미터 '%s'의 값 '%s'이(가) 올바르지 않습니다.", e.getName(), e.getValue());
+        log.warn("MethodArgumentTypeMismatchException: {}", message);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error(message));
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<CommonResponse<Void>> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        String message = String.format("요청하신 API를 찾을 수 없습니다: %s %s", e.getHttpMethod(), e.getRequestURL());
+        log.warn("NoHandlerFoundException: {}", message);
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(CommonResponse.error(message));
     }
 
     @ExceptionHandler(Exception.class)

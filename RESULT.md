@@ -33,13 +33,6 @@ tastyhouse-api/
 
 ## 3. 개선이 필요한 항목
 
-#### 3.4.2 GlobalExceptionHandler 보강 필요
-
-- `MethodArgumentNotValidException` (Bean Validation), `HttpMessageNotReadableException` (잘못된 JSON), `MissingServletRequestParameterException` 등의 핸들러 미존재
-- **개선:** Spring MVC 표준 예외에 대한 핸들러 추가
-
----
-
 ### 3.5 [중요] 테스트 코드 부재
 
 - 전체 프로젝트에서 테스트 파일이 **5개**뿐이며, 그중 2개는 빈 Application Test
