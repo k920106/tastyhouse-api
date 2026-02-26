@@ -41,8 +41,15 @@ public class PlaceService {
     private final PlaceBookmarkJpaRepository placeBookmarkJpaRepository;
     private final PlaceOwnerMessageHistoryJpaRepository placeOwnerMessageHistoryJpaRepository;
 
-    public List<Place> findNearbyPlaces(Double latitude, Double longitude) {
-        return placeCoreService.findNearbyPlaces(latitude, longitude);
+    public List<PlaceMapMarkerResponse> findMapMarkers(Double latitude, Double longitude) {
+        return placeCoreService.findNearbyPlaces(latitude, longitude).stream()
+                .map(place -> PlaceMapMarkerResponse.builder()
+                        .id(place.getId())
+                        .latitude(place.getLatitude())
+                        .longitude(place.getLongitude())
+                        .name(place.getName())
+                        .build())
+                .toList();
     }
 
     public PageResult<BestPlaceListItem> findBestPlaces(PageRequest pageRequest) {

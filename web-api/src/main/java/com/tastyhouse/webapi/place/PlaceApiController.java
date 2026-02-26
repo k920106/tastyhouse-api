@@ -1,16 +1,15 @@
 package com.tastyhouse.webapi.place;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.place.Amenity;
 import com.tastyhouse.core.entity.place.FoodType;
-import com.tastyhouse.core.entity.place.Place;
 import com.tastyhouse.webapi.common.PageRequest;
-import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.place.request.LatestPlaceFilterRequest;
-import com.tastyhouse.webapi.place.request.PlaceNearRequest;
 import com.tastyhouse.webapi.place.response.*;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,10 +30,14 @@ public class PlaceApiController {
 
     private final PlaceService placeService;
 
-    @GetMapping
-    public ResponseEntity<CommonResponse<List<Place>>> findAll(@RequestBody PlaceNearRequest placeNearRequest) {
-        List<Place> places = placeService.findNearbyPlaces(placeNearRequest.latitude(), placeNearRequest.longitude());
-        CommonResponse<List<Place>> response = CommonResponse.success(places);
+    @Operation(summary = "지도 마커 목록 조회", description = "지도에서 드래그한 위치 기준 주변 플레이스의 마커 정보(위도, 경도, 상호명)를 조회합니다.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
+    @GetMapping("/v1/map/markers")
+    public ResponseEntity<CommonResponse<List<PlaceMapMarkerResponse>>> getMapMarkers(
+            @RequestParam @Parameter(description = "위도", example = "37.5013") Double latitude,
+            @RequestParam @Parameter(description = "경도", example = "127.0396") Double longitude) {
+        List<PlaceMapMarkerResponse> markers = placeService.findMapMarkers(latitude, longitude);
+        CommonResponse<List<PlaceMapMarkerResponse>> response = CommonResponse.success(markers);
         return ResponseEntity.ok(response);
     }
 
