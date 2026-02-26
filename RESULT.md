@@ -33,16 +33,6 @@ tastyhouse-api/
 
 ## 3. 개선이 필요한 항목
 
-### 3.5 [중요] 테스트 코드 부재
-
-- 전체 프로젝트에서 테스트 파일이 **5개**뿐이며, 그중 2개는 빈 Application Test
-- `PasswordEncodeTest`, `KeyGeneratorTest`, `RankServiceTest`만 존재
-- 결제, 주문 등 핵심 비즈니스 로직에 대한 테스트가 전혀 없음
-- **개선:**
-  - 최소한 결제(`PaymentService`) 및 주문(`OrderService`) 관련 단위 테스트 추가
-  - 컨트롤러 통합 테스트(`@WebMvcTest` 또는 `@SpringBootTest`) 추가
-  - 테스트 전략 수립 (단위 > 통합 > E2E)
-
 ### 3.11 [경미] 기타 개선 사항
 
 | 항목                    | 현재                                             | 개선안                                                  |
