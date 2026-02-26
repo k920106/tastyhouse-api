@@ -23,6 +23,7 @@ import com.tastyhouse.webapi.review.response.ReviewLikeStatusResponse;
 import com.tastyhouse.webapi.review.response.ReviewProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReviewService {
 
     private final ReviewCoreService reviewCoreService;
@@ -128,16 +130,19 @@ public class ReviewService {
         return new ReviewLikeStatusResponse(isLiked);
     }
 
+    @Transactional
     public boolean toggleReviewLike(Long reviewId, Long memberId) {
         return reviewCoreService.toggleReviewLike(reviewId, memberId);
     }
 
+    @Transactional
     public CommentResponse createComment(Long reviewId, Long memberId, String content) {
         ReviewComment comment = reviewCoreService.createComment(reviewId, memberId, content);
         Member member = memberJpaRepository.findById(memberId).orElse(null);
         return convertToCommentResponse(comment, member, List.of());
     }
 
+    @Transactional
     public ReplyResponse createReply(Long commentId, Long memberId, Long replyToMemberId, String content) {
         ReviewReply reply = reviewCoreService.createReply(commentId, memberId, replyToMemberId, content);
         Member member = memberJpaRepository.findById(memberId).orElse(null);

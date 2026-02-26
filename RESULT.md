@@ -87,20 +87,6 @@ public record OrderCreateRequest(
 
 ---
 
-### 3.8 [보통] 트랜잭션 관리 개선
-
-#### 3.8.1 조회 메서드에 `@Transactional(readOnly = true)` 누락
-
-- `PlaceService`, `ReviewService`, `BannerService` 등 대부분의 조회 메서드에 `@Transactional(readOnly = true)`가 없음
-- readOnly 트랜잭션은 Hibernate 더티 체킹을 비활성화하여 성능 향상에 기여
-
-#### 3.8.2 긴 트랜잭션 주의
-
-- `OrderService.createOrder()`는 하나의 트랜잭션 안에서 주문 생성 + 쿠폰 사용 + 포인트 차감을 모두 처리
-- 외부 API 호출이 포함되지 않아 현재는 괜찮으나, 향후 확장 시 트랜잭션 분리 고려 필요
-
----
-
 ### 3.9 [보통] API 설계 개선
 
 #### 3.9.1 admin-api 모듈이 사실상 비어있음

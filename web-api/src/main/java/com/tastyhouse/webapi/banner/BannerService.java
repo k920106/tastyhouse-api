@@ -7,9 +7,11 @@ import com.tastyhouse.webapi.banner.response.BannerListItem;
 import com.tastyhouse.webapi.common.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BannerService {
 
     private final BannerCoreService bannerCoreService;
