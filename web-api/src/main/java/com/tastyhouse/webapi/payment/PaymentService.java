@@ -160,7 +160,7 @@ public class PaymentService {
             );
         }
 
-        LocalDateTime approvedAt = parseDateTime(response.getApprovedAt());
+        LocalDateTime approvedAt = TossPaymentUtils.parseDateTime(response.getApprovedAt());
         String receiptUrl = response.getReceipt() != null ? response.getReceipt().getUrl() : null;
 
         payment.complete(response.getPaymentKey(), approvedAt, receiptUrl);
@@ -419,8 +419,8 @@ public class PaymentService {
             .totalAmount(response.getTotalAmount())
             .balanceAmount(response.getBalanceAmount())
             .status(response.getStatus())
-            .requestedAt(parseDateTime(response.getRequestedAt()))
-            .approvedAt(parseDateTime(response.getApprovedAt()))
+            .requestedAt(TossPaymentUtils.parseDateTime(response.getRequestedAt()))
+            .approvedAt(TossPaymentUtils.parseDateTime(response.getApprovedAt()))
             .useEscrow(response.getUseEscrow())
             .lastTransactionKey(response.getLastTransactionKey())
             .suppliedAmount(response.getSuppliedAmount())
@@ -455,7 +455,7 @@ public class PaymentService {
                 .virtualAccountNumber(va.getAccountNumber())
                 .virtualAccountBankCode(va.getBankCode())
                 .virtualAccountCustomerName(va.getCustomerName())
-                .virtualAccountDueDate(parseDateTime(va.getDueDate()))
+                .virtualAccountDueDate(TossPaymentUtils.parseDateTime(va.getDueDate()))
                 .virtualAccountRefundStatus(va.getRefundStatus())
                 .virtualAccountExpired(va.getExpired())
                 .virtualAccountSettlementStatus(va.getSettlementStatus());
@@ -509,19 +509,4 @@ public class PaymentService {
         return builder.build();
     }
 
-    private LocalDateTime parseDateTime(String dateTimeStr) {
-        if (dateTimeStr == null || dateTimeStr.isBlank()) {
-            return null;
-        }
-        try {
-            java.time.OffsetDateTime offsetDateTime = java.time.OffsetDateTime.parse(
-                dateTimeStr,
-                java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
-            );
-            return offsetDateTime.toLocalDateTime();
-        } catch (Exception e) {
-            log.warn("Failed to parse datetime: {}", dateTimeStr, e);
-            return null;
-        }
-    }
 }

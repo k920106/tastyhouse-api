@@ -1,8 +1,28 @@
 package com.tastyhouse.external.payment.toss;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Slf4j
 public final class TossPaymentUtils {
 
     private TossPaymentUtils() {
+    }
+
+    public static LocalDateTime parseDateTime(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isBlank()) {
+            return null;
+        }
+        try {
+            OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            return offsetDateTime.toLocalDateTime();
+        } catch (Exception e) {
+            log.warn("Failed to parse datetime: {}", dateTimeStr, e);
+            return null;
+        }
     }
 
     public static String mapIssuerCodeToCardCompany(String issuerCode) {

@@ -14,9 +14,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @Slf4j
@@ -156,7 +153,7 @@ public class TossPaymentClient {
         if (response.getCancels() != null && !response.getCancels().isEmpty()) {
             TossPaymentConfirmResponse.Cancel latestCancel = response.getCancels().get(0);
             builder.cancelReason(latestCancel.getCancelReason())
-                .canceledAt(parseDateTime(latestCancel.getCanceledAt()))
+                .canceledAt(TossPaymentUtils.parseDateTime(latestCancel.getCanceledAt()))
                 .cancelAmount(latestCancel.getCancelAmount())
                 .refundableAmount(latestCancel.getRefundableAmount())
                 .cancelStatus(latestCancel.getCancelStatus());
@@ -179,7 +176,7 @@ public class TossPaymentClient {
             .orderName(response.getOrderName())
             .totalAmount(response.getTotalAmount())
             .status(response.getStatus())
-            .approvedAt(parseDateTime(response.getApprovedAt()))
+            .approvedAt(TossPaymentUtils.parseDateTime(response.getApprovedAt()))
             .method(response.getMethod());
 
         if (response.getReceipt() != null) {
@@ -204,18 +201,5 @@ public class TossPaymentClient {
             .errorCode(errorCode)
             .errorMessage(errorMessage)
             .build();
-    }
-
-    private LocalDateTime parseDateTime(String dateTimeStr) {
-        if (dateTimeStr == null || dateTimeStr.isBlank()) {
-            return null;
-        }
-        try {
-            OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            return offsetDateTime.toLocalDateTime();
-        } catch (Exception e) {
-            log.warn("Failed to parse datetime: {}", dateTimeStr, e);
-            return null;
-        }
     }
 }
