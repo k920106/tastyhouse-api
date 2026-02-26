@@ -1,6 +1,8 @@
 package com.tastyhouse.file;
 
 import com.tastyhouse.core.entity.file.UploadedFile;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.service.FileCoreService;
 import com.tastyhouse.file.storage.FileStorageStrategy;
 import lombok.RequiredArgsConstructor;
@@ -55,28 +57,28 @@ public class FileService {
 
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어있습니다.");
+            throw new BusinessException(ErrorCode.FILE_EMPTY);
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+            throw new BusinessException(ErrorCode.FILE_SIZE_EXCEEDED);
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, png, gif, webp만 가능)");
+            throw new BusinessException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
         }
 
         String originalFilename = file.getOriginalFilename();
         String extension = extractExtension(originalFilename);
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다. (jpg, png, gif, webp만 가능)");
+            throw new BusinessException(ErrorCode.FILE_EXTENSION_NOT_ALLOWED);
         }
     }
 
     private String extractExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
-            throw new IllegalArgumentException("파일 확장자를 확인할 수 없습니다.");
+            throw new BusinessException(ErrorCode.FILE_EXTENSION_UNKNOWN);
         }
         return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
     }

@@ -4,7 +4,8 @@ import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.coupon.response.MemberCouponListItemResponse;
-import com.tastyhouse.webapi.exception.NotFoundException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.webapi.member.request.UpdatePasswordRequest;
 import com.tastyhouse.webapi.member.request.UpdatePersonalInfoRequest;
 import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
@@ -65,7 +66,7 @@ public class MemberApiController {
     @GetMapping("/v1/me")
     public ResponseEntity<CommonResponse<MemberProfileResponse>> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         MemberProfileResponse profile = memberService.getMemberProfile(userDetails.getMemberId())
-            .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "회원을 찾을 수 없습니다."));
         return ResponseEntity.ok(CommonResponse.success(profile));
     }
 

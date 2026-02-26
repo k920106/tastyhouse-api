@@ -3,6 +3,9 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.entity.point.MemberPoint;
 import com.tastyhouse.core.entity.point.MemberPointHistory;
 import com.tastyhouse.core.entity.point.PointType;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +29,10 @@ public class PointCoreService {
     @Transactional
     public void usePoints(Long memberId, int pointAmount) {
         MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("포인트 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POINT_NOT_FOUND));
 
         if (memberPoint.getAvailablePoints() < pointAmount) {
-            throw new IllegalStateException("포인트가 부족합니다.");
+            throw new BusinessException(ErrorCode.POINT_INSUFFICIENT);
         }
 
         memberPoint.deductPoints(pointAmount);
@@ -47,7 +50,7 @@ public class PointCoreService {
     @Transactional
     public void earnPoints(Long memberId, int pointAmount, String reason) {
         MemberPoint memberPoint = memberPointJpaRepository.findByMemberId(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("포인트 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POINT_NOT_FOUND));
 
         memberPoint.addPoints(pointAmount);
 

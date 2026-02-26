@@ -1,0 +1,78 @@
+package com.tastyhouse.core.exception;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+
+    // 공통 - 엔티티 미존재
+    ENTITY_NOT_FOUND(404, "ENTITY_NOT_FOUND", "요청한 데이터를 찾을 수 없습니다."),
+
+    // 주문
+    ORDER_NOT_FOUND(404, "ORDER_NOT_FOUND", "주문을 찾을 수 없습니다."),
+    ORDER_ACCESS_DENIED(403, "ORDER_ACCESS_DENIED", "본인의 주문만 조회할 수 있습니다."),
+    ORDER_PRODUCT_NOT_FOUND(404, "ORDER_PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다."),
+    ORDER_OPTION_GROUP_NOT_FOUND(404, "ORDER_OPTION_GROUP_NOT_FOUND", "옵션 그룹을 찾을 수 없습니다."),
+    ORDER_OPTION_NOT_FOUND(404, "ORDER_OPTION_NOT_FOUND", "옵션을 찾을 수 없습니다."),
+    ORDER_PRODUCT_SOLD_OUT(400, "ORDER_PRODUCT_SOLD_OUT", "품절된 상품입니다."),
+    ORDER_PRODUCT_AMOUNT_MISMATCH(400, "ORDER_PRODUCT_AMOUNT_MISMATCH", "상품 금액이 일치하지 않습니다."),
+    ORDER_PRODUCT_DISCOUNT_AMOUNT_MISMATCH(400, "ORDER_PRODUCT_DISCOUNT_AMOUNT_MISMATCH", "상품 할인 금액이 일치하지 않습니다."),
+    ORDER_COUPON_DISCOUNT_AMOUNT_MISMATCH(400, "ORDER_COUPON_DISCOUNT_AMOUNT_MISMATCH", "쿠폰 사용 금액이 일치하지 않습니다."),
+    ORDER_POINT_DISCOUNT_AMOUNT_MISMATCH(400, "ORDER_POINT_DISCOUNT_AMOUNT_MISMATCH", "포인트 사용 금액이 일치하지 않습니다."),
+    ORDER_TOTAL_DISCOUNT_AMOUNT_MISMATCH(400, "ORDER_TOTAL_DISCOUNT_AMOUNT_MISMATCH", "할인 금액이 일치하지 않습니다."),
+    ORDER_FINAL_AMOUNT_MISMATCH(400, "ORDER_FINAL_AMOUNT_MISMATCH", "결제 금액이 일치하지 않습니다."),
+    ORDER_MINIMUM_AMOUNT_NOT_MET(400, "ORDER_MINIMUM_AMOUNT_NOT_MET", "최소 주문 금액을 충족하지 않습니다."),
+
+    // 쿠폰
+    COUPON_NOT_FOUND(404, "COUPON_NOT_FOUND", "쿠폰을 찾을 수 없습니다."),
+    COUPON_ACCESS_DENIED(403, "COUPON_ACCESS_DENIED", "본인의 쿠폰만 사용할 수 있습니다."),
+    COUPON_INFO_NOT_FOUND(404, "COUPON_INFO_NOT_FOUND", "쿠폰 정보를 찾을 수 없습니다."),
+    COUPON_NOT_AVAILABLE(400, "COUPON_NOT_AVAILABLE", "사용할 수 없는 쿠폰입니다."),
+
+    // 결제
+    PAYMENT_ORDER_ACCESS_DENIED(403, "PAYMENT_ORDER_ACCESS_DENIED", "본인의 주문만 결제할 수 있습니다."),
+    PAYMENT_ACCESS_DENIED(403, "PAYMENT_ACCESS_DENIED", "본인의 결제만 처리할 수 있습니다."),
+    PAYMENT_INVALID_ORDER_STATUS(400, "PAYMENT_INVALID_ORDER_STATUS", "결제할 수 없는 주문 상태입니다."),
+    PAYMENT_ALREADY_IN_PROGRESS(400, "PAYMENT_ALREADY_IN_PROGRESS", "이미 결제가 진행 중인 주문입니다."),
+    PAYMENT_NOT_PENDING_APPROVAL(400, "PAYMENT_NOT_PENDING_APPROVAL", "승인 대기 중인 결제만 처리할 수 있습니다."),
+    PAYMENT_AMOUNT_MISMATCH(400, "PAYMENT_AMOUNT_MISMATCH", "결제 금액이 일치하지 않습니다."),
+    PAYMENT_APPROVAL_FAILED(400, "PAYMENT_APPROVAL_FAILED", "결제 승인에 실패했습니다."),
+    PAYMENT_REFUND_AMOUNT_EXCEEDED(400, "PAYMENT_REFUND_AMOUNT_EXCEEDED", "환불 금액이 결제 금액을 초과할 수 없습니다."),
+    PAYMENT_NOT_COMPLETED(400, "PAYMENT_NOT_COMPLETED", "완료된 결제만 환불할 수 있습니다."),
+    PAYMENT_NOT_PENDING(400, "PAYMENT_NOT_PENDING", "대기 중인 결제만 완료 처리할 수 있습니다."),
+    PAYMENT_NOT_ON_SITE(400, "PAYMENT_NOT_ON_SITE", "현장결제만 완료 처리할 수 있습니다."),
+
+    // 회원
+    MEMBER_INFO_AUTH_EXPIRED(400, "MEMBER_INFO_AUTH_EXPIRED", "개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요."),
+    MEMBER_PHONE_SMS_REQUIRED(400, "MEMBER_PHONE_SMS_REQUIRED", "휴대폰번호 변경 시 SMS 인증이 필요합니다."),
+    MEMBER_PHONE_AUTH_EXPIRED(400, "MEMBER_PHONE_AUTH_EXPIRED", "휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요."),
+    MEMBER_PHONE_MISMATCH(400, "MEMBER_PHONE_MISMATCH", "인증된 휴대폰번호와 입력한 휴대폰번호가 일치하지 않습니다."),
+    MEMBER_PASSWORD_MISMATCH(400, "MEMBER_PASSWORD_MISMATCH", "비밀번호가 일치하지 않습니다."),
+    MEMBER_PASSWORD_CONFIRM_MISMATCH(400, "MEMBER_PASSWORD_CONFIRM_MISMATCH", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다."),
+    MEMBER_PASSWORD_SAME_AS_OLD(400, "MEMBER_PASSWORD_SAME_AS_OLD", "현재 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
+
+    // 인증 (SMS)
+    VERIFICATION_CODE_NOT_FOUND(400, "VERIFICATION_CODE_NOT_FOUND", "발송된 인증번호가 없습니다. 인증번호를 다시 요청해주세요."),
+    VERIFICATION_CODE_EXPIRED(400, "VERIFICATION_CODE_EXPIRED", "인증번호가 만료되었습니다. 인증번호를 다시 요청해주세요."),
+    VERIFICATION_CODE_MISMATCH(400, "VERIFICATION_CODE_MISMATCH", "인증번호가 일치하지 않습니다."),
+
+    // 포인트
+    POINT_NOT_FOUND(404, "POINT_NOT_FOUND", "포인트 정보를 찾을 수 없습니다."),
+    POINT_INSUFFICIENT(400, "POINT_INSUFFICIENT", "포인트가 부족합니다."),
+
+    // 파일
+    FILE_EMPTY(400, "FILE_EMPTY", "파일이 비어있습니다."),
+    FILE_SIZE_EXCEEDED(400, "FILE_SIZE_EXCEEDED", "파일 크기는 10MB를 초과할 수 없습니다."),
+    FILE_TYPE_NOT_ALLOWED(400, "FILE_TYPE_NOT_ALLOWED", "허용되지 않는 파일 형식입니다. (jpg, png, gif, webp만 가능)"),
+    FILE_EXTENSION_NOT_ALLOWED(400, "FILE_EXTENSION_NOT_ALLOWED", "허용되지 않는 파일 확장자입니다. (jpg, png, gif, webp만 가능)"),
+    FILE_EXTENSION_UNKNOWN(400, "FILE_EXTENSION_UNKNOWN", "파일 확장자를 확인할 수 없습니다."),
+
+    // 랭크
+    RANK_TYPE_UNKNOWN(400, "RANK_TYPE_UNKNOWN", "알 수 없는 랭크 타입입니다.");
+
+    private final int httpStatusCode;
+    private final String code;
+    private final String defaultMessage;
+}

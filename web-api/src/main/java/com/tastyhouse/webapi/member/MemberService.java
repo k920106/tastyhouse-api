@@ -8,6 +8,9 @@ import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.entity.user.MemberStatus;
 import com.tastyhouse.core.entity.user.MemberWithdrawal;
 import com.tastyhouse.core.entity.user.WithdrawalReason;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.member.MemberWithdrawalJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
@@ -56,7 +59,7 @@ public class MemberService {
 
     public void verifyPersonalInfoToken(Long memberId, String verifyToken) {
         if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
-            throw new IllegalArgumentException("개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요.");
+            throw new BusinessException(ErrorCode.MEMBER_INFO_AUTH_EXPIRED);
         }
 
         Long verifiedMemberId = jwtTokenProvider.getMemberIdFromVerifyToken(verifyToken);
@@ -67,11 +70,11 @@ public class MemberService {
 
     public void verifyPhoneToken(Long memberId, String phoneVerifyToken, String phoneNumber) {
         if (!StringUtils.hasText(phoneVerifyToken)) {
-            throw new IllegalArgumentException("휴대폰번호 변경 시 SMS 인증이 필요합니다.");
+            throw new BusinessException(ErrorCode.MEMBER_PHONE_SMS_REQUIRED);
         }
 
         if (!jwtTokenProvider.validatePhoneVerifyToken(phoneVerifyToken)) {
-            throw new IllegalArgumentException("휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요.");
+            throw new BusinessException(ErrorCode.MEMBER_PHONE_AUTH_EXPIRED);
         }
 
         Long phoneVerifiedMemberId = jwtTokenProvider.getMemberIdFromPhoneVerifyToken(phoneVerifyToken);
@@ -81,7 +84,7 @@ public class MemberService {
 
         String verifiedPhoneNumber = jwtTokenProvider.getPhoneNumberFromPhoneVerifyToken(phoneVerifyToken);
         if (!verifiedPhoneNumber.equals(phoneNumber)) {
-            throw new IllegalArgumentException("인증된 휴대폰번호와 입력한 휴대폰번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.MEMBER_PHONE_MISMATCH);
         }
     }
 
@@ -97,16 +100,16 @@ public class MemberService {
 
     public void verifyPassword(Long memberId, String rawPassword) {
         Member member = memberJpaRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "존재하지 않는 회원입니다."));
 
         if (!passwordEncoder.matches(rawPassword, member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.MEMBER_PASSWORD_MISMATCH);
         }
     }
 
     public PersonalInfoResponse getPersonalInfo(Long memberId) {
         Member member = memberJpaRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "존재하지 않는 회원입니다."));
 
         return PersonalInfoResponse.from(member);
     }
@@ -114,7 +117,7 @@ public class MemberService {
     @Transactional
     public void withdrawMember(Long memberId, WithdrawalReason reason, String reasonDetail) {
         memberJpaRepository.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."))
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "존재하지 않는 회원입니다."))
             .setMemberStatus(MemberStatus.DELETED);
 
         memberWithdrawalJpaRepository.save(
@@ -191,14 +194,14 @@ public class MemberService {
     @Transactional
     public void updatePassword(Long memberId, String newPassword, String newPasswordConfirm) {
         if (!newPassword.equals(newPasswordConfirm)) {
-            throw new IllegalStateException("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.MEMBER_PASSWORD_CONFIRM_MISMATCH);
         }
 
         Member member = memberJpaRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalStateException("인증된 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "인증된 회원을 찾을 수 없습니다."));
 
         if (passwordEncoder.matches(newPassword, member.getPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로 변경할 수 없습니다.");
+            throw new BusinessException(ErrorCode.MEMBER_PASSWORD_SAME_AS_OLD);
         }
 
         member.setPassword(passwordEncoder.encode(newPassword));
@@ -288,7 +291,6 @@ public class MemberService {
     }
 
     public MyReviewStatsResponse getMyReviewStats(Long memberId) {
-        // 전체 리뷰 개수 조회 (ALL 타입, 가장 최근 데이터)
         Integer reviewCount = memberReviewRankJpaRepository
             .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
             .map(MemberReviewRank::getReviewCount)

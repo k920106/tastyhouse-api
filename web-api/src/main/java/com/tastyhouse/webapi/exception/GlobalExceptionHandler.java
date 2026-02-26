@@ -1,6 +1,7 @@
 package com.tastyhouse.webapi.exception;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<CommonResponse<Void>> handleNotFoundException(NotFoundException e) {
-        log.warn("NotFoundException: {}", e.getMessage());
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<CommonResponse<Void>> handleBusinessException(BusinessException e) {
+        log.warn("BusinessException [{}]: {}", e.getErrorCode().getCode(), e.getMessage());
+        HttpStatus status = HttpStatus.resolve(e.getErrorCode().getHttpStatusCode());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
         return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
+            .status(status)
             .body(CommonResponse.error(e.getMessage()));
     }
 
@@ -24,14 +29,6 @@ public class GlobalExceptionHandler {
         log.warn("UnauthorizedException: {}", e.getMessage());
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
-            .body(CommonResponse.error(e.getMessage()));
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<CommonResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
-        log.warn("IllegalArgumentException: {}", e.getMessage());
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
             .body(CommonResponse.error(e.getMessage()));
     }
 

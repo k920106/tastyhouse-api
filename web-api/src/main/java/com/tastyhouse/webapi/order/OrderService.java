@@ -14,6 +14,10 @@ import com.tastyhouse.core.entity.product.Product;
 import com.tastyhouse.core.entity.product.ProductImage;
 import com.tastyhouse.core.entity.product.ProductOption;
 import com.tastyhouse.core.entity.product.ProductOptionGroup;
+import com.tastyhouse.core.exception.AccessDeniedException;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.service.CouponCoreService;
 import com.tastyhouse.core.service.OrderCoreService;
@@ -56,7 +60,7 @@ public class OrderService {
         Place place = placeCoreService.findPlaceById(request.placeId());
 
         MemberProfileResponse contact = memberService.getMemberProfile(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
 
         int totalProductAmount = 0;
         int productDiscountAmount = 0;
@@ -75,10 +79,12 @@ public class OrderService {
 
         for (OrderItemRequest itemRequest : request.orderItems()) {
             Product product = productCoreService.findProductById(itemRequest.productId())
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + itemRequest.productId()));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_PRODUCT_NOT_FOUND,
+                    ErrorCode.ORDER_PRODUCT_NOT_FOUND.getDefaultMessage() + ": " + itemRequest.productId()));
 
             if (product.getIsSoldOut()) {
-                throw new IllegalStateException("품절된 상품입니다: " + product.getName());
+                throw new BusinessException(ErrorCode.ORDER_PRODUCT_SOLD_OUT,
+                    ErrorCode.ORDER_PRODUCT_SOLD_OUT.getDefaultMessage() + ": " + product.getName());
             }
 
             String productImageUrl = productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(product.getId())
@@ -103,10 +109,10 @@ public class OrderService {
             if (itemRequest.selectedOptions() != null) {
                 for (OrderItemOptionRequest optionRequest : itemRequest.selectedOptions()) {
                     ProductOptionGroup optionGroup = productCoreService.findProductOptionGroupById(optionRequest.groupId())
-                        .orElseThrow(() -> new IllegalArgumentException("옵션 그룹을 찾을 수 없습니다."));
+                        .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_OPTION_GROUP_NOT_FOUND));
 
                     ProductOption option = productCoreService.findProductOptionById(optionRequest.optionId())
-                        .orElseThrow(() -> new IllegalArgumentException("옵션을 찾을 수 없습니다."));
+                        .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_OPTION_NOT_FOUND));
 
                     orderCoreService.saveOrderItemOption(OrderItemOption.builder()
                         .orderItemId(savedOrderItem.getId())
@@ -135,22 +141,22 @@ public class OrderService {
         Long memberCouponId = null;
         if (request.memberCouponId() != null) {
             MemberCoupon memberCoupon = couponCoreService.findMemberCouponById(request.memberCouponId())
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.COUPON_NOT_FOUND));
 
             if (!memberCoupon.getMemberId().equals(memberId)) {
-                throw new IllegalArgumentException("본인의 쿠폰만 사용할 수 있습니다.");
+                throw new AccessDeniedException(ErrorCode.COUPON_ACCESS_DENIED);
             }
 
             if (!memberCoupon.isAvailable()) {
-                throw new IllegalStateException("사용할 수 없는 쿠폰입니다.");
+                throw new BusinessException(ErrorCode.COUPON_NOT_AVAILABLE);
             }
 
             Coupon coupon = couponCoreService.findCouponById(memberCoupon.getCouponId())
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.COUPON_INFO_NOT_FOUND));
 
             int orderAmountAfterProductDiscount = totalProductAmount - productDiscountAmount;
             if (orderAmountAfterProductDiscount < coupon.getMinOrderAmount()) {
-                throw new IllegalStateException("최소 주문 금액을 충족하지 않습니다.");
+                throw new BusinessException(ErrorCode.ORDER_MINIMUM_AMOUNT_NOT_MET);
             }
 
             if (coupon.getDiscountType() == DiscountType.AMOUNT) {
@@ -190,28 +196,34 @@ public class OrderService {
                                       int productDiscountAmount, int couponDiscountAmount,
                                       int pointDiscountAmount, int finalAmount) {
         if (!request.totalProductAmount().equals(totalProductAmount)) {
-            throw new IllegalArgumentException(
-                "상품 금액이 일치하지 않습니다. 요청: " + request.totalProductAmount() + ", 계산: " + totalProductAmount);
+            throw new BusinessException(ErrorCode.ORDER_PRODUCT_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_PRODUCT_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.totalProductAmount() + ", 계산: " + totalProductAmount);
         }
         if (!request.productDiscountAmount().equals(productDiscountAmount)) {
-            throw new IllegalArgumentException(
-                "상품 할인 금액이 일치하지 않습니다. 요청: " + request.productDiscountAmount() + ", 계산: " + productDiscountAmount);
+            throw new BusinessException(ErrorCode.ORDER_PRODUCT_DISCOUNT_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_PRODUCT_DISCOUNT_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.productDiscountAmount() + ", 계산: " + productDiscountAmount);
         }
         if (!request.couponDiscountAmount().equals(couponDiscountAmount)) {
-            throw new IllegalArgumentException(
-                "쿠폰 사용 금액이 일치하지 않습니다. 요청: " + request.couponDiscountAmount() + ", 계산: " + couponDiscountAmount);
+            throw new BusinessException(ErrorCode.ORDER_COUPON_DISCOUNT_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_COUPON_DISCOUNT_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.couponDiscountAmount() + ", 계산: " + couponDiscountAmount);
         }
         if (!request.usePoint().equals(pointDiscountAmount)) {
-            throw new IllegalArgumentException(
-                "포인트 사용 금액이 일치하지 않습니다. 요청: " + request.usePoint() + ", 계산: " + pointDiscountAmount);
+            throw new BusinessException(ErrorCode.ORDER_POINT_DISCOUNT_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_POINT_DISCOUNT_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.usePoint() + ", 계산: " + pointDiscountAmount);
         }
         if (!request.totalDiscountAmount().equals(totalDiscountAmount)) {
-            throw new IllegalArgumentException(
-                "할인 금액이 일치하지 않습니다. 요청: " + request.totalDiscountAmount() + ", 계산: " + totalDiscountAmount);
+            throw new BusinessException(ErrorCode.ORDER_TOTAL_DISCOUNT_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_TOTAL_DISCOUNT_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.totalDiscountAmount() + ", 계산: " + totalDiscountAmount);
         }
         if (!request.finalAmount().equals(finalAmount)) {
-            throw new IllegalArgumentException(
-                "결제 금액이 일치하지 않습니다. 요청: " + request.finalAmount() + ", 계산: " + finalAmount);
+            throw new BusinessException(ErrorCode.ORDER_FINAL_AMOUNT_MISMATCH,
+                ErrorCode.ORDER_FINAL_AMOUNT_MISMATCH.getDefaultMessage()
+                    + " 요청: " + request.finalAmount() + ", 계산: " + finalAmount);
         }
     }
 
@@ -239,10 +251,10 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderDetail(Long memberId, Long orderId) {
         Order order = orderCoreService.findOrderById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.ORDER_ACCESS_DENIED);
         }
 
         Place place = placeCoreService.findPlaceById(order.getPlaceId());

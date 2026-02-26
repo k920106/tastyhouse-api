@@ -3,6 +3,8 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.entity.rank.MemberReviewRank;
 import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +121,8 @@ public class RankAggregationService {
                 break;
 
             default:
-                throw new IllegalArgumentException("Unknown RankType: " + rankType);
+                throw new BusinessException(ErrorCode.RANK_TYPE_UNKNOWN,
+                    ErrorCode.RANK_TYPE_UNKNOWN.getDefaultMessage() + ": " + rankType);
         }
 
         return new LocalDateTime[]{startDate, endDate};

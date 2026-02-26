@@ -8,7 +8,8 @@ import com.tastyhouse.core.entity.event.EventStatus;
 import com.tastyhouse.core.service.EventCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.event.response.*;
-import com.tastyhouse.webapi.exception.NotFoundException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class EventService {
 
     public EventDetailResponse getEventDetail(Long eventId) {
         Event event = eventCoreService.findEventById(eventId)
-            .orElseThrow(() -> new NotFoundException("이벤트를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "이벤트를 찾을 수 없습니다."));
 
         return convertToEventDetailResponse(event);
     }

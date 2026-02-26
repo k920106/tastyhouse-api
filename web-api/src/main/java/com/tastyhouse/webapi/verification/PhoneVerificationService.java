@@ -2,6 +2,8 @@ package com.tastyhouse.webapi.verification;
 
 import com.tastyhouse.core.entity.verification.PhoneVerification;
 import com.tastyhouse.core.entity.verification.PhoneVerificationStatus;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.verification.PhoneVerificationJpaRepository;
 import com.tastyhouse.external.sms.solapi.SolapiSmsClient;
 import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
@@ -49,15 +51,15 @@ public class PhoneVerificationService {
     public String confirmVerificationCode(Long memberId, String phoneNumber, String verificationCode) {
         PhoneVerification verification = phoneVerificationJpaRepository
             .findTopByPhoneNumberAndStatusOrderByCreatedAtDesc(phoneNumber, PhoneVerificationStatus.PENDING)
-            .orElseThrow(() -> new IllegalArgumentException("발송된 인증번호가 없습니다. 인증번호를 다시 요청해주세요."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.VERIFICATION_CODE_NOT_FOUND));
 
         if (verification.isExpired()) {
             verification.expire();
-            throw new IllegalArgumentException("인증번호가 만료되었습니다. 인증번호를 다시 요청해주세요.");
+            throw new BusinessException(ErrorCode.VERIFICATION_CODE_EXPIRED);
         }
 
         if (!verification.getVerificationCode().equals(verificationCode)) {
-            throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.VERIFICATION_CODE_MISMATCH);
         }
 
         verification.verify();

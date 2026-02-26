@@ -33,38 +33,6 @@ tastyhouse-api/
 
 ## 3. 개선이 필요한 항목
 
-#### 3.3.2 `parseDateTime()` 메서드 중복
-
-- `PaymentService.java:511-525`와 `TossPaymentClient.java:209-220`에 동일한 날짜 파싱 로직 존재
-- **개선:** 공통 유틸 클래스로 추출
-
-#### 3.3.3 `getFirstImageUrl()` 메서드 중복
-
-- `PlaceService.java:397-403`와 `ReviewService.java:330-336`에 동일 로직 존재
-- **개선:** `ProductCoreService`에 공통 메서드로 이동
-
----
-
-### 3.4 [중요] 예외 처리 개선
-
-#### 3.4.1 커스텀 예외 클래스 부족
-
-- 현재 `NotFoundException`과 `IllegalArgumentException`, `IllegalStateException`만 사용
-- 비즈니스 예외를 Java 표준 예외로 처리하면 예외 원인을 구분하기 어려움
-
-```java
-// 현재 - 모두 IllegalArgumentException
-throw new IllegalArgumentException("주문을 찾을 수 없습니다.");
-throw new IllegalArgumentException("본인의 주문만 결제할 수 있습니다."); // 권한 문제인데 같은 예외
-throw new IllegalStateException("결제할 수 없는 주문 상태입니다.");
-```
-
-- **개선:** 도메인별 커스텀 예외 도입
-  - `AccessDeniedException` - 권한 없는 접근
-  - `BusinessException` - 비즈니스 규칙 위반
-  - `EntityNotFoundException` - 엔티티 미존재
-  - 각 예외에 에러 코드(enum) 부여하여 클라이언트에서 분기 처리 가능하도록
-
 #### 3.4.2 GlobalExceptionHandler 보강 필요
 
 - `MethodArgumentNotValidException` (Bean Validation), `HttpMessageNotReadableException` (잘못된 JSON), `MissingServletRequestParameterException` 등의 핸들러 미존재

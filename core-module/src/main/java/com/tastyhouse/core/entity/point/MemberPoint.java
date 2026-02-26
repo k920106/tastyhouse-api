@@ -1,6 +1,8 @@
 package com.tastyhouse.core.entity.point;
 
 import com.tastyhouse.core.entity.BaseEntity;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -48,7 +50,7 @@ public class MemberPoint extends BaseEntity {
 
     public void deductPoints(Integer amount) {
         if (this.availablePoints < amount) {
-            throw new IllegalStateException("포인트가 부족합니다.");
+            throw new BusinessException(ErrorCode.POINT_INSUFFICIENT);
         }
         this.availablePoints -= amount;
     }

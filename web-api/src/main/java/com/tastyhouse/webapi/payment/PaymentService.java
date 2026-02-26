@@ -10,6 +10,10 @@ import com.tastyhouse.core.entity.payment.PgProvider;
 import com.tastyhouse.core.entity.point.MemberPoint;
 import com.tastyhouse.core.entity.point.MemberPointHistory;
 import com.tastyhouse.core.entity.point.PointType;
+import com.tastyhouse.core.exception.AccessDeniedException;
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.order.OrderJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentJpaRepository;
 import com.tastyhouse.core.repository.payment.PaymentRefundJpaRepository;
@@ -56,18 +60,18 @@ public class PaymentService {
     @Transactional
     public PaymentResponse createPayment(Long memberId, PaymentCreateRequest request) {
         Order order = orderJpaRepository.findById(request.orderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 주문만 결제할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.PAYMENT_ORDER_ACCESS_DENIED);
         }
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("결제할 수 없는 주문 상태입니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_INVALID_ORDER_STATUS);
         }
 
         if (paymentJpaRepository.existsByOrderId(request.orderId())) {
-            throw new IllegalStateException("이미 결제가 진행 중인 주문입니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_ALREADY_IN_PROGRESS);
         }
 
         String pgOrderId = generatePgOrderId();
@@ -88,14 +92,14 @@ public class PaymentService {
     @Transactional
     public PaymentResponse confirmPayment(PaymentConfirmRequest request) {
         Payment payment = paymentJpaRepository.findById(request.paymentId())
-            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제를 찾을 수 없습니다."));
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException("승인 대기 중인 결제만 처리할 수 있습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_PENDING_APPROVAL);
         }
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         payment.updatePgInfo(request.pgProvider(), request.pgTid(), request.pgOrderId());
 
@@ -113,21 +117,21 @@ public class PaymentService {
     @Transactional
     public PaymentResponse confirmTossPayment(Long memberId, TossPaymentConfirmApiRequest request) {
         Payment payment = paymentJpaRepository.findByPgOrderId(request.pgOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제를 찾을 수 없습니다."));
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 결제만 승인할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException("승인 대기 중인 결제만 처리할 수 있습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_PENDING_APPROVAL);
         }
 
         if (!payment.getAmount().equals(request.amount())) {
-            throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
 
         TossPaymentConfirmResponse response = tossPaymentClient.confirmPayment(
@@ -145,9 +149,8 @@ public class PaymentService {
             TossPaymentRecord tossPaymentRecord = buildTossPaymentRecord(payment.getId(), response);
             tossPaymentRecordJpaRepository.save(tossPaymentRecord);
 
-            throw new IllegalStateException(response.getMessage() != null
-                ? response.getMessage()
-                : "결제 승인에 실패했습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_APPROVAL_FAILED,
+                response.getMessage() != null ? response.getMessage() : ErrorCode.PAYMENT_APPROVAL_FAILED.getDefaultMessage());
         }
 
         payment.updatePgInfo(PgProvider.TOSS, response.getPaymentKey(), response.getOrderId());
@@ -179,13 +182,13 @@ public class PaymentService {
     @Transactional
     public PaymentCancelResponse cancelPayment(Long memberId, Long paymentId, PaymentCancelRequest request) {
         Payment payment = paymentJpaRepository.findById(paymentId)
-            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제를 찾을 수 없습니다."));
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 결제만 취소할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
         PaymentCancelCode cancelCode = validateOrderStatusForCancel(order.getOrderStatus());
@@ -264,21 +267,21 @@ public class PaymentService {
     @Transactional
     public PaymentRefundResponse requestRefund(Long memberId, Long paymentId, RefundRequest request) {
         Payment payment = paymentJpaRepository.findById(paymentId)
-            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제를 찾을 수 없습니다."));
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 결제만 환불할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
         if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 결제만 환불할 수 있습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_COMPLETED);
         }
 
         if (request.refundAmount() > payment.getAmount()) {
-            throw new IllegalArgumentException("환불 금액이 결제 금액을 초과할 수 없습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_REFUND_AMOUNT_EXCEEDED);
         }
 
         PaymentRefund refund = PaymentRefund.builder()
@@ -295,14 +298,14 @@ public class PaymentService {
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(Long memberId, Long orderId) {
         Order order = orderJpaRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.ORDER_ACCESS_DENIED);
         }
 
         Payment payment = paymentJpaRepository.findByOrderId(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
 
         return buildPaymentResponse(payment);
     }
@@ -310,21 +313,21 @@ public class PaymentService {
     @Transactional
     public PaymentResponse completeOnSitePayment(Long memberId, Long paymentId) {
         Payment payment = paymentJpaRepository.findById(paymentId)
-            .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "결제를 찾을 수 없습니다."));
 
         Order order = orderJpaRepository.findById(payment.getOrderId())
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_NOT_FOUND));
 
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 결제만 완료 처리할 수 있습니다.");
+            throw new AccessDeniedException(ErrorCode.PAYMENT_ACCESS_DENIED);
         }
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException("대기 중인 결제만 완료 처리할 수 있습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_PENDING);
         }
 
         if (!isOnSitePayment(payment.getPaymentMethod())) {
-            throw new IllegalStateException("현장결제만 완료 처리할 수 있습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_ON_SITE);
         }
 
         processOnSitePaymentCompletion(payment, order, memberId);
