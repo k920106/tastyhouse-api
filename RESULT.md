@@ -43,22 +43,6 @@ tastyhouse-api/
   - 컨트롤러 통합 테스트(`@WebMvcTest` 또는 `@SpringBootTest`) 추가
   - 테스트 전략 수립 (단위 > 통합 > E2E)
 
----
-
-### 3.6 [보통] TokenBlacklist 메모리 이슈
-
-**파일:** `TokenBlacklist.java`
-
-```java
-private final Map<String, Long> blacklistedTokens = new ConcurrentHashMap<>();
-```
-
-- 인메모리 `ConcurrentHashMap`으로 구현되어 있어:
-  - **서버 재시작 시 블랙리스트 초기화** (로그아웃한 토큰이 다시 유효해짐)
-  - **다중 인스턴스 환경에서 동기화 불가** (Scale-out 시 문제)
-  - 토큰이 많아지면 메모리 누수 가능 (`purgeExpired()`가 `add()` 시에만 호출됨)
-- **개선:** Redis를 활용한 분산 Token Blacklist 구현
-
 ### 3.11 [경미] 기타 개선 사항
 
 | 항목                    | 현재                                             | 개선안                                                  |
