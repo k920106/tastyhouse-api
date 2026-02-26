@@ -87,14 +87,6 @@ public record OrderCreateRequest(
 
 ---
 
-#### 3.9.3 일관되지 않은 응답 타입
-
-- 일부 API는 `CommonResponse<T>`로 감싸고, 일부는 `ResponseEntity<T>`를 직접 반환
-- 예: `AuthController`는 `ResponseEntity<JwtResponse>`, 다른 컨트롤러는 `CommonResponse<T>` 사용
-- **개선:** 전체 API에 `CommonResponse<T>` 통일 적용
-
----
-
 ### 3.10 [보통] 코드 품질
 
 #### 3.10.1 Map<String, Object> 반환 타입

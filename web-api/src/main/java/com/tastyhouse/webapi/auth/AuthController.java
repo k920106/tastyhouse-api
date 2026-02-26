@@ -1,5 +1,6 @@
 package com.tastyhouse.webapi.auth;
 
+import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.auth.request.LoginRequest;
 import com.tastyhouse.webapi.auth.request.RefreshTokenRequest;
 import com.tastyhouse.webapi.auth.response.JwtResponse;
@@ -40,7 +41,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true)))
     })
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<CommonResponse<JwtResponse>> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
         );
@@ -50,7 +51,7 @@ public class AuthController {
         String accessToken = jwtTokenProvider.createAccessToken(authentication);
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
-        return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken, "Bearer"));
+        return ResponseEntity.ok(CommonResponse.success(new JwtResponse(accessToken, refreshToken, "Bearer")));
     }
 
     @Operation(summary = "로그아웃", description = "Access Token을 블랙리스트에 등록하여 로그아웃 처리합니다.")
@@ -59,9 +60,9 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰", content = @Content(schema = @Schema(hidden = true)))
     })
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
+    public ResponseEntity<CommonResponse<Void>> logout(@RequestHeader("Authorization") String bearerToken) {
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(CommonResponse.error("유효하지 않은 토큰입니다."));
         }
         String accessToken = bearerToken.substring(7).trim();
         if (jwtTokenProvider.validateToken(accessToken)) {
@@ -69,7 +70,7 @@ public class AuthController {
             tokenBlacklist.add(accessToken, expirationMillis);
         }
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 
     @Operation(summary = "토큰 갱신", description = "Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급합니다.")
@@ -78,10 +79,10 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token", content = @Content(schema = @Schema(hidden = true)))
     })
     @PostMapping("/refresh")
-    public ResponseEntity<JwtResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<CommonResponse<JwtResponse>> refreshToken(@RequestBody RefreshTokenRequest request) {
         String newAccessToken = jwtTokenProvider.createAccessTokenFromRefreshToken(request.getRefreshToken());
         String newRefreshToken = jwtTokenProvider.createRefreshTokenFromRefreshToken(request.getRefreshToken());
 
-        return ResponseEntity.ok(new JwtResponse(newAccessToken, newRefreshToken, "Bearer"));
+        return ResponseEntity.ok(CommonResponse.success(new JwtResponse(newAccessToken, newRefreshToken, "Bearer")));
     }
 }
