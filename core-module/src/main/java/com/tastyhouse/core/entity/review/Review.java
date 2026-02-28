@@ -49,6 +49,9 @@ public class Review extends BaseEntity {
     @Column(name = "will_revisit")
     private Boolean willRevisit; // 재방문 의사
 
+    @Column(name = "order_id")
+    private Long orderId; // null이면 일반 리뷰, 값이 있으면 주문/결제 기반 인증 리뷰
+
     @Column(name = "is_hidden", nullable = false)
     private Boolean isHidden = false; // 관리자 미노출 여부
 }

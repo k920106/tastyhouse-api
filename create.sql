@@ -565,6 +565,7 @@ CREATE TABLE REVIEW
     place_id          BIGINT     NOT NULL,
     product_id        BIGINT     NOT NULL,
     member_id         BIGINT     NOT NULL,
+    order_id          BIGINT,
     content           TEXT       NOT NULL,
     total_rating      DOUBLE     NOT NULL,
     taste_rating      DOUBLE,
@@ -577,7 +578,8 @@ CREATE TABLE REVIEW
     is_hidden         TINYINT(1) NOT NULL DEFAULT 0,
     created_at        DATETIME   NOT NULL,
     updated_at        DATETIME   NOT NULL,
-    INDEX idx_review_product_id (product_id)
+    INDEX idx_review_product_id (product_id),
+    INDEX idx_review_order_id (order_id)
 );
 
 CREATE TABLE REVIEW_COMMENT
