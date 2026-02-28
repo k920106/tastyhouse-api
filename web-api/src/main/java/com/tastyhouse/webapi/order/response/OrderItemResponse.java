@@ -17,5 +17,6 @@ public class OrderItemResponse {
     private Integer discountPrice;
     private Integer optionTotalPrice;
     private Integer totalPrice;
+    private boolean isReviewed;
     private List<OrderItemOptionResponse> options;
 }

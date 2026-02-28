@@ -19,6 +19,7 @@ import com.tastyhouse.core.exception.BusinessException;
 import com.tastyhouse.core.exception.EntityNotFoundException;
 import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
+import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.service.CouponCoreService;
 import com.tastyhouse.core.service.OrderCoreService;
 import com.tastyhouse.core.service.PlaceCoreService;
@@ -53,6 +54,7 @@ public class OrderService {
     private final ProductCoreService productCoreService;
     private final PlaceCoreService placeCoreService;
     private final ProductImageJpaRepository productImageJpaRepository;
+    private final ReviewJpaRepository reviewJpaRepository;
     private final MemberService memberService;
 
     @Transactional
@@ -188,7 +190,7 @@ public class OrderService {
             couponDiscountAmount, pointDiscountAmount, totalDiscountAmount,
             finalAmount, memberCouponId, pointDiscountAmount);
 
-        return buildOrderResponse(savedOrder, place);
+        return buildOrderResponse(savedOrder, place, memberId);
     }
 
     private void validateOrderAmounts(OrderCreateRequest request,
@@ -258,7 +260,7 @@ public class OrderService {
         }
 
         Place place = placeCoreService.findPlaceById(order.getPlaceId());
-        return buildOrderResponse(order, place);
+        return buildOrderResponse(order, place, memberId);
     }
 
     private String generateOrderNumber() {
@@ -267,7 +269,7 @@ public class OrderService {
         return "ORD" + dateTime + uuid;
     }
 
-    private OrderResponse buildOrderResponse(Order order, Place place) {
+    private OrderResponse buildOrderResponse(Order order, Place place, Long memberId) {
         List<OrderItem> items = orderCoreService.findOrderItemsByOrderId(order.getId());
 
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
@@ -282,6 +284,9 @@ public class OrderService {
                     .build())
                 .toList();
 
+            boolean isReviewed = reviewJpaRepository.existsByOrderIdAndProductIdAndMemberId(
+                order.getId(), item.getProductId(), memberId);
+
             return OrderItemResponse.builder()
                 .id(item.getId())
                 .productId(item.getProductId())
@@ -292,6 +297,7 @@ public class OrderService {
                 .discountPrice(item.getDiscountPrice())
                 .optionTotalPrice(item.getOptionTotalPrice())
                 .totalPrice(item.getTotalPrice())
+                .isReviewed(isReviewed)
                 .options(optionResponses)
                 .build();
         }).toList();

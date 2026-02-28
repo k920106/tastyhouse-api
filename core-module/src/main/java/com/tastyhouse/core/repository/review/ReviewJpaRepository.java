@@ -49,6 +49,9 @@ public interface ReviewJpaRepository extends JpaRepository<Review, Long> {
 
     Long countByProductIdAndIsHiddenFalse(Long productId);
 
+    // 주문 상품 리뷰 작성 여부
+    boolean existsByOrderIdAndProductIdAndMemberId(Long orderId, Long productId, Long memberId);
+
     // 상품 리뷰 통계
     @Query("SELECT AVG(r.tasteRating) FROM Review r WHERE r.productId = :productId AND r.isHidden = false")
     Double getAverageTasteRatingByProductId(@Param("productId") Long productId);
