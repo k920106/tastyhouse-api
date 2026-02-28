@@ -42,8 +42,9 @@ public record ReviewCreateRequest(
         @Schema(description = "리뷰 내용", example = "정말 맛있었어요!", requiredMode = Schema.RequiredMode.REQUIRED)
         String content,
 
-        @Schema(description = "리뷰 이미지 URL 목록 (파일 업로드 API로 업로드 후 URL 전달)")
-        List<String> imageUrls,
+        @Size(max = 5, message = "이미지는 최대 5장까지 첨부할 수 있습니다")
+        @Schema(description = "업로드된 파일 ID 목록 (최대 5장)", example = "[1, 2, 3]")
+        List<Long> uploadedFileIds,
 
         @Schema(description = "태그 목록", example = "[\"샌드위치\", \"아보카도\"]")
         List<String> tags

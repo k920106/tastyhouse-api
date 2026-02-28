@@ -68,6 +68,7 @@ public enum ErrorCode {
     FILE_TYPE_NOT_ALLOWED(400, "FILE_TYPE_NOT_ALLOWED", "허용되지 않는 파일 형식입니다. (jpg, png, gif, webp만 가능)"),
     FILE_EXTENSION_NOT_ALLOWED(400, "FILE_EXTENSION_NOT_ALLOWED", "허용되지 않는 파일 확장자입니다. (jpg, png, gif, webp만 가능)"),
     FILE_EXTENSION_UNKNOWN(400, "FILE_EXTENSION_UNKNOWN", "파일 확장자를 확인할 수 없습니다."),
+    FILE_NOT_FOUND(404, "FILE_NOT_FOUND", "파일을 찾을 수 없습니다."),
 
     // 리뷰
     REVIEW_NOT_FOUND(404, "REVIEW_NOT_FOUND", "리뷰를 찾을 수 없습니다."),
