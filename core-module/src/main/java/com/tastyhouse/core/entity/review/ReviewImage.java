@@ -2,8 +2,11 @@ package com.tastyhouse.core.entity.review;
 
 import com.tastyhouse.core.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "REVIEW_IMAGE")
@@ -21,4 +24,10 @@ public class ReviewImage extends BaseEntity {
 
     @Column(name = "sort", nullable = false)
     private Integer sort; // 이미지 정렬 순서
+
+    public ReviewImage(Long reviewId, String imageUrl, Integer sort) {
+        this.reviewId = reviewId;
+        this.imageUrl = imageUrl;
+        this.sort = sort;
+    }
 }

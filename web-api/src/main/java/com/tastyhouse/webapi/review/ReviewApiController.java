@@ -7,6 +7,7 @@ import com.tastyhouse.webapi.review.request.CommentCreateRequest;
 import com.tastyhouse.webapi.review.request.ReplyCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
+import com.tastyhouse.webapi.review.request.ReviewUpdateRequest;
 import com.tastyhouse.webapi.review.response.*;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,10 +33,76 @@ public class ReviewApiController {
 
     private final ReviewService reviewService;
 
-    @PostMapping
-//    public void create(@RequestBody ReviewCreateRequest reviewCreateRequest) {
-    public void create(@Valid @ModelAttribute ReviewCreateRequest reviewCreateRequest) {
+    @Operation(summary = "리뷰 작성 정보 조회", description = "주문 상품 ID로 리뷰 작성 페이지에 필요한 상품 정보를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = ReviewWriteInfoResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "주문 상품을 찾을 수 없음")
+    })
+    @GetMapping("/v1/write/order-items/{orderItemId}")
+    public ResponseEntity<CommonResponse<ReviewWriteInfoResponse>> getReviewWriteInfo(
+            @Parameter(description = "주문 상품 ID", example = "1") @PathVariable Long orderItemId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        ReviewWriteInfoResponse response = reviewService.getReviewWriteInfo(orderItemId, userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
 
+    @Operation(summary = "리뷰 등록", description = "리뷰를 등록합니다. orderItemId가 있으면 주문 기반 인증 리뷰, 없으면 일반 리뷰로 등록됩니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "등록 성공", content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
+        @ApiResponse(responseCode = "400", description = "이미 리뷰를 작성한 상품"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "상품 또는 주문 상품을 찾을 수 없음")
+    })
+    @PostMapping("/v1")
+    public ResponseEntity<CommonResponse<ReviewResponse>> createReview(
+            @Valid @RequestBody ReviewCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        ReviewResponse response = reviewService.createReview(userDetails.getMemberId(), request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "리뷰 수정", description = "본인이 작성한 리뷰를 수정합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "본인 리뷰가 아님"),
+        @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음")
+    })
+    @PutMapping("/v1/{reviewId}")
+    public ResponseEntity<CommonResponse<ReviewResponse>> updateReview(
+            @Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId,
+            @Valid @RequestBody ReviewUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        ReviewResponse response = reviewService.updateReview(reviewId, userDetails.getMemberId(), request);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "리뷰 삭제", description = "본인이 작성한 리뷰를 삭제합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "삭제 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "본인 리뷰가 아님"),
+        @ApiResponse(responseCode = "404", description = "리뷰를 찾을 수 없음")
+    })
+    @DeleteMapping("/v1/{reviewId}")
+    public ResponseEntity<CommonResponse<Void>> deleteReview(
+            @Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        reviewService.deleteReview(reviewId, userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(null));
     }
 
     @Operation(summary = "베스트 리뷰 목록 조회", description = "평점이 높은 순으로 정렬된 베스트 리뷰 목록을 페이징하여 조회합니다.")

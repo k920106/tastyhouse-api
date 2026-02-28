@@ -2,8 +2,12 @@ package com.tastyhouse.core.entity.review;
 
 import com.tastyhouse.core.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "REVIEW")
@@ -54,4 +58,39 @@ public class Review extends BaseEntity {
 
     @Column(name = "is_hidden", nullable = false)
     private Boolean isHidden = false; // 관리자 미노출 여부
+
+    @Builder
+    public Review(Long placeId, Long productId, Long memberId, String content,
+                  Double totalRating, Double tasteRating, Double amountRating,
+                  Double priceRating, Double atmosphereRating, Double kindnessRating,
+                  Double hygieneRating, Boolean willRevisit, Long orderId) {
+        this.placeId = placeId;
+        this.productId = productId;
+        this.memberId = memberId;
+        this.content = content;
+        this.totalRating = totalRating;
+        this.tasteRating = tasteRating;
+        this.amountRating = amountRating;
+        this.priceRating = priceRating;
+        this.atmosphereRating = atmosphereRating;
+        this.kindnessRating = kindnessRating;
+        this.hygieneRating = hygieneRating;
+        this.willRevisit = willRevisit;
+        this.orderId = orderId;
+        this.isHidden = false;
+    }
+
+    public void updateContent(String content, Double totalRating, Double tasteRating,
+                              Double amountRating, Double priceRating, Double atmosphereRating,
+                              Double kindnessRating, Double hygieneRating, Boolean willRevisit) {
+        this.content = content;
+        this.totalRating = totalRating;
+        this.tasteRating = tasteRating;
+        this.amountRating = amountRating;
+        this.priceRating = priceRating;
+        this.atmosphereRating = atmosphereRating;
+        this.kindnessRating = kindnessRating;
+        this.hygieneRating = hygieneRating;
+        this.willRevisit = willRevisit;
+    }
 }

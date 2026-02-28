@@ -6,6 +6,7 @@ import com.tastyhouse.core.entity.review.Review;
 import com.tastyhouse.core.entity.review.ReviewComment;
 import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.ReviewReply;
+import com.tastyhouse.core.entity.review.ReviewTag;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.PlaceReviewStatisticsDto;
@@ -329,6 +330,44 @@ public class ReviewCoreService {
             allReviewsPage.getNumber(),
             allReviewsPage.getSize()
         );
+    }
+
+    public boolean isReviewedByOrderAndProduct(Long orderId, Long productId, Long memberId) {
+        return reviewJpaRepository.existsByOrderIdAndProductIdAndMemberId(orderId, productId, memberId);
+    }
+
+    @Transactional
+    public Review saveReview(Review review) {
+        return reviewJpaRepository.save(review);
+    }
+
+    @Transactional
+    public void saveReviewImages(List<ReviewImage> images) {
+        reviewImageJpaRepository.saveAll(images);
+    }
+
+    @Transactional
+    public void saveReviewTags(List<ReviewTag> tags) {
+        reviewTagJpaRepository.saveAll(tags);
+    }
+
+    public Optional<Review> findReviewByIdAndMemberId(Long reviewId, Long memberId) {
+        return reviewJpaRepository.findByIdAndMemberId(reviewId, memberId);
+    }
+
+    @Transactional
+    public void deleteReviewImages(Long reviewId) {
+        reviewImageJpaRepository.deleteByReviewId(reviewId);
+    }
+
+    @Transactional
+    public void deleteReviewTags(Long reviewId) {
+        reviewTagJpaRepository.deleteByReviewId(reviewId);
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        reviewJpaRepository.deleteById(reviewId);
     }
 
     public Map<String, Object> getProductReviewStatistics(Long productId) {

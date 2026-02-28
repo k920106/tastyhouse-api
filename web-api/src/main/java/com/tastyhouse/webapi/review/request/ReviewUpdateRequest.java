@@ -9,15 +9,8 @@ import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-@Schema(description = "리뷰 등록 요청")
-public record ReviewCreateRequest(
-
-        @Schema(description = "주문 상품 ID (주문 기반 리뷰 시 필수, 일반 리뷰 시 null)", example = "10")
-        Long orderItemId,
-
-        @NotNull(message = "상품 ID는 필수입니다")
-        @Schema(description = "상품 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-        Long productId,
+@Schema(description = "리뷰 수정 요청")
+public record ReviewUpdateRequest(
 
         @NotNull(message = "맛 평점은 필수입니다")
         @Min(value = 1, message = "평점은 1 이상이어야 합니다")
@@ -42,10 +35,10 @@ public record ReviewCreateRequest(
         @Schema(description = "리뷰 내용", example = "정말 맛있었어요!", requiredMode = Schema.RequiredMode.REQUIRED)
         String content,
 
-        @Schema(description = "리뷰 이미지 URL 목록 (파일 업로드 API로 업로드 후 URL 전달)")
+        @Schema(description = "리뷰 이미지 URL 목록 (기존 이미지 포함하여 전체 목록 전달)")
         List<String> imageUrls,
 
-        @Schema(description = "태그 목록", example = "[\"샌드위치\", \"아보카도\"]")
+        @Schema(description = "태그 목록 (기존 태그 포함하여 전체 목록 전달)", example = "[\"샌드위치\", \"아보카도\"]")
         List<String> tags
 ) {
 }
