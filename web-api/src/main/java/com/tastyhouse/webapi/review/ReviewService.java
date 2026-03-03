@@ -44,7 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -391,7 +390,7 @@ public class ReviewService {
 
         Review savedReview = reviewCoreService.saveReview(review);
 
-        List<String> imageUrls = saveReviewImages(savedReview.getId(), request.uploadedFileIds());
+        List<Long> savedUploadedFileIds = saveReviewImages(savedReview.getId(), request.uploadedFileIds());
         List<String> tags = saveReviewTags(savedReview.getId(), request.tags());
 
         return ReviewResponse.builder()
@@ -402,7 +401,7 @@ public class ReviewService {
                 .priceRating(savedReview.getPriceRating())
                 .totalRating(savedReview.getTotalRating())
                 .content(savedReview.getContent())
-                .imageUrls(imageUrls)
+                .uploadedFileIds(savedUploadedFileIds)
                 .tags(tags)
                 .createdAt(savedReview.getCreatedAt())
                 .build();
@@ -427,7 +426,7 @@ public class ReviewService {
         reviewCoreService.deleteReviewImages(reviewId);
         reviewCoreService.deleteReviewTags(reviewId);
 
-        List<String> imageUrls = saveReviewImages(reviewId, request.uploadedFileIds());
+        List<Long> savedUploadedFileIds = saveReviewImages(reviewId, request.uploadedFileIds());
         List<String> tags = saveReviewTags(reviewId, request.tags());
 
         return ReviewResponse.builder()
@@ -438,7 +437,7 @@ public class ReviewService {
                 .priceRating(review.getPriceRating())
                 .totalRating(review.getTotalRating())
                 .content(review.getContent())
-                .imageUrls(imageUrls)
+                .uploadedFileIds(savedUploadedFileIds)
                 .tags(tags)
                 .createdAt(review.getCreatedAt())
                 .build();
@@ -454,22 +453,24 @@ public class ReviewService {
         reviewCoreService.deleteReview(reviewId);
     }
 
-    private List<String> saveReviewImages(Long reviewId, List<Long> uploadedFileIds) {
+    private List<Long> saveReviewImages(Long reviewId, List<Long> uploadedFileIds) {
         if (uploadedFileIds == null || uploadedFileIds.isEmpty()) {
             return List.of();
         }
-        List<String> filePaths = new ArrayList<>();
         List<ReviewImage> images = new ArrayList<>();
         for (int i = 0; i < uploadedFileIds.size(); i++) {
-            Long fileId = Objects.requireNonNull(uploadedFileIds.get(i));
-            String filePath = uploadedFileJpaRepository.findById(fileId)
-                .map(file -> file.getFilePath())
-                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.FILE_NOT_FOUND));
-            filePaths.add(filePath);
-            images.add(new ReviewImage(reviewId, filePath, i + 1));
+            Long fileId = uploadedFileIds.get(i);
+            if (fileId == null || !uploadedFileJpaRepository.existsById(fileId)) {
+                throw new EntityNotFoundException(ErrorCode.FILE_NOT_FOUND);
+            }
+            images.add(ReviewImage.builder()
+                .reviewId(reviewId)
+                .uploadedFileId(fileId)
+                .sort(i + 1)
+                .build());
         }
         reviewCoreService.saveReviewImages(images);
-        return filePaths;
+        return uploadedFileIds;
     }
 
     private List<String> saveReviewTags(Long reviewId, List<String> tagNames) {

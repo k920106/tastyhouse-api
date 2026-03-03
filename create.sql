@@ -597,12 +597,13 @@ CREATE TABLE REVIEW_COMMENT
 
 CREATE TABLE REVIEW_IMAGE
 (
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    review_id  BIGINT       NOT NULL,
-    image_url  VARCHAR(255) NOT NULL,
-    sort       INT          NOT NULL,
-    created_at DATETIME     NOT NULL,
-    updated_at DATETIME     NOT NULL
+    id               BIGINT   AUTO_INCREMENT PRIMARY KEY,
+    review_id        BIGINT   NOT NULL,
+    uploaded_file_id BIGINT   NOT NULL,
+    sort             INT      NOT NULL,
+    created_at       DATETIME NOT NULL,
+    updated_at       DATETIME NOT NULL,
+    INDEX idx_review_image_review_id (review_id)
 );
 
 CREATE TABLE REVIEW_LIKE

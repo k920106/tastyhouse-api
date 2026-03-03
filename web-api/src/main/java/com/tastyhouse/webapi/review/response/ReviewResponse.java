@@ -33,8 +33,8 @@ public class ReviewResponse {
     @Schema(description = "리뷰 내용")
     private String content;
 
-    @Schema(description = "리뷰 이미지 URL 목록")
-    private List<String> imageUrls;
+    @Schema(description = "리뷰 이미지 파일 ID 목록")
+    private List<Long> uploadedFileIds;
 
     @Schema(description = "태그 목록")
     private List<String> tags;

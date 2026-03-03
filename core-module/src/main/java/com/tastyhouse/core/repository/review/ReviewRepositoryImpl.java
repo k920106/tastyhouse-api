@@ -45,11 +45,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QPlaceStation placeStation = QPlaceStation.placeStation;
         QReviewImage reviewImage = QReviewImage.reviewImage;
         QReviewImage subReviewImage = new QReviewImage("subReviewImage");
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         JPAQuery<BestReviewListItemDto> query = queryFactory
             .select(new QBestReviewListItemDto(
                 review.id,
-                reviewImage.imageUrl,
+                uploadedFile.filePath,
                 placeStation.stationName,
                 review.totalRating,
                 review.content
@@ -66,6 +67,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                         .where(subReviewImage.reviewId.eq(review.id))
                 ))
             )
+            .leftJoin(uploadedFile).on(reviewImage.uploadedFileId.eq(uploadedFile.id))
             .where(review.isHidden.eq(false))
             .orderBy(review.totalRating.desc(), review.createdAt.desc());
 
@@ -129,10 +131,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     private Map<Long, List<String>> findImageUrlsByReviewIds(List<Long> reviewIds) {
         QReviewImage reviewImage = QReviewImage.reviewImage;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         List<com.querydsl.core.Tuple> results = queryFactory
-            .select(reviewImage.reviewId, reviewImage.imageUrl)
+            .select(reviewImage.reviewId, uploadedFile.filePath)
             .from(reviewImage)
+            .innerJoin(uploadedFile).on(reviewImage.uploadedFileId.eq(uploadedFile.id))
             .where(reviewImage.reviewId.in(reviewIds))
             .orderBy(reviewImage.sort.asc())
             .fetch();
@@ -140,7 +144,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return results.stream()
             .collect(Collectors.groupingBy(
                 tuple -> tuple.get(reviewImage.reviewId),
-                Collectors.mapping(tuple -> tuple.get(reviewImage.imageUrl), Collectors.toList())
+                Collectors.mapping(tuple -> tuple.get(uploadedFile.filePath), Collectors.toList())
             ));
     }
 
@@ -578,10 +582,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     private List<String> findImageUrlsByReviewId(Long reviewId) {
         QReviewImage reviewImage = QReviewImage.reviewImage;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         return queryFactory
-            .select(reviewImage.imageUrl)
+            .select(uploadedFile.filePath)
             .from(reviewImage)
+            .innerJoin(uploadedFile).on(reviewImage.uploadedFileId.eq(uploadedFile.id))
             .where(reviewImage.reviewId.eq(reviewId))
             .orderBy(reviewImage.sort.asc())
             .fetch();
@@ -635,10 +641,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
         QReviewImage reviewImage = QReviewImage.reviewImage;
         QReviewImage subReviewImage = new QReviewImage("subReviewImage");
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
 
         List<com.querydsl.core.Tuple> results = queryFactory
-            .select(reviewImage.reviewId, reviewImage.imageUrl)
+            .select(reviewImage.reviewId, uploadedFile.filePath)
             .from(reviewImage)
+            .innerJoin(uploadedFile).on(reviewImage.uploadedFileId.eq(uploadedFile.id))
             .where(
                 reviewImage.reviewId.in(reviewIds),
                 reviewImage.sort.eq(
@@ -653,7 +661,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return results.stream()
             .collect(Collectors.toMap(
                 tuple -> tuple.get(reviewImage.reviewId),
-                tuple -> tuple.get(reviewImage.imageUrl),
+                tuple -> tuple.get(uploadedFile.filePath),
                 (existing, replacement) -> existing // 중복 시 첫 번째 값 유지
             ));
     }
