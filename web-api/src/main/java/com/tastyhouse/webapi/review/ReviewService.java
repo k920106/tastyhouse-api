@@ -20,9 +20,9 @@ import com.tastyhouse.core.repository.member.MemberJpaRepository;
 import com.tastyhouse.core.repository.order.OrderItemJpaRepository;
 import com.tastyhouse.core.repository.place.TagJpaRepository;
 import com.tastyhouse.core.common.PageResult;
-import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
 import com.tastyhouse.core.service.ReviewCoreService;
+import com.tastyhouse.file.FileService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
@@ -52,13 +52,12 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ReviewService {
 
+    private final FileService fileService;
     private final ReviewCoreService reviewCoreService;
     private final ProductCoreService productCoreService;
-    private final PlaceCoreService placeCoreService;
     private final MemberJpaRepository memberJpaRepository;
     private final OrderItemJpaRepository orderItemJpaRepository;
     private final TagJpaRepository tagJpaRepository;
-    private final com.tastyhouse.core.repository.file.UploadedFileJpaRepository uploadedFileJpaRepository;
 
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
         return reviewCoreService.findBestReviewsWithPagination(
@@ -69,7 +68,7 @@ public class ReviewService {
     private BestReviewListItem convertToBestReviewListItem(BestReviewListItemDto dto) {
         return BestReviewListItem.builder()
             .id(dto.getId())
-            .imageUrl(dto.getImageUrl())
+            .imageUrl(fileService.getUrlByPath(dto.getImageUrl()))
             .stationName(dto.getStationName())
             .totalRating(dto.getTotalRating())
             .content(dto.getContent())
@@ -100,15 +99,20 @@ public class ReviewService {
     }
 
     private LatestReviewListItem convertToLatestReviewListItem(LatestReviewListItemDto dto) {
+        List<String> imageUrls = dto.getImageUrls() == null ? List.of() :
+            dto.getImageUrls().stream()
+                .map(fileService::getUrlByPath)
+                .toList();
+
         return LatestReviewListItem.builder()
             .id(dto.getId())
-            .imageUrls(dto.getImageUrls())
+            .imageUrls(imageUrls)
             .stationName(dto.getStationName())
             .totalRating(dto.getTotalRating())
             .content(dto.getContent())
             .memberId(dto.getMemberId())
             .memberNickname(dto.getMemberNickname())
-            .memberProfileImageUrl(dto.getMemberProfileImageUrl())
+            .memberProfileImageUrl(fileService.getUrlByPath(dto.getMemberProfileImageUrl()))
             .createdAt(dto.getCreatedAt())
             .likeCount(dto.getLikeCount())
             .commentCount(dto.getCommentCount())
@@ -121,6 +125,11 @@ public class ReviewService {
     }
 
     private ReviewDetailResponse convertToReviewDetailResponse(ReviewDetailDto dto) {
+        List<String> imageUrls = dto.getImageUrls() == null ? List.of() :
+            dto.getImageUrls().stream()
+                .map(fileService::getUrlByPath)
+                .toList();
+
         return ReviewDetailResponse.builder()
             .id(dto.getId())
             .placeId(dto.getPlaceId())
@@ -137,9 +146,9 @@ public class ReviewService {
             .willRevisit(dto.getWillRevisit())
             .memberId(dto.getMemberId())
             .memberNickname(dto.getMemberNickname())
-            .memberProfileImageUrl(dto.getMemberProfileImageUrl())
+            .memberProfileImageUrl(fileService.getUrlByPath(dto.getMemberProfileImageUrl()))
             .createdAt(dto.getCreatedAt())
-            .imageUrls(dto.getImageUrls())
+            .imageUrls(imageUrls)
             .tagNames(dto.getTagNames())
             .build();
     }
@@ -219,9 +228,7 @@ public class ReviewService {
     private CommentResponse convertToCommentResponse(ReviewComment comment, Member member, List<ReplyResponse> replies) {
         String memberProfileImageUrl = null;
         if (member != null && member.getProfileImageFileId() != null) {
-            memberProfileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
-                .map(file -> file.getFilePath())
-                .orElse(null);
+            memberProfileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
         }
 
         return CommentResponse.builder()
@@ -239,9 +246,7 @@ public class ReviewService {
     private ReplyResponse convertToReplyResponse(ReviewReply reply, Member member, Member replyToMember) {
         String memberProfileImageUrl = null;
         if (member != null && member.getProfileImageFileId() != null) {
-            memberProfileImageUrl = uploadedFileJpaRepository.findById(member.getProfileImageFileId())
-                .map(file -> file.getFilePath())
-                .orElse(null);
+            memberProfileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
         }
 
         return ReplyResponse.builder()
@@ -269,18 +274,22 @@ public class ReviewService {
             return Optional.empty();
         }
 
+        List<String> reviewImageUrls = reviewDetail.getImageUrls() == null ? List.of() :
+            reviewDetail.getImageUrls().stream()
+                .map(fileService::getUrlByPath)
+                .toList();
+        String reviewMemberProfileImageUrl = fileService.getUrlByPath(reviewDetail.getMemberProfileImageUrl());
+
         return productCoreService.findProductById(review.getProductId())
             .map(product -> {
-                Integer price = product.getDiscountPrice() != null 
-                    ? product.getDiscountPrice() 
+                Integer price = product.getDiscountPrice() != null
+                    ? product.getDiscountPrice()
                     : product.getOriginalPrice();
-                
-                String productImageUrl = getFirstImageUrl(product.getId());
-                
+
                 return ReviewProductResponse.builder()
                     .productId(product.getId())
                     .productName(product.getName())
-                    .productImageUrl(productImageUrl)
+                    .productImageUrl(getFirstImageUrl(product.getId()))
                     .productPrice(price)
                     .reviewId(reviewDetail.getId())
                     .content(reviewDetail.getContent())
@@ -294,9 +303,9 @@ public class ReviewService {
                     .willRevisit(reviewDetail.getWillRevisit())
                     .memberId(reviewDetail.getMemberId())
                     .memberNickname(reviewDetail.getMemberNickname())
-                    .memberProfileImageUrl(reviewDetail.getMemberProfileImageUrl())
+                    .memberProfileImageUrl(reviewMemberProfileImageUrl)
                     .createdAt(reviewDetail.getCreatedAt())
-                    .imageUrls(reviewDetail.getImageUrls())
+                    .imageUrls(reviewImageUrls)
                     .tagNames(reviewDetail.getTagNames())
                     .build();
             })
@@ -318,9 +327,9 @@ public class ReviewService {
                     .willRevisit(reviewDetail.getWillRevisit())
                     .memberId(reviewDetail.getMemberId())
                     .memberNickname(reviewDetail.getMemberNickname())
-                    .memberProfileImageUrl(reviewDetail.getMemberProfileImageUrl())
+                    .memberProfileImageUrl(reviewMemberProfileImageUrl)
                     .createdAt(reviewDetail.getCreatedAt())
-                    .imageUrls(reviewDetail.getImageUrls())
+                    .imageUrls(reviewImageUrls)
                     .tagNames(reviewDetail.getTagNames())
                     .build()
             ));
@@ -460,7 +469,7 @@ public class ReviewService {
         List<ReviewImage> images = new ArrayList<>();
         for (int i = 0; i < uploadedFileIds.size(); i++) {
             Long fileId = uploadedFileIds.get(i);
-            if (fileId == null || !uploadedFileJpaRepository.existsById(fileId)) {
+            if (fileId == null) {
                 throw new EntityNotFoundException(ErrorCode.FILE_NOT_FOUND);
             }
             images.add(ReviewImage.builder()

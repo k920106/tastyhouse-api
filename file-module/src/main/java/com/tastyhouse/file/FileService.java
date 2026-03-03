@@ -55,6 +55,13 @@ public class FileService {
         return fileStorageStrategy.getFileUrl(file.getFilePath());
     }
 
+    public String getUrlByPath(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        return fileStorageStrategy.getFileUrl(filePath);
+    }
+
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ErrorCode.FILE_EMPTY);
