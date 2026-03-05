@@ -53,6 +53,8 @@ public interface ReviewJpaRepository extends JpaRepository<Review, Long> {
 
     Optional<Review> findByIdAndMemberId(Long id, Long memberId);
 
+    long countByMemberIdAndIsHiddenFalse(Long memberId);
+
     // 주문 상품 리뷰 작성 여부
     boolean existsByOrderIdAndProductIdAndMemberId(Long orderId, Long productId, Long memberId);
 

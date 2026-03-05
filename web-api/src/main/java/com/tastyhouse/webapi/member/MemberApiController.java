@@ -12,6 +12,7 @@ import com.tastyhouse.webapi.member.request.UpdateProfileRequest;
 import com.tastyhouse.webapi.member.request.VerifyPasswordRequest;
 import com.tastyhouse.webapi.member.request.WithdrawMemberRequest;
 import com.tastyhouse.webapi.member.response.MemberProfileResponse;
+import com.tastyhouse.webapi.member.response.OtherMemberProfileResponse;
 import com.tastyhouse.webapi.member.response.PersonalInfoResponse;
 import com.tastyhouse.webapi.member.response.VerifyPasswordResponse;
 import com.tastyhouse.webapi.grade.GradeService;
@@ -37,6 +38,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -316,6 +318,21 @@ public class MemberApiController {
         memberService.verifyPersonalInfoToken(userDetails.getMemberId(), verifyToken);
         memberService.updatePassword(userDetails.getMemberId(), request.getNewPassword(), request.getNewPasswordConfirm());
         return ResponseEntity.ok(CommonResponse.success(null));
+    }
+
+    @Operation(summary = "다른 회원 프로필 조회", description = "특정 회원의 프로필 정보(닉네임, 등급, 상태메시지, 프로필 이미지, 리뷰 수, 팔로잉/팔로워 수, 내 팔로우 여부)를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = OtherMemberProfileResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
+    @GetMapping("/v1/{memberId}/profile")
+    public ResponseEntity<CommonResponse<OtherMemberProfileResponse>> getOtherMemberProfile(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @Parameter(description = "조회할 회원 ID", example = "2") @PathVariable Long memberId
+    ) {
+        OtherMemberProfileResponse profile = memberService.getOtherMemberProfile(memberId, userDetails.getMemberId());
+        return ResponseEntity.ok(CommonResponse.success(profile));
     }
 
     @Operation(summary = "회원 탈퇴", description = "탈퇴 사유를 선택하여 회원 탈퇴를 처리합니다. 탈퇴 즉시 Access Token이 무효화됩니다.")

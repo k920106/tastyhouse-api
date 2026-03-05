@@ -17,6 +17,8 @@ import com.tastyhouse.core.repository.place.PlaceRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
 import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
+import com.tastyhouse.core.repository.follow.FollowRepository;
+import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.webapi.common.PageRequest;
@@ -55,7 +57,9 @@ public class MemberService {
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
+    private final ReviewJpaRepository reviewJpaRepository;
     private final PlaceRepository placeRepository;
+    private final FollowRepository followRepository;
 
     public void verifyPersonalInfoToken(Long memberId, String verifyToken) {
         if (!jwtTokenProvider.validateVerifyToken(verifyToken)) {
@@ -298,6 +302,34 @@ public class MemberService {
 
         return MyReviewStatsResponse.builder()
             .totalReviewCount(reviewCount)
+            .build();
+    }
+
+    public OtherMemberProfileResponse getOtherMemberProfile(Long targetMemberId, Long viewerMemberId) {
+        Member member = memberJpaRepository.findById(targetMemberId)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "회원을 찾을 수 없습니다."));
+
+        String profileImageUrl = null;
+        if (member.getProfileImageFileId() != null) {
+            profileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
+        }
+
+        long reviewCount = reviewJpaRepository.countByMemberIdAndIsHiddenFalse(targetMemberId);
+        long followingCount = followRepository.countByFollowerId(targetMemberId);
+        long followerCount = followRepository.countByFollowingId(targetMemberId);
+        boolean isFollowing = viewerMemberId != null
+            && followRepository.existsByFollowerIdAndFollowingId(viewerMemberId, targetMemberId);
+
+        return OtherMemberProfileResponse.builder()
+            .id(member.getId())
+            .nickname(member.getNickname())
+            .memberGrade(member.getMemberGrade())
+            .statusMessage(member.getStatusMessage())
+            .profileImageUrl(profileImageUrl)
+            .reviewCount(reviewCount)
+            .followingCount(followingCount)
+            .followerCount(followerCount)
+            .isFollowing(isFollowing)
             .build();
     }
 }
