@@ -1,5 +1,7 @@
 package com.tastyhouse.webapi.config.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.webapi.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
     private final TokenBlacklist tokenBlacklist;
+    private final ObjectMapper objectMapper;
 
     private static final List<String> PUBLIC_PATHS = List.of(
         "/api/auth/",
@@ -68,22 +71,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
+                writeUnauthorizedResponse(response, "Invalid or expired token");
                 return;
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"Authentication failed\"}");
+            writeUnauthorizedResponse(response, "Authentication failed");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
+
+    private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(CommonResponse.error(message)));
+    }
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
