@@ -5,6 +5,8 @@ import com.tastyhouse.core.common.ReviewsByRatingResult;
 import com.tastyhouse.core.entity.product.*;
 import com.tastyhouse.core.entity.product.dto.TodayDiscountProductDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.product.ProductImageJpaRepository;
 import com.tastyhouse.core.service.PlaceCoreService;
 import com.tastyhouse.core.service.ProductCoreService;
@@ -280,7 +282,7 @@ public class ProductService {
         Map<String, Object> statistics = reviewCoreService.getProductReviewStatistics(productId);
 
         Product product = productCoreService.findProductById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return ProductReviewStatisticsResponse.builder()
                 .totalRating(product.getRating())

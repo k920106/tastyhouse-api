@@ -1,6 +1,8 @@
 package com.tastyhouse.core.service;
 
 import com.tastyhouse.core.entity.file.UploadedFile;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.file.UploadedFileJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,6 @@ public class FileCoreService {
     @Transactional(readOnly = true)
     public UploadedFile findById(Long id) {
         return uploadedFileJpaRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.FILE_NOT_FOUND));
     }
 }

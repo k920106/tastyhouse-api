@@ -4,6 +4,8 @@ import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.policy.PolicyType;
 import com.tastyhouse.core.entity.policy.dto.PolicyDocumentDto;
 import com.tastyhouse.core.entity.policy.dto.PolicyListItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.service.PolicyDocumentCoreService;
 import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.policy.response.PolicyDetailResponse;
@@ -19,14 +21,14 @@ public class PolicyService {
 
     public PolicyDetailResponse findCurrentByType(PolicyType type) {
         PolicyDocumentDto dto = policyDocumentCoreService.findCurrentByType(type)
-            .orElseThrow(() -> new IllegalArgumentException("현재 유효한 정책을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_CURRENT_NOT_FOUND));
 
         return convertToPolicyDetailResponse(dto);
     }
 
     public PolicyDetailResponse findByTypeAndVersion(PolicyType type, String version) {
         PolicyDocumentDto dto = policyDocumentCoreService.findByTypeAndVersion(type, version)
-            .orElseThrow(() -> new IllegalArgumentException("해당 버전의 정책을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_VERSION_NOT_FOUND));
 
         return convertToPolicyDetailResponse(dto);
     }

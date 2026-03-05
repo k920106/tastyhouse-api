@@ -5,6 +5,8 @@ import com.tastyhouse.core.entity.policy.PolicyDocument;
 import com.tastyhouse.core.entity.policy.PolicyType;
 import com.tastyhouse.core.entity.policy.dto.PolicyDocumentDto;
 import com.tastyhouse.core.entity.policy.dto.PolicyListItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.policy.PolicyDocumentJpaRepository;
 import com.tastyhouse.core.repository.policy.PolicyDocumentRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +60,7 @@ public class PolicyDocumentCoreService {
     @Transactional
     public void updateCurrentPolicy(Long newPolicyId) {
         PolicyDocument newPolicy = policyDocumentJpaRepository.findById(newPolicyId)
-            .orElseThrow(() -> new IllegalArgumentException("정책 문서를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_NOT_FOUND));
 
         Optional<PolicyDocument> currentPolicy = policyDocumentJpaRepository
             .findByTypeAndCurrent(newPolicy.getType(), true);
@@ -72,7 +74,7 @@ public class PolicyDocumentCoreService {
     public void update(Long id, String title, String content, Boolean mandatory,
                       LocalDateTime effectiveDate, String updatedBy) {
         PolicyDocument policyDocument = policyDocumentJpaRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("정책 문서를 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_NOT_FOUND));
 
         policyDocument.update(title, content, mandatory, effectiveDate, updatedBy);
     }

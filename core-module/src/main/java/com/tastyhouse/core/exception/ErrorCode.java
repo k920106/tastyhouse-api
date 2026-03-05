@@ -77,6 +77,20 @@ public enum ErrorCode {
     REVIEW_ORDER_ITEM_NOT_FOUND(404, "REVIEW_ORDER_ITEM_NOT_FOUND", "주문 상품을 찾을 수 없습니다."),
     REVIEW_ORDER_ACCESS_DENIED(403, "REVIEW_ORDER_ACCESS_DENIED", "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다."),
 
+    // 플레이스
+    PLACE_NOT_FOUND(404, "PLACE_NOT_FOUND", "존재하지 않는 플레이스입니다."),
+    PLACE_STATION_NOT_FOUND(404, "PLACE_STATION_NOT_FOUND", "존재하지 않는 전철역입니다."),
+    PLACE_AMENITY_CATEGORY_NOT_FOUND(404, "PLACE_AMENITY_CATEGORY_NOT_FOUND", "존재하지 않는 편의시설 카테고리입니다."),
+    PLACE_IMAGE_CATEGORY_NOT_FOUND(404, "PLACE_IMAGE_CATEGORY_NOT_FOUND", "존재하지 않는 이미지 카테고리입니다."),
+
+    // 정책
+    POLICY_NOT_FOUND(404, "POLICY_NOT_FOUND", "정책 문서를 찾을 수 없습니다."),
+    POLICY_CURRENT_NOT_FOUND(404, "POLICY_CURRENT_NOT_FOUND", "현재 유효한 정책을 찾을 수 없습니다."),
+    POLICY_VERSION_NOT_FOUND(404, "POLICY_VERSION_NOT_FOUND", "해당 버전의 정책을 찾을 수 없습니다."),
+
+    // 상품
+    PRODUCT_NOT_FOUND(404, "PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다."),
+
     // 랭크
     RANK_TYPE_UNKNOWN(400, "RANK_TYPE_UNKNOWN", "알 수 없는 랭크 타입입니다."),
 

@@ -4,6 +4,8 @@ import com.tastyhouse.core.entity.place.*;
 import com.tastyhouse.core.entity.place.dto.BestPlaceItemDto;
 import com.tastyhouse.core.entity.place.dto.EditorChoiceDto;
 import com.tastyhouse.core.entity.place.dto.LatestPlaceItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.place.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -69,22 +71,22 @@ public class PlaceCoreService {
 
     public Place findPlaceById(Long placeId) {
         return placeJpaRepository.findById(placeId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 플레이스입니다. ID: " + placeId));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PLACE_NOT_FOUND));
     }
 
     public PlaceStation findStationById(Long stationId) {
         return placeStationJpaRepository.findById(stationId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 전철역입니다. ID: " + stationId));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PLACE_STATION_NOT_FOUND));
     }
 
     public PlaceAmenityCategory findPlaceAmenityCategoryById(Long categoryId) {
         return placeAmenityCategoryJpaRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 편의시설 카테고리입니다. ID: " + categoryId));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PLACE_AMENITY_CATEGORY_NOT_FOUND));
     }
 
     public PlacePhotoCategory findPlaceImageCategoryById(Long categoryId) {
         return placeImageCategoryJpaRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이미지 카테고리입니다. ID: " + categoryId));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PLACE_IMAGE_CATEGORY_NOT_FOUND));
     }
 
     public List<PlaceBusinessHour> findPlaceBusinessHours(Long placeId) {
