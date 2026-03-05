@@ -41,24 +41,17 @@ public class BbqApiClient {
     public Mono<List<BbqMenuCategoryResponse>> getMenuCategories() {
         String url = baseUrl + "/api/delivery/menu/category";
 
-        return getWebClient().get()
-                .uri(url)
-                .retrieve()
-                .bodyToFlux(BbqMenuCategoryResponse.class)
-                .collectList()
-                .timeout(Duration.ofSeconds(10))
-                .doOnSuccess(categories -> {
-                    log.info("BBQ 메뉴 카테고리 조회 성공: {}개", categories.size());
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    log.error("BBQ 메뉴 카테고리 조회 실패: Status={}, Message={}", 
-                            ex.getStatusCode(), ex.getMessage());
-                })
-                .doOnError(Throwable.class, ex -> {
-                    if (!(ex instanceof WebClientResponseException)) {
-                        log.error("BBQ 메뉴 카테고리 조회 중 예외 발생", ex);
-                    }
-                });
+        return handleApiError(
+                getWebClient().get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToFlux(BbqMenuCategoryResponse.class)
+                        .collectList()
+                        .timeout(Duration.ofSeconds(10))
+                        .doOnSuccess(categories ->
+                                log.info("BBQ 메뉴 카테고리 조회 성공: {}개", categories.size())),
+                "BBQ 메뉴 카테고리 조회"
+        );
     }
 
     /**
@@ -80,24 +73,17 @@ public class BbqApiClient {
     public Mono<List<BbqMenuResponse>> getMenusByCategoryId(Long categoryId) {
         String url = baseUrl + "/api/delivery/menu/" + categoryId;
 
-        return getWebClient().get()
-                .uri(url)
-                .retrieve()
-                .bodyToFlux(BbqMenuResponse.class)
-                .collectList()
-                .timeout(Duration.ofSeconds(10))
-                .doOnSuccess(menus -> {
-                    log.info("BBQ 카테고리별 메뉴 조회 성공: categoryId={}, 메뉴 수={}", categoryId, menus.size());
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    log.error("BBQ 카테고리별 메뉴 조회 실패: categoryId={}, Status={}, Message={}", 
-                            categoryId, ex.getStatusCode(), ex.getMessage());
-                })
-                .doOnError(Throwable.class, ex -> {
-                    if (!(ex instanceof WebClientResponseException)) {
-                        log.error("BBQ 카테고리별 메뉴 조회 중 예외 발생: categoryId={}", categoryId, ex);
-                    }
-                });
+        return handleApiError(
+                getWebClient().get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToFlux(BbqMenuResponse.class)
+                        .collectList()
+                        .timeout(Duration.ofSeconds(10))
+                        .doOnSuccess(menus ->
+                                log.info("BBQ 카테고리별 메뉴 조회 성공: categoryId={}, 메뉴 수={}", categoryId, menus.size())),
+                "BBQ 카테고리별 메뉴 조회"
+        );
     }
 
     /**
@@ -120,23 +106,16 @@ public class BbqApiClient {
     public Mono<BbqMenuResponse> getMenuDetail(Long menuId) {
         String url = baseUrl + "/api/delivery/menu/detail/" + menuId;
 
-        return getWebClient().get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(BbqMenuResponse.class)
-                .timeout(Duration.ofSeconds(10))
-                .doOnSuccess(menu -> {
-                    log.info("BBQ 메뉴 상세 조회 성공: menuId={}, menuName={}", menuId, menu.getMenuName());
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    log.error("BBQ 메뉴 상세 조회 실패: menuId={}, Status={}, Message={}", 
-                            menuId, ex.getStatusCode(), ex.getMessage());
-                })
-                .doOnError(Throwable.class, ex -> {
-                    if (!(ex instanceof WebClientResponseException)) {
-                        log.error("BBQ 메뉴 상세 조회 중 예외 발생: menuId={}", menuId, ex);
-                    }
-                });
+        return handleApiError(
+                getWebClient().get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToMono(BbqMenuResponse.class)
+                        .timeout(Duration.ofSeconds(10))
+                        .doOnSuccess(menu ->
+                                log.info("BBQ 메뉴 상세 조회 성공: menuId={}, menuName={}", menuId, menu.getMenuName())),
+                "BBQ 메뉴 상세 조회"
+        );
     }
 
     /**
@@ -159,24 +138,17 @@ public class BbqApiClient {
     public Mono<List<BbqMenuSubOptionResponse>> getMenuSubOptions(Long menuId) {
         String url = baseUrl + "/api/delivery/menu/sub-option/" + menuId;
 
-        return getWebClient().get()
-                .uri(url)
-                .retrieve()
-                .bodyToFlux(BbqMenuSubOptionResponse.class)
-                .collectList()
-                .timeout(Duration.ofSeconds(10))
-                .doOnSuccess(subOptions -> {
-                    log.info("BBQ 메뉴 서브 옵션 조회 성공: menuId={}, 옵션 수={}", menuId, subOptions.size());
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    log.error("BBQ 메뉴 서브 옵션 조회 실패: menuId={}, Status={}, Message={}", 
-                            menuId, ex.getStatusCode(), ex.getMessage());
-                })
-                .doOnError(Throwable.class, ex -> {
-                    if (!(ex instanceof WebClientResponseException)) {
-                        log.error("BBQ 메뉴 서브 옵션 조회 중 예외 발생: menuId={}", menuId, ex);
-                    }
-                });
+        return handleApiError(
+                getWebClient().get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToFlux(BbqMenuSubOptionResponse.class)
+                        .collectList()
+                        .timeout(Duration.ofSeconds(10))
+                        .doOnSuccess(subOptions ->
+                                log.info("BBQ 메뉴 서브 옵션 조회 성공: menuId={}, 옵션 수={}", menuId, subOptions.size())),
+                "BBQ 메뉴 서브 옵션 조회"
+        );
     }
 
     /**
@@ -188,5 +160,16 @@ public class BbqApiClient {
     public List<BbqMenuSubOptionResponse> getMenuSubOptionsSync(Long menuId) {
         return getMenuSubOptions(menuId)
                 .block(Duration.ofSeconds(10));
+    }
+
+    private <T> Mono<T> handleApiError(Mono<T> mono, String apiName) {
+        return mono
+                .doOnError(WebClientResponseException.class, ex ->
+                        log.error("{} 실패: Status={}, Message={}", apiName, ex.getStatusCode(), ex.getMessage()))
+                .doOnError(Throwable.class, ex -> {
+                    if (!(ex instanceof WebClientResponseException)) {
+                        log.error("{} 중 예외 발생", apiName, ex);
+                    }
+                });
     }
 }
