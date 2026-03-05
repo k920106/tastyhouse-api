@@ -42,10 +42,6 @@ public class PaymentApiController {
         @Valid @RequestBody PaymentCreateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentResponse response = paymentService.createPayment(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -75,10 +71,6 @@ public class PaymentApiController {
         @Valid @RequestBody TossPaymentConfirmApiRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentResponse response = paymentService.confirmTossPayment(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -94,10 +86,6 @@ public class PaymentApiController {
         @PathVariable Long orderId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentResponse response = paymentService.getPaymentByOrderId(userDetails.getMemberId(), orderId);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -114,10 +102,6 @@ public class PaymentApiController {
         @Valid @RequestBody PaymentCancelRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentCancelResponse response = paymentService.cancelPayment(userDetails.getMemberId(), paymentId, request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -134,10 +118,6 @@ public class PaymentApiController {
         @PathVariable Long paymentId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentResponse response = paymentService.completeOnSitePayment(userDetails.getMemberId(), paymentId);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -155,10 +135,6 @@ public class PaymentApiController {
         @Valid @RequestBody RefundRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         PaymentRefundResponse response = paymentService.requestRefund(userDetails.getMemberId(), paymentId, request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }

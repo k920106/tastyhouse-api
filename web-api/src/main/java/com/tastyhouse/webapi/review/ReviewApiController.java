@@ -43,9 +43,6 @@ public class ReviewApiController {
     public ResponseEntity<CommonResponse<ReviewWriteInfoResponse>> getReviewWriteInfo(
             @Parameter(description = "주문 상품 ID", example = "1") @PathVariable Long orderItemId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
         ReviewWriteInfoResponse response = reviewService.getReviewWriteInfo(orderItemId, userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -61,9 +58,6 @@ public class ReviewApiController {
     public ResponseEntity<CommonResponse<ReviewResponse>> createReview(
             @Valid @RequestBody ReviewCreateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
         ReviewResponse response = reviewService.createReview(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -80,9 +74,6 @@ public class ReviewApiController {
             @Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId,
             @Valid @RequestBody ReviewUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
         ReviewResponse response = reviewService.updateReview(reviewId, userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -98,9 +89,6 @@ public class ReviewApiController {
     public ResponseEntity<CommonResponse<Void>> deleteReview(
             @Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
         reviewService.deleteReview(reviewId, userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(null));
     }
@@ -162,10 +150,6 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "좋아요 토글 성공", content = @Content(schema = @Schema(implementation = ReviewLikeResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")})
     @PostMapping("/v1/{reviewId}/like")
     public ResponseEntity<CommonResponse<ReviewLikeResponse>> toggleReviewLike(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         boolean liked = reviewService.toggleReviewLike(reviewId, userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(new ReviewLikeResponse(liked)));
     }
@@ -174,10 +158,6 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "댓글 등록 성공", content = @Content(schema = @Schema(implementation = CommentResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")})
     @PostMapping("/v1/{reviewId}/comments")
     public ResponseEntity<CommonResponse<CommentResponse>> createComment(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId, @Valid @RequestBody CommentCreateRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         CommentResponse response = reviewService.createComment(reviewId, userDetails.getMemberId(), request.getContent());
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -186,10 +166,6 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "답글 등록 성공", content = @Content(schema = @Schema(implementation = ReplyResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")})
     @PostMapping("/v1/comments/{commentId}/replies")
     public ResponseEntity<CommonResponse<ReplyResponse>> createReply(@Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId, @Valid @RequestBody ReplyCreateRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         ReplyResponse response = reviewService.createReply(commentId, userDetails.getMemberId(), request.getReplyToMemberId(), request.getContent());
         return ResponseEntity.ok(CommonResponse.success(response));
     }

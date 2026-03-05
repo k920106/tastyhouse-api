@@ -41,10 +41,6 @@ public class OrderApiController {
         @Valid @RequestBody OrderCreateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         OrderResponse response = orderService.createOrder(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
@@ -60,10 +56,6 @@ public class OrderApiController {
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         Long memberId = userDetails.getMemberId();
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<OrderListItemResponse> pageResult = orderService.getOrderList(memberId, pageRequest);
@@ -87,10 +79,6 @@ public class OrderApiController {
         @PathVariable Long orderId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         OrderResponse response = orderService.getOrderDetail(userDetails.getMemberId(), orderId);
         return ResponseEntity.ok(CommonResponse.success(response));
     }

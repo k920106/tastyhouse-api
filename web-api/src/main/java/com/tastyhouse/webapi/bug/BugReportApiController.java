@@ -37,10 +37,6 @@ public class BugReportApiController {
         @Valid @RequestBody BugReportCreateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         BugReportResponse response = bugReportService.createBugReport(userDetails.getMemberId(), request);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
