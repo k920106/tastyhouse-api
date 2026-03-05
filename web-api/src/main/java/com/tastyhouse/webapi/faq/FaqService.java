@@ -7,6 +7,7 @@ import com.tastyhouse.webapi.faq.response.FaqCategoryItem;
 import com.tastyhouse.webapi.faq.response.FaqItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,12 +17,14 @@ public class FaqService {
 
     private final FaqCoreService faqCoreService;
 
+    @Transactional(readOnly = true)
     public List<FaqCategoryItem> findCategories() {
         return faqCoreService.findAllActiveCategories().stream()
                 .map(this::toFaqCategoryItem)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<FaqItem> findFaqItems(Long categoryId) {
         return faqCoreService.findFaqItems(categoryId).stream()
                 .map(this::toFaqItem)

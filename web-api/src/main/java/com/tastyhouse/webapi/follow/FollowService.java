@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class FollowService {
 
     private final FollowRepository followRepository;
@@ -65,6 +64,7 @@ public class FollowService {
         followJpaRepository.delete(follow);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<FollowMemberResponse> getFollowingList(Long memberId, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
@@ -81,6 +81,7 @@ public class FollowService {
         return new PageResult<>(content, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
+    @Transactional(readOnly = true)
     public PageResult<FollowMemberResponse> getFollowerList(Long memberId, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
@@ -97,6 +98,7 @@ public class FollowService {
         return new PageResult<>(content, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
+    @Transactional(readOnly = true)
     public PageResult<MemberSearchResponse> searchMembersByNickname(String nickname, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());

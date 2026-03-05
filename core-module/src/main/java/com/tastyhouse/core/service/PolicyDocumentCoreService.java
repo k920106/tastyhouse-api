@@ -20,20 +20,22 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PolicyDocumentCoreService {
 
     private final PolicyDocumentRepository policyDocumentRepository;
     private final PolicyDocumentJpaRepository policyDocumentJpaRepository;
 
+    @Transactional(readOnly = true)
     public Optional<PolicyDocumentDto> findCurrentByType(PolicyType type) {
         return policyDocumentRepository.findCurrentByType(type);
     }
 
+    @Transactional(readOnly = true)
     public Optional<PolicyDocumentDto> findByTypeAndVersion(PolicyType type, String version) {
         return policyDocumentRepository.findByTypeAndVersion(type, version);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<PolicyListItemDto> findAllByTypeWithPagination(PolicyType type, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<PolicyListItemDto> policyPage = policyDocumentRepository.findAllByType(type, pageRequest);

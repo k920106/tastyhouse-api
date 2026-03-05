@@ -17,7 +17,6 @@ import java.security.SecureRandom;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PhoneVerificationService {
 
     private static final int VERIFICATION_CODE_LENGTH = 6;

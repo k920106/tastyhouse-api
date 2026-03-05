@@ -50,17 +50,20 @@ public class ReviewCoreService {
     private final ReviewImageJpaRepository reviewImageJpaRepository;
     private final MemberJpaRepository memberJpaRepository;
 
+    @Transactional(readOnly = true)
     public PageResult<BestReviewListItemDto> findBestReviewsWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<BestReviewListItemDto> reviewPage = reviewRepository.findBestReviews(pageRequest);
         return PageResult.from(reviewPage);
     }
 
+    @Transactional(readOnly = true)
     public Review findById(Long id) {
         return reviewJpaRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.REVIEW_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
     public Optional<ReviewDetailDto> findReviewDetail(Long reviewId) {
         Optional<ReviewDetailDto> result = reviewRepository.findReviewDetail(reviewId);
 
@@ -75,10 +78,12 @@ public class ReviewCoreService {
         return result;
     }
 
+    @Transactional(readOnly = true)
     public boolean isLikedByMember(Long reviewId, Long memberId) {
         return reviewLikeJpaRepository.existsByReviewIdAndMemberId(reviewId, memberId);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<LatestReviewListItemDto> findLatestReviewsWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<LatestReviewListItemDto> reviewPage = reviewRepository.findLatestReviews(pageRequest);
@@ -97,6 +102,7 @@ public class ReviewCoreService {
         );
     }
 
+    @Transactional(readOnly = true)
     public PageResult<LatestReviewListItemDto> findLatestReviewsByFollowingWithPagination(Long memberId, int page, int size) {
         List<Long> followingMemberIds = followJpaRepository.findFollowingIdsByFollowerId(memberId);
 
@@ -130,6 +136,7 @@ public class ReviewCoreService {
         );
     }
 
+    @Transactional(readOnly = true)
     public ReviewsByRatingResult getPlaceReviewsByRating(Long placeId, int page, int size) {
         List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 1, 5);
         List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 2, 5);
@@ -222,10 +229,12 @@ public class ReviewCoreService {
         return reviewReplyJpaRepository.save(reply);
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewComment> findCommentsByReviewId(Long reviewId) {
         return reviewCommentJpaRepository.findByReviewIdAndIsHiddenFalseOrderByCreatedAtDesc(reviewId);
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewReply> findRepliesByCommentIds(List<Long> commentIds) {
         if (commentIds.isEmpty()) {
             return List.of();
@@ -233,6 +242,7 @@ public class ReviewCoreService {
         return reviewReplyJpaRepository.findByCommentIdInAndIsHiddenFalseOrderByCreatedAtAsc(commentIds);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<Review> findPlaceReviews(Long placeId, Integer rating, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Review> reviewPage;
@@ -248,10 +258,12 @@ public class ReviewCoreService {
         return PageResult.from(reviewPage);
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewImage> findReviewImages(List<Long> reviewIds) {
         return reviewImageJpaRepository.findByReviewIdInOrderBySortAsc(reviewIds);
     }
 
+    @Transactional(readOnly = true)
     public PlaceReviewStatisticsDto getPlaceReviewStatistics(Long placeId) {
         Long totalCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
 
@@ -292,6 +304,7 @@ public class ReviewCoreService {
         return builder.build();
     }
 
+    @Transactional(readOnly = true)
     public ReviewsByRatingResult getProductReviewsByRating(Long productId, int page, int size) {
         List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 1, 5);
         List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 2, 5);
@@ -335,6 +348,7 @@ public class ReviewCoreService {
         );
     }
 
+    @Transactional(readOnly = true)
     public boolean isReviewedByOrderAndProduct(Long orderId, Long productId, Long memberId) {
         return reviewJpaRepository.existsByOrderIdAndProductIdAndMemberId(orderId, productId, memberId);
     }
@@ -354,6 +368,7 @@ public class ReviewCoreService {
         reviewTagJpaRepository.saveAll(tags);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Review> findReviewByIdAndMemberId(Long reviewId, Long memberId) {
         return reviewJpaRepository.findByIdAndMemberId(reviewId, memberId);
     }
@@ -373,6 +388,7 @@ public class ReviewCoreService {
         reviewJpaRepository.deleteById(reviewId);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> getProductReviewStatistics(Long productId) {
         Map<String, Object> statistics = new HashMap<>();
 

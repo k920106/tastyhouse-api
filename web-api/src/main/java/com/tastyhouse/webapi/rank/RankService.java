@@ -7,6 +7,7 @@ import com.tastyhouse.webapi.rank.response.MemberRankItem;
 import com.tastyhouse.webapi.rank.response.MyRankResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +18,7 @@ public class RankService {
 
     private final RankCoreService rankCoreService;
 
+    @Transactional(readOnly = true)
     public List<MemberRankItem> getMemberRankList(String rankType, int limit) {
         RankType type = parseRankType(rankType);
         LocalDate baseDate = calculateBaseDate(type);
@@ -28,6 +30,7 @@ public class RankService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public MyRankResponse getMyMemberRank(Long memberId, String rankType) {
         RankType type = parseRankType(rankType);
         LocalDate baseDate = calculateBaseDate(type);

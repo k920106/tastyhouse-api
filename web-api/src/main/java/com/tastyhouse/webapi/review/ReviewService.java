@@ -49,7 +49,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ReviewService {
 
     private final FileService fileService;
@@ -59,6 +58,7 @@ public class ReviewService {
     private final OrderItemJpaRepository orderItemJpaRepository;
     private final TagJpaRepository tagJpaRepository;
 
+    @Transactional(readOnly = true)
     public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
         return reviewCoreService.findBestReviewsWithPagination(
             pageRequest.getPage(), pageRequest.getSize()
@@ -75,6 +75,7 @@ public class ReviewService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public PageResult<LatestReviewListItem> findLatestReviewList(
         PageRequest pageRequest,
         ReviewType type,
@@ -119,6 +120,7 @@ public class ReviewService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public Optional<ReviewDetailResponse> findReviewDetail(Long reviewId) {
         return reviewCoreService.findReviewDetail(reviewId)
             .map(this::convertToReviewDetailResponse);
@@ -153,6 +155,7 @@ public class ReviewService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public ReviewLikeStatusResponse isLiked(Long reviewId, Long memberId) {
         boolean isLiked = reviewCoreService.isLikedByMember(reviewId, memberId);
         return new ReviewLikeStatusResponse(isLiked);
@@ -180,6 +183,7 @@ public class ReviewService {
         return convertToReplyResponse(reply, member, replyToMember);
     }
 
+    @Transactional(readOnly = true)
     public CommentListResponse findCommentsWithReplies(Long reviewId) {
         List<ReviewComment> comments = reviewCoreService.findCommentsByReviewId(reviewId);
 
@@ -264,6 +268,7 @@ public class ReviewService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public Optional<ReviewProductResponse> findReviewProduct(Long reviewId) {
         Optional<ReviewDetailDto> reviewDetailOpt = reviewCoreService.findReviewDetail(reviewId);
         if (reviewDetailOpt.isEmpty()) {
@@ -338,6 +343,7 @@ public class ReviewService {
         return productCoreService.getFirstImageUrl(productId);
     }
 
+    @Transactional(readOnly = true)
     public ReviewWriteInfoResponse getReviewWriteInfo(Long orderItemId, Long memberId) {
         OrderItem orderItem = orderItemJpaRepository.findById(orderItemId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.REVIEW_ORDER_ITEM_NOT_FOUND));

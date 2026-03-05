@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MemberService {
 
     private final FileService fileService;
@@ -102,6 +101,7 @@ public class MemberService {
         }
     }
 
+    @Transactional(readOnly = true)
     public void verifyPassword(Long memberId, String rawPassword) {
         Member member = memberJpaRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "존재하지 않는 회원입니다."));
@@ -111,6 +111,7 @@ public class MemberService {
         }
     }
 
+    @Transactional(readOnly = true)
     public PersonalInfoResponse getPersonalInfo(Long memberId) {
         Member member = memberJpaRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "존재하지 않는 회원입니다."));
@@ -133,6 +134,7 @@ public class MemberService {
         );
     }
 
+    @Transactional(readOnly = true)
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
             .map(PointResponse::from)
@@ -142,6 +144,7 @@ public class MemberService {
                 .build());
     }
 
+    @Transactional(readOnly = true)
     public PointHistoryResponse getPointHistory(Long memberId) {
         PointResponse pointResponse = getMemberPoint(memberId);
 
@@ -158,14 +161,17 @@ public class MemberService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public List<MemberCouponListItemResponse> getMemberCoupons(Long memberId) {
         return couponService.getMemberCoupons(memberId);
     }
 
+    @Transactional(readOnly = true)
     public List<MemberCouponListItemResponse> getAvailableMemberCoupons(Long memberId) {
         return couponService.getAvailableMemberCoupons(memberId);
     }
 
+    @Transactional(readOnly = true)
     public UsablePointResponse getUsablePoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
             .map(UsablePointResponse::from)
@@ -174,6 +180,7 @@ public class MemberService {
                 .build());
     }
 
+    @Transactional(readOnly = true)
     public Optional<MemberProfileResponse> getMemberProfile(Long memberId) {
         return memberJpaRepository.findById(memberId)
             .map(member -> {
@@ -256,6 +263,7 @@ public class MemberService {
         });
     }
 
+    @Transactional(readOnly = true)
     public PageResult<MyReviewListItemResponse> getMyReviews(Long memberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
@@ -275,6 +283,7 @@ public class MemberService {
         );
     }
 
+    @Transactional(readOnly = true)
     public PageResult<MyBookmarkedPlaceListItemResponse> getMyBookmarkedPlaces(Long memberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
@@ -294,6 +303,7 @@ public class MemberService {
         );
     }
 
+    @Transactional(readOnly = true)
     public MyReviewStatsResponse getMyReviewStats(Long memberId) {
         Integer reviewCount = memberReviewRankJpaRepository
             .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
@@ -305,6 +315,7 @@ public class MemberService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public OtherMemberProfileResponse getOtherMemberProfile(Long targetMemberId, Long viewerMemberId) {
         Member member = memberJpaRepository.findById(targetMemberId)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "회원을 찾을 수 없습니다."));

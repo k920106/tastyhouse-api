@@ -7,6 +7,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.notice.response.NoticeListItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,7 @@ public class NoticeService {
 
     private final NoticeCoreService noticeCoreService;
 
+    @Transactional(readOnly = true)
     public PageResult<NoticeListItem> findNoticeList(PageRequest pageRequest) {
         return noticeCoreService.findAllWithPagination(
             pageRequest.getPage(), pageRequest.getSize()

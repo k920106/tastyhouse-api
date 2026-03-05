@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PlaceService {
 
     private final PlaceCoreService placeCoreService;
@@ -40,6 +39,7 @@ public class PlaceService {
     private final PlaceBookmarkJpaRepository placeBookmarkJpaRepository;
     private final PlaceOwnerMessageHistoryJpaRepository placeOwnerMessageHistoryJpaRepository;
 
+    @Transactional(readOnly = true)
     public List<PlaceMapMarkerResponse> findMapMarkers(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude).stream()
                 .map(place -> PlaceMapMarkerResponse.builder()
@@ -51,6 +51,7 @@ public class PlaceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public PageResult<BestPlaceListItem> findBestPlaces(PageRequest pageRequest) {
         org.springframework.data.domain.Page<BestPlaceItemDto> page =
             placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
@@ -60,6 +61,7 @@ public class PlaceService {
         return new PageResult<>(bestPlaceListItems, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
+    @Transactional(readOnly = true)
     public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
         org.springframework.data.domain.Page<LatestPlaceItemDto> page = placeCoreService.findLatestPlaces(
                 pageRequest.getPage(),
@@ -74,10 +76,12 @@ public class PlaceService {
         return new PageResult<>(latestPlaceListItems, page.getTotalElements(), page.getTotalPages(), page.getNumber(), page.getSize());
     }
 
+    @Transactional(readOnly = true)
     public List<EditorChoiceResponse> findEditorChoices() {
         return placeCoreService.findEditorChoices().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<EditorChoiceResponse> findEditorChoices(PageRequest pageRequest) {
         return placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize())
             .getContent().stream().map(this::convertToEditorChoiceResponse).toList();
@@ -101,11 +105,13 @@ public class PlaceService {
         return EditorChoiceProductItem.builder().id(dto.getId()).placeName(dto.getPlaceName()).name(dto.getName()).imageUrl(dto.getImageUrl()).originalPrice(dto.getOriginalPrice()).discountPrice(dto.getDiscountPrice()).discountRate(dto.getDiscountRate()).build();
     }
 
+    @Transactional(readOnly = true)
     public List<StationListItem> findAllStations() {
         List<PlaceStation> stations = placeCoreService.findAllStations();
         return stations.stream().map(this::convertToStationListItem).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<FoodTypeListItem> findAllFoodTypes() {
         List<PlaceFoodTypeCategory> categories = placeCoreService.findAllFoodTypeCategories();
         return categories.stream()
@@ -113,6 +119,7 @@ public class PlaceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<AmenityListItem> findAllAmenities() {
         List<PlaceAmenityCategory> categories = placeCoreService.findAllAmenityCategories();
         return categories.stream()
@@ -141,6 +148,7 @@ public class PlaceService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PlaceSummaryResponse getPlaceSummary(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
 
@@ -153,6 +161,7 @@ public class PlaceService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PlaceInfoResponse getPlaceInfo(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
         PlaceStation station = placeCoreService.findStationById(place.getStationId());
@@ -201,6 +210,7 @@ public class PlaceService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public List<PlaceBannerResponse> getPlaceBanners(Long placeId) {
         List<PlaceBannerImage> banners = placeCoreService.findPlaceBannerImages(placeId);
         return banners.stream()
@@ -208,6 +218,7 @@ public class PlaceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<PlaceMenuCategoryResponse> getPlaceMenus(Long placeId) {
         List<ProductCategory> categories = productCoreService.findProductCategoriesByPlaceId(placeId);
         List<Product> products = productCoreService.findProductsByPlaceId(placeId);
@@ -232,6 +243,7 @@ public class PlaceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<PlacePhotoCategoryResponse> getPlacePhotos(Long placeId) {
         List<PlacePhotoCategory> categories = placeCoreService.findAllPlacePhotoCategories();
         List<PlacePhotoCategoryImage> images = placeCoreService.findAllPlacePhotoCategoryImages();
@@ -274,6 +286,7 @@ public class PlaceService {
         }
     }
 
+    @Transactional(readOnly = true)
     public PlaceReviewsByRatingWithPagination getPlaceReviewsByRatingWithPagination(Long placeId, int page, int size) {
         ReviewsByRatingResult result = reviewCoreService.getPlaceReviewsByRating(placeId, page, size);
 
@@ -312,6 +325,7 @@ public class PlaceService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PlaceReviewStatisticsResponse getPlaceReviewStatistics(Long placeId) {
         PlaceReviewStatisticsDto statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
 
@@ -400,6 +414,7 @@ public class PlaceService {
         return productCoreService.getFirstImageUrl(productId);
     }
 
+    @Transactional(readOnly = true)
     public PlaceBookmarkResponse isBookmarked(Long placeId, Long memberId) {
         boolean isBookmarked = placeBookmarkJpaRepository.existsByPlaceIdAndMemberId(placeId, memberId);
         return new PlaceBookmarkResponse(isBookmarked);
@@ -418,6 +433,7 @@ public class PlaceService {
         }
     }
 
+    @Transactional(readOnly = true)
     public PlaceOwnerMessageHistoryResponse getPlaceOwnerMessageHistory(Long placeId) {
         placeCoreService.findPlaceById(placeId); // Ensure place exists
 
@@ -432,6 +448,7 @@ public class PlaceService {
                         .build());
     }
 
+    @Transactional(readOnly = true)
     public PlaceNameResponse getPlaceName(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
         return PlaceNameResponse.builder()
@@ -440,6 +457,7 @@ public class PlaceService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PlaceOrderMethodResponse getPlaceOrderMethods(Long placeId) {
         placeCoreService.findPlaceById(placeId); // Ensure place exists
         List<PlaceOrderMethod> placeOrderMethods = placeCoreService.findPlaceOrderMethods(placeId);

@@ -24,7 +24,6 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class EventCoreService {
 
     private final EventJpaRepository eventJpaRepository;
@@ -32,15 +31,18 @@ public class EventCoreService {
     private final EventWinnerJpaRepository eventWinnerJpaRepository;
     private final EventAnnouncementJpaRepository eventAnnouncementJpaRepository;
 
+    @Transactional(readOnly = true)
     public Optional<Event> getActiveRankingEvent() {
         return eventJpaRepository.findFirstByStatusAndTypeOrderByStartAtDesc(EventStatus.ACTIVE, EventType.RANKING);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<Event> getEventsByStatus(EventStatus status, int page, int size) {
         Page<Event> eventPage = eventJpaRepository.findByStatusOrderByStartAtDesc(status, PageRequest.of(page, size));
         return PageResult.from(eventPage);
     }
 
+    @Transactional(readOnly = true)
     public List<EventPrize> getEventPrizes(Long eventId) {
         return eventPrizeJpaRepository.findByEventIdOrderByPrizeRankAsc(eventId);
     }
@@ -55,14 +57,17 @@ public class EventCoreService {
         return eventPrizeJpaRepository.save(eventPrize);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Event> findEventById(Long eventId) {
         return eventJpaRepository.findById(eventId);
     }
 
+    @Transactional(readOnly = true)
     public List<EventWinner> findEventWinnersByEventId(Long eventId) {
         return eventWinnerJpaRepository.findByEventIdOrderByAnnouncedAtDescRankNoAsc(eventId);
     }
 
+    @Transactional(readOnly = true)
     public List<EventWinner> findAllEventWinners() {
         return eventWinnerJpaRepository.findAllByOrderByAnnouncedAtDescRankNoAsc();
     }
@@ -72,11 +77,13 @@ public class EventCoreService {
         return eventWinnerJpaRepository.save(eventWinner);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<EventAnnouncement> findAllEventAnnouncements(int page, int size) {
         Page<EventAnnouncement> announcementPage = eventAnnouncementJpaRepository.findAllByOrderByAnnouncedAtDesc(PageRequest.of(page, size));
         return PageResult.from(announcementPage);
     }
 
+    @Transactional(readOnly = true)
     public Optional<EventAnnouncement> findEventAnnouncementByEventId(Long eventId) {
         return eventAnnouncementJpaRepository.findByEventId(eventId);
     }

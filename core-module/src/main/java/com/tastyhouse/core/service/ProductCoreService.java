@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,56 +26,69 @@ public class ProductCoreService {
     private final ProductCommonOptionJpaRepository productCommonOptionJpaRepository;
     private final ProductImageJpaRepository productImageJpaRepository;
 
+    @Transactional(readOnly = true)
     public PageResult<TodayDiscountProductDto> findTodayDiscountProducts(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<TodayDiscountProductDto> productPage = productRepository.findTodayDiscountProducts(pageRequest);
         return PageResult.from(productPage);
     }
 
+    @Transactional(readOnly = true)
     public List<Product> findProductsByPlaceId(Long placeId) {
         return productJpaRepository.findByPlaceIdAndIsActiveTrueOrderByIsRepresentativeDescRatingDescIdAsc(placeId);
     }
 
+    @Transactional(readOnly = true)
     public List<Product> findActiveProductsByPlaceId(Long placeId) {
         return productJpaRepository.findByPlaceIdAndIsActiveTrueOrderBySortAsc(placeId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Product> findProductById(Long productId) {
         return productJpaRepository.findById(productId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<ProductCategory> findProductCategoryById(Long categoryId) {
         return productCategoryJpaRepository.findById(categoryId);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductCategory> findProductCategoriesByPlaceId(Long placeId) {
         return productCategoryJpaRepository.findByPlaceIdAndIsActiveTrueOrderBySortAsc(placeId);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductOptionGroup> findProductOptionGroupsByProductId(Long productId) {
         return productOptionGroupJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<ProductOptionGroup> findProductOptionGroupById(Long optionGroupId) {
         return productOptionGroupJpaRepository.findById(optionGroupId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<ProductOption> findProductOptionById(Long optionId) {
         return productOptionJpaRepository.findById(optionId);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductOption> findProductOptionsByOptionGroupIds(List<Long> optionGroupIds) {
         return productOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductCommonOptionGroup> findProductCommonOptionGroupsByProductId(Long productId) {
         return productCommonOptionGroupJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductCommonOption> findProductCommonOptionsByOptionGroupIds(List<Long> optionGroupIds) {
         return productCommonOptionJpaRepository.findByOptionGroupIdInAndIsActiveTrueOrderBySortAsc(optionGroupIds);
     }
 
+    @Transactional(readOnly = true)
     public String getFirstImageUrl(Long productId) {
         return productImageJpaRepository.findByProductIdAndIsActiveTrueOrderBySortAsc(productId)
             .stream()

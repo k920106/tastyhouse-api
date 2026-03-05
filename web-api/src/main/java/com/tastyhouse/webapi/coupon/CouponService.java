@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CouponService {
 
     private final CouponCoreService couponCoreService;
 
+    @Transactional(readOnly = true)
     public List<MemberCouponListItemResponse> getMemberCoupons(Long memberId) {
         List<MemberCoupon> memberCoupons = couponCoreService.findMemberCoupons(memberId);
 
@@ -69,6 +69,7 @@ public class CouponService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<MemberCouponListItemResponse> getAvailableMemberCoupons(Long memberId) {
         List<MemberCoupon> memberCoupons = couponCoreService.findAvailableMemberCoupons(memberId);
 

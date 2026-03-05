@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BannerService {
 
     private final BannerCoreService bannerCoreService;
 
+    @Transactional(readOnly = true)
     public PageResult<BannerListItem> findBannerList(PageRequest pageRequest) {
         return bannerCoreService.findAllWithPagination(
             pageRequest.getPage(), pageRequest.getSize()

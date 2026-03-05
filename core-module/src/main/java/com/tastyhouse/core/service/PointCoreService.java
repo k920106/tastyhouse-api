@@ -16,12 +16,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PointCoreService {
 
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
 
+    @Transactional(readOnly = true)
     public Optional<MemberPoint> findMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId);
     }

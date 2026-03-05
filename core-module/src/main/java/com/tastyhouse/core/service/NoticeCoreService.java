@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,12 +20,14 @@ public class NoticeCoreService {
     private final NoticeRepository noticeRepository;
     private final NoticeJpaRepository noticeJpaRepository;
 
+    @Transactional(readOnly = true)
     public PageResult<NoticeListItemDto> findAllWithPagination(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<NoticeListItemDto> noticePage = noticeRepository.findAllWithFilter(pageRequest);
         return PageResult.from(noticePage);
     }
 
+    @Transactional(readOnly = true)
     public Notice findById(Long id) {
         return noticeJpaRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.NOTICE_NOT_FOUND));

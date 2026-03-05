@@ -21,12 +21,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class EventService {
 
     private final EventCoreService eventCoreService;
     private final FileService fileService;
 
+    @Transactional(readOnly = true)
     public Optional<EventDurationResponse> getRankingEventDuration() {
         return eventCoreService.getActiveRankingEvent()
                 .map(event -> EventDurationResponse.builder()
@@ -35,6 +35,7 @@ public class EventService {
                         .build());
     }
 
+    @Transactional(readOnly = true)
     public List<PrizeItem> getActivePrizes() {
         return eventCoreService.getActiveRankingEvent()
             .map(event -> {
@@ -56,11 +57,13 @@ public class EventService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public PageResult<EventListItemResponse> getEventList(EventStatus status, PageRequest pageRequest) {
         return eventCoreService.getEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize())
             .map(this::convertToEventListItemResponse);
     }
 
+    @Transactional(readOnly = true)
     public EventDetailResponse getEventDetail(Long eventId) {
         Event event = eventCoreService.findEventById(eventId)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ENTITY_NOT_FOUND, "이벤트를 찾을 수 없습니다."));
@@ -68,6 +71,7 @@ public class EventService {
         return convertToEventDetailResponse(event);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<EventAnnouncementListItemResponse> getEventAnnouncementList(PageRequest pageRequest) {
         return eventCoreService.findAllEventAnnouncements(pageRequest.getPage(), pageRequest.getSize())
             .map(this::convertToEventAnnouncementListItemResponse);

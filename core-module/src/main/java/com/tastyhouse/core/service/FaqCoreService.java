@@ -11,15 +11,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class FaqCoreService {
 
     private final FaqRepository faqRepository;
 
+    @Transactional(readOnly = true)
     public List<FaqCategoryDto> findAllActiveCategories() {
         return faqRepository.findAllActiveCategories();
     }
 
+    @Transactional(readOnly = true)
     public List<FaqItemDto> findFaqItems(Long categoryId) {
         if (categoryId == null) {
             return faqRepository.findAllActiveItems();

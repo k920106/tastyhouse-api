@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderCoreService {
 
     private final OrderJpaRepository orderJpaRepository;
@@ -28,22 +27,27 @@ public class OrderCoreService {
     private final OrderItemOptionJpaRepository orderItemOptionJpaRepository;
     private final PaymentJpaRepository paymentJpaRepository;
 
+    @Transactional(readOnly = true)
     public Optional<Order> findOrderById(Long orderId) {
         return orderJpaRepository.findById(orderId);
     }
 
+    @Transactional(readOnly = true)
     public Page<OrderListItemDto> findOrderListByMemberId(Long memberId, Pageable pageable) {
         return orderJpaRepository.findOrderListByMemberId(memberId, pageable);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderItem> findOrderItemsByOrderId(Long orderId) {
         return orderItemJpaRepository.findByOrderId(orderId);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderItemOption> findOrderItemOptionsByOrderItemId(Long orderItemId) {
         return orderItemOptionJpaRepository.findByOrderItemId(orderItemId);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Payment> findPaymentByOrderId(Long orderId) {
         return paymentJpaRepository.findByOrderId(orderId);
     }

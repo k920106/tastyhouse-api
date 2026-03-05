@@ -18,17 +18,18 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class RankCoreService {
 
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final MemberReviewRankRepository memberReviewRankRepository;
     private final EntityManager entityManager;
 
+    @Transactional(readOnly = true)
     public List<MemberRankDto> getMemberRankList(RankType rankType, LocalDate baseDate, int limit) {
         return memberReviewRankRepository.findMemberRankList(rankType, baseDate, limit);
     }
 
+    @Transactional(readOnly = true)
     public Optional<MemberRankDto> getMemberRank(Long memberId, RankType rankType, LocalDate baseDate) {
         return memberReviewRankRepository.findMemberRank(memberId, rankType, baseDate);
     }

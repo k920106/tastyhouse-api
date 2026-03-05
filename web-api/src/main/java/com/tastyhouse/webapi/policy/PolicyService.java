@@ -12,6 +12,7 @@ import com.tastyhouse.webapi.policy.response.PolicyDetailResponse;
 import com.tastyhouse.webapi.policy.response.PolicyListItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class PolicyService {
 
     private final PolicyDocumentCoreService policyDocumentCoreService;
 
+    @Transactional(readOnly = true)
     public PolicyDetailResponse findCurrentByType(PolicyType type) {
         PolicyDocumentDto dto = policyDocumentCoreService.findCurrentByType(type)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_CURRENT_NOT_FOUND));
@@ -26,6 +28,7 @@ public class PolicyService {
         return convertToPolicyDetailResponse(dto);
     }
 
+    @Transactional(readOnly = true)
     public PolicyDetailResponse findByTypeAndVersion(PolicyType type, String version) {
         PolicyDocumentDto dto = policyDocumentCoreService.findByTypeAndVersion(type, version)
             .orElseThrow(() -> new EntityNotFoundException(ErrorCode.POLICY_VERSION_NOT_FOUND));
@@ -33,6 +36,7 @@ public class PolicyService {
         return convertToPolicyDetailResponse(dto);
     }
 
+    @Transactional(readOnly = true)
     public PageResult<PolicyListItemResponse> findAllByType(PolicyType type, PageRequest pageRequest) {
         return policyDocumentCoreService
             .findAllByTypeWithPagination(type, pageRequest.getPage(), pageRequest.getSize())

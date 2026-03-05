@@ -15,6 +15,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.product.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class ProductService {
     private final ProductImageJpaRepository productImageJpaRepository;
     private final ReviewCoreService reviewCoreService;
 
+    @Transactional(readOnly = true)
     public PageResult<TodayDiscountProductItem> findTodayDiscountProducts(PageRequest pageRequest) {
         return productCoreService.findTodayDiscountProducts(
             pageRequest.getPage(), pageRequest.getSize()
@@ -46,6 +48,7 @@ public class ProductService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductListItem> findProductsByPlaceId(Long placeId) {
         List<Product> products = productCoreService.findActiveProductsByPlaceId(placeId);
         Map<Long, String> categoryNameMap = buildCategoryNameMap(placeId);
@@ -55,6 +58,7 @@ public class ProductService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductCategoryListItem> findProductCategoriesByPlaceId(Long placeId) {
         List<ProductCategory> categories = productCoreService.findProductCategoriesByPlaceId(placeId);
         return categories.stream()
@@ -70,6 +74,7 @@ public class ProductService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public Optional<ProductDetailResponse> findProductById(Long productId) {
         return productCoreService.findProductById(productId)
             .map(this::buildProductDetailResponse);
@@ -240,6 +245,7 @@ public class ProductService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public ProductReviewsByRatingWithPagination getProductReviewsByRatingWithPagination(Long productId, int page, int size) {
         ReviewsByRatingResult result = reviewCoreService.getProductReviewsByRating(productId, page, size);
 
@@ -278,6 +284,7 @@ public class ProductService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public ProductReviewStatisticsResponse getProductReviewStatistics(Long productId) {
         Map<String, Object> statistics = reviewCoreService.getProductReviewStatistics(productId);
 

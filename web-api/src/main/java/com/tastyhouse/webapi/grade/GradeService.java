@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GradeService {
 
     private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
@@ -65,6 +64,7 @@ public class GradeService {
     /**
      * 내 등급 정보 조회
      */
+    @Transactional(readOnly = true)
     public MyGradeResponse getMyGrade(Long memberId) {
         int currentReviewCount = memberReviewRankJpaRepository
                 .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
