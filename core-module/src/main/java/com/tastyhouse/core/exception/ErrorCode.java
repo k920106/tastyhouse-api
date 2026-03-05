@@ -45,6 +45,7 @@ public enum ErrorCode {
     PAYMENT_NOT_ON_SITE(400, "PAYMENT_NOT_ON_SITE", "현장결제만 완료 처리할 수 있습니다."),
 
     // 회원
+    MEMBER_NOT_FOUND(404, "MEMBER_NOT_FOUND", "회원을 찾을 수 없습니다."),
     MEMBER_INFO_AUTH_EXPIRED(400, "MEMBER_INFO_AUTH_EXPIRED", "개인정보 수정 인증이 만료되었습니다. 비밀번호를 다시 인증해주세요."),
     MEMBER_PHONE_SMS_REQUIRED(400, "MEMBER_PHONE_SMS_REQUIRED", "휴대폰번호 변경 시 SMS 인증이 필요합니다."),
     MEMBER_PHONE_AUTH_EXPIRED(400, "MEMBER_PHONE_AUTH_EXPIRED", "휴대폰 인증이 만료되었습니다. SMS 인증을 다시 진행해주세요."),
@@ -92,6 +93,12 @@ public enum ErrorCode {
 
     // 상품
     PRODUCT_NOT_FOUND(404, "PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다."),
+
+    // 공지사항
+    NOTICE_NOT_FOUND(404, "NOTICE_NOT_FOUND", "공지사항을 찾을 수 없습니다."),
+
+    // 배너
+    BANNER_NOT_FOUND(404, "BANNER_NOT_FOUND", "배너를 찾을 수 없습니다."),
 
     // 랭크
     RANK_TYPE_UNKNOWN(400, "RANK_TYPE_UNKNOWN", "알 수 없는 랭크 타입입니다."),

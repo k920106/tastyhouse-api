@@ -166,14 +166,16 @@ public class ReviewService {
     @Transactional
     public CommentResponse createComment(Long reviewId, Long memberId, String content) {
         ReviewComment comment = reviewCoreService.createComment(reviewId, memberId, content);
-        Member member = memberJpaRepository.findById(memberId).orElse(null);
+        Member member = memberJpaRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
         return convertToCommentResponse(comment, member, List.of());
     }
 
     @Transactional
     public ReplyResponse createReply(Long commentId, Long memberId, Long replyToMemberId, String content) {
         ReviewReply reply = reviewCoreService.createReply(commentId, memberId, replyToMemberId, content);
-        Member member = memberJpaRepository.findById(memberId).orElse(null);
+        Member member = memberJpaRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
         Member replyToMember = replyToMemberId != null ? memberJpaRepository.findById(replyToMemberId).orElse(null) : null;
         return convertToReplyResponse(reply, member, replyToMember);
     }
@@ -270,9 +272,6 @@ public class ReviewService {
 
         ReviewDetailDto reviewDetail = reviewDetailOpt.get();
         Review review = reviewCoreService.findById(reviewId);
-        if (review == null) {
-            return Optional.empty();
-        }
 
         List<String> reviewImageUrls = reviewDetail.getImageUrls() == null ? List.of() :
             reviewDetail.getImageUrls().stream()

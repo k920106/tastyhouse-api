@@ -3,6 +3,8 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.notice.Notice;
 import com.tastyhouse.core.entity.notice.dto.NoticeListItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.notice.NoticeJpaRepository;
 import com.tastyhouse.core.repository.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class NoticeCoreService {
     }
 
     public Notice findById(Long id) {
-        return noticeJpaRepository.findById(id).orElse(null);
+        return noticeJpaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.NOTICE_NOT_FOUND));
     }
 }

@@ -3,6 +3,8 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.entity.banner.Banner;
 import com.tastyhouse.core.entity.banner.dto.BannerListItemDto;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.repository.banner.BannerJpaRepository;
 import com.tastyhouse.core.repository.banner.BannerRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class BannerCoreService {
     }
 
     public Banner findById(Long id) {
-        return bannerJpaRepository.findById(id).orElse(null);
+        return bannerJpaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.BANNER_NOT_FOUND));
     }
 }

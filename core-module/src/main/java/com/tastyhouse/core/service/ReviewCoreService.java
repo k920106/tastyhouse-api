@@ -23,6 +23,8 @@ import com.tastyhouse.core.repository.review.ReviewTagJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewCommentJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewReplyJpaRepository;
 import com.tastyhouse.core.entity.review.ReviewLike;
+import com.tastyhouse.core.exception.EntityNotFoundException;
+import com.tastyhouse.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,7 +57,8 @@ public class ReviewCoreService {
     }
 
     public Review findById(Long id) {
-        return reviewJpaRepository.findById(id).orElse(null);
+        return reviewJpaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.REVIEW_NOT_FOUND));
     }
 
     public Optional<ReviewDetailDto> findReviewDetail(Long reviewId) {
