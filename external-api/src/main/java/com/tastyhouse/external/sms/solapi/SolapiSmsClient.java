@@ -1,5 +1,7 @@
 package com.tastyhouse.external.sms.solapi;
 
+import com.tastyhouse.external.exception.ExternalApiErrorCode;
+import com.tastyhouse.external.exception.ExternalApiException;
 import com.tastyhouse.external.sms.solapi.dto.SolapiMessageRequest;
 import com.tastyhouse.external.sms.solapi.dto.SolapiMessageResponse;
 import lombok.RequiredArgsConstructor;
@@ -55,12 +57,12 @@ public class SolapiSmsClient {
 
             if (response == null) {
                 log.warn("Solapi SMS 발송 응답 없음. to: {}", to);
-                throw new RuntimeException("SMS 발송 응답이 없습니다.");
+                throw new ExternalApiException(ExternalApiErrorCode.SMS_SEND_NO_RESPONSE);
             }
 
             if (!response.isSuccess()) {
                 log.error("Solapi SMS 발송 실패. to: {}, failedMessages: {}", to, response.getFailedMessageList());
-                throw new RuntimeException("SMS 발송에 실패했습니다.");
+                throw new ExternalApiException(ExternalApiErrorCode.SMS_SEND_FAILED);
             }
 
             log.info("Solapi SMS 발송 성공. to: {}", to);
@@ -68,12 +70,12 @@ public class SolapiSmsClient {
 
         } catch (WebClientResponseException e) {
             log.error("Solapi SMS 발송 API 오류. status: {}, body: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
-            throw new RuntimeException("SMS 발송 중 오류가 발생했습니다: " + e.getMessage());
-        } catch (RuntimeException e) {
+            throw new ExternalApiException(ExternalApiErrorCode.SMS_SEND_API_ERROR, e);
+        } catch (ExternalApiException e) {
             throw e;
         } catch (Exception e) {
             log.error("Solapi SMS 발송 중 예외 발생. to: {}", to, e);
-            throw new RuntimeException("SMS 발송 중 오류가 발생했습니다: " + e.getMessage());
+            throw new ExternalApiException(ExternalApiErrorCode.SMS_SEND_API_ERROR, e);
         }
     }
 

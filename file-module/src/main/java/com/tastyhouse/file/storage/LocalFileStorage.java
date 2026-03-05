@@ -1,5 +1,7 @@
 package com.tastyhouse.file.storage;
 
+import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,7 +32,7 @@ public class LocalFileStorage implements FileStorageStrategy {
             file.transferTo(filePath.toFile());
             log.info("파일 저장 완료: {}", filePath);
         } catch (IOException e) {
-            throw new RuntimeException("파일 저장에 실패했습니다.", e);
+            throw new BusinessException(ErrorCode.FILE_STORE_FAILED);
         }
 
         return datePath + "/" + storedFilename;
@@ -49,7 +51,7 @@ public class LocalFileStorage implements FileStorageStrategy {
             log.info("파일 삭제 완료: {}", fullPath);
         } catch (IOException e) {
             log.error("파일 삭제 실패: {}", fullPath, e);
-            throw new RuntimeException("파일 삭제에 실패했습니다.", e);
+            throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
         }
     }
 }
