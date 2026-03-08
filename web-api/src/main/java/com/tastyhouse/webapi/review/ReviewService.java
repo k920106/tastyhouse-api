@@ -59,7 +59,7 @@ public class ReviewService {
     private final TagJpaRepository tagJpaRepository;
 
     @Transactional(readOnly = true)
-    public PageResult<BestReviewListItem> findBestReviewList(PageRequest pageRequest) {
+    public PageResult<BestReviewListItem> searchBestReviewList(PageRequest pageRequest) {
         return reviewCoreService.findBestReviewsWithPagination(
             pageRequest.getPage(), pageRequest.getSize()
         ).map(this::convertToBestReviewListItem);
@@ -76,7 +76,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<LatestReviewListItem> findLatestReviewList(
+    public PageResult<LatestReviewListItem> searchLatestReviewList(
         PageRequest pageRequest,
         ReviewType type,
         Long memberId
@@ -184,7 +184,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public CommentListResponse findCommentsWithReplies(Long reviewId) {
+    public CommentListResponse searchCommentsWithReplies(Long reviewId) {
         List<ReviewComment> comments = reviewCoreService.findCommentsByReviewId(reviewId);
 
         if (comments.isEmpty()) {

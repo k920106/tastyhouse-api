@@ -28,7 +28,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public Optional<EventDurationResponse> getRankingEventDuration() {
-        return eventCoreService.getActiveRankingEvent()
+        return eventCoreService.findActiveRankingEvent()
                 .map(event -> EventDurationResponse.builder()
                         .startAt(event.getStartAt())
                         .endAt(event.getEndAt())
@@ -37,9 +37,9 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<PrizeItem> getActivePrizes() {
-        return eventCoreService.getActiveRankingEvent()
+        return eventCoreService.findActiveRankingEvent()
             .map(event -> {
-                List<EventPrize> eventPrizes = eventCoreService.getEventPrizes(event.getId());
+                List<EventPrize> eventPrizes = eventCoreService.findEventPrizes(event.getId());
                 return eventPrizes.stream()
                     .map(this::convertToPrizeItem)
                     .toList();
@@ -59,7 +59,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public PageResult<EventListItemResponse> getEventList(EventStatus status, PageRequest pageRequest) {
-        return eventCoreService.getEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize())
+        return eventCoreService.searchEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize())
             .map(this::convertToEventListItemResponse);
     }
 

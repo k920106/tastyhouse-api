@@ -18,14 +18,14 @@ public class FaqService {
     private final FaqCoreService faqCoreService;
 
     @Transactional(readOnly = true)
-    public List<FaqCategoryItem> findCategories() {
+    public List<FaqCategoryItem> searchCategories() {
         return faqCoreService.findAllActiveCategories().stream()
                 .map(this::toFaqCategoryItem)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<FaqItem> findFaqItems(Long categoryId) {
+    public List<FaqItem> searchFaqItems(Long categoryId) {
         return faqCoreService.findFaqItems(categoryId).stream()
                 .map(this::toFaqItem)
                 .toList();

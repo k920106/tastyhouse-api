@@ -53,7 +53,7 @@ class RankServiceTest {
             1,
             MemberGrade.NEWCOMER
         );
-        when(rankCoreService.getMemberRank(eq(memberId), any(RankType.class), eq(baseDate)))
+        when(rankCoreService.findMemberRank(eq(memberId), any(RankType.class), eq(baseDate)))
             .thenReturn(Optional.of(mockMemberRankDto));
 
         // When
@@ -72,7 +72,7 @@ class RankServiceTest {
     @DisplayName("내 랭킹 조회 실패 - 랭킹 정보 없음")
     void testGetMyMemberRank_notFound() {
         // Given
-        when(rankCoreService.getMemberRank(eq(memberId), any(RankType.class), eq(baseDate)))
+        when(rankCoreService.findMemberRank(eq(memberId), any(RankType.class), eq(baseDate)))
             .thenReturn(Optional.empty());
 
         // When

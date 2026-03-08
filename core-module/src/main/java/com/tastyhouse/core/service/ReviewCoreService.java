@@ -137,7 +137,7 @@ public class ReviewCoreService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewsByRatingResult getPlaceReviewsByRating(Long placeId, int page, int size) {
+    public ReviewsByRatingResult findPlaceReviewsByRating(Long placeId, int page, int size) {
         List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 1, 5);
         List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 2, 5);
         List<LatestReviewListItemDto> rating3Reviews = reviewRepository.findReviewsByPlaceIdAndRating(placeId, 3, 5);
@@ -264,7 +264,7 @@ public class ReviewCoreService {
     }
 
     @Transactional(readOnly = true)
-    public PlaceReviewStatisticsDto getPlaceReviewStatistics(Long placeId) {
+    public PlaceReviewStatisticsDto findPlaceReviewStatistics(Long placeId) {
         Long totalCount = reviewJpaRepository.countByPlaceIdAndIsHiddenFalse(placeId);
 
         Object[][] ratingData = reviewJpaRepository.getRatingCounts(placeId);
@@ -305,7 +305,7 @@ public class ReviewCoreService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewsByRatingResult getProductReviewsByRating(Long productId, int page, int size) {
+    public ReviewsByRatingResult findProductReviewsByRating(Long productId, int page, int size) {
         List<LatestReviewListItemDto> rating1Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 1, 5);
         List<LatestReviewListItemDto> rating2Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 2, 5);
         List<LatestReviewListItemDto> rating3Reviews = reviewRepository.findReviewsByProductIdAndRating(productId, 3, 5);
@@ -389,7 +389,7 @@ public class ReviewCoreService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> getProductReviewStatistics(Long productId) {
+    public Map<String, Object> findProductReviewStatistics(Long productId) {
         Map<String, Object> statistics = new HashMap<>();
 
         Long totalCount = reviewJpaRepository.countByProductIdAndIsHiddenFalse(productId);

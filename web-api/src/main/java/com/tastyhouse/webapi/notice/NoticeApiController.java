@@ -32,7 +32,7 @@ public class NoticeApiController {
     @GetMapping("/v1")
     public ResponseEntity<CommonResponse<List<NoticeListItem>>> getNoticeList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<NoticeListItem> pageResult = noticeService.findNoticeList(pageRequest);
+        PageResult<NoticeListItem> pageResult = noticeService.searchNoticeList(pageRequest);
         CommonResponse<List<NoticeListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }

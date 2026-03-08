@@ -40,7 +40,7 @@ public class PlaceService {
     private final PlaceOwnerMessageHistoryJpaRepository placeOwnerMessageHistoryJpaRepository;
 
     @Transactional(readOnly = true)
-    public List<PlaceMapMarkerResponse> findMapMarkers(Double latitude, Double longitude) {
+    public List<PlaceMapMarkerResponse> searchMapMarkers(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude).stream()
                 .map(place -> PlaceMapMarkerResponse.builder()
                         .id(place.getId())
@@ -52,7 +52,7 @@ public class PlaceService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<BestPlaceListItem> findBestPlaces(PageRequest pageRequest) {
+    public PageResult<BestPlaceListItem> searchBestPlaces(PageRequest pageRequest) {
         org.springframework.data.domain.Page<BestPlaceItemDto> page =
             placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
 
@@ -62,7 +62,7 @@ public class PlaceService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<LatestPlaceListItem> findLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
+    public PageResult<LatestPlaceListItem> searchLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
         org.springframework.data.domain.Page<LatestPlaceItemDto> page = placeCoreService.findLatestPlaces(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
@@ -77,12 +77,12 @@ public class PlaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<EditorChoiceResponse> findEditorChoices() {
+    public List<EditorChoiceResponse> searchEditorChoices() {
         return placeCoreService.findEditorChoices().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<EditorChoiceResponse> findEditorChoices(PageRequest pageRequest) {
+    public List<EditorChoiceResponse> searchEditorChoices(PageRequest pageRequest) {
         return placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize())
             .getContent().stream().map(this::convertToEditorChoiceResponse).toList();
     }
@@ -106,13 +106,13 @@ public class PlaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<StationListItem> findAllStations() {
+    public List<StationListItem> searchAllStations() {
         List<PlaceStation> stations = placeCoreService.findAllStations();
         return stations.stream().map(this::convertToStationListItem).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<FoodTypeListItem> findAllFoodTypes() {
+    public List<FoodTypeListItem> searchAllFoodTypes() {
         List<PlaceFoodTypeCategory> categories = placeCoreService.findAllFoodTypeCategories();
         return categories.stream()
                 .map(this::convertToFoodTypeListItem)
@@ -120,7 +120,7 @@ public class PlaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<AmenityListItem> findAllAmenities() {
+    public List<AmenityListItem> searchAllAmenities() {
         List<PlaceAmenityCategory> categories = placeCoreService.findAllAmenityCategories();
         return categories.stream()
                 .map(this::convertToAmenityListItem)
@@ -288,7 +288,7 @@ public class PlaceService {
 
     @Transactional(readOnly = true)
     public PlaceReviewsByRatingWithPagination getPlaceReviewsByRatingWithPagination(Long placeId, int page, int size) {
-        ReviewsByRatingResult result = reviewCoreService.getPlaceReviewsByRating(placeId, page, size);
+        ReviewsByRatingResult result = reviewCoreService.findPlaceReviewsByRating(placeId, page, size);
 
         Map<Integer, List<PlaceReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
                 .collect(Collectors.toMap(
@@ -327,7 +327,7 @@ public class PlaceService {
 
     @Transactional(readOnly = true)
     public PlaceReviewStatisticsResponse getPlaceReviewStatistics(Long placeId) {
-        PlaceReviewStatisticsDto statistics = reviewCoreService.getPlaceReviewStatistics(placeId);
+        PlaceReviewStatisticsDto statistics = reviewCoreService.findPlaceReviewStatistics(placeId);
 
         Place place = placeCoreService.findPlaceById(placeId);
 

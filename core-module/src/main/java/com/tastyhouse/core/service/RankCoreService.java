@@ -25,12 +25,12 @@ public class RankCoreService {
     private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
-    public List<MemberRankDto> getMemberRankList(RankType rankType, LocalDate baseDate, int limit) {
+    public List<MemberRankDto> searchMemberRankList(RankType rankType, LocalDate baseDate, int limit) {
         return memberReviewRankRepository.findMemberRankList(rankType, baseDate, limit);
     }
 
     @Transactional(readOnly = true)
-    public Optional<MemberRankDto> getMemberRank(Long memberId, RankType rankType, LocalDate baseDate) {
+    public Optional<MemberRankDto> findMemberRank(Long memberId, RankType rankType, LocalDate baseDate) {
         return memberReviewRankRepository.findMemberRank(memberId, rankType, baseDate);
     }
 

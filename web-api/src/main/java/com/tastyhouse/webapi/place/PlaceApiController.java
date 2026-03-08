@@ -36,7 +36,7 @@ public class PlaceApiController {
     public ResponseEntity<CommonResponse<List<PlaceMapMarkerResponse>>> getMapMarkers(
             @RequestParam @Parameter(description = "위도", example = "37.5013") Double latitude,
             @RequestParam @Parameter(description = "경도", example = "127.0396") Double longitude) {
-        List<PlaceMapMarkerResponse> markers = placeService.findMapMarkers(latitude, longitude);
+        List<PlaceMapMarkerResponse> markers = placeService.searchMapMarkers(latitude, longitude);
         CommonResponse<List<PlaceMapMarkerResponse>> response = CommonResponse.success(markers);
         return ResponseEntity.ok(response);
     }
@@ -46,7 +46,7 @@ public class PlaceApiController {
     @GetMapping("/v1/best")
     public ResponseEntity<CommonResponse<List<BestPlaceListItem>>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<BestPlaceListItem> pageResult = placeService.findBestPlaces(pageRequest);
+        PageResult<BestPlaceListItem> pageResult = placeService.searchBestPlaces(pageRequest);
         CommonResponse<List<BestPlaceListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
@@ -56,7 +56,7 @@ public class PlaceApiController {
     @GetMapping("/v1/editor-choice")
     public ResponseEntity<CommonResponse<List<EditorChoiceResponse>>> getEditorChoices(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        List<EditorChoiceResponse> editorChoiceResponses = placeService.findEditorChoices(pageRequest);
+        List<EditorChoiceResponse> editorChoiceResponses = placeService.searchEditorChoices(pageRequest);
         CommonResponse<List<EditorChoiceResponse>> response = CommonResponse.success(editorChoiceResponses);
         return ResponseEntity.ok(response);
     }
@@ -67,7 +67,7 @@ public class PlaceApiController {
     public ResponseEntity<CommonResponse<List<LatestPlaceListItem>>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) Long stationId, @RequestParam(required = false) List<FoodType> foodTypes, @RequestParam(required = false) List<Amenity> amenities) {
         PageRequest pageRequest = new PageRequest(page, size);
         LatestPlaceFilterRequest filterRequest = new LatestPlaceFilterRequest(stationId, foodTypes, amenities);
-        PageResult<LatestPlaceListItem> pageResult = placeService.findLatestPlaces(pageRequest, filterRequest);
+        PageResult<LatestPlaceListItem> pageResult = placeService.searchLatestPlaces(pageRequest, filterRequest);
         CommonResponse<List<LatestPlaceListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
@@ -76,7 +76,7 @@ public class PlaceApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/stations")
     public ResponseEntity<CommonResponse<List<StationListItem>>> getStations() {
-        List<StationListItem> stations = placeService.findAllStations();
+        List<StationListItem> stations = placeService.searchAllStations();
         CommonResponse<List<StationListItem>> response = CommonResponse.success(stations);
         return ResponseEntity.ok(response);
     }
@@ -85,7 +85,7 @@ public class PlaceApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/food-types")
     public ResponseEntity<CommonResponse<List<FoodTypeListItem>>> getFoodTypes() {
-        List<FoodTypeListItem> foodTypes = placeService.findAllFoodTypes();
+        List<FoodTypeListItem> foodTypes = placeService.searchAllFoodTypes();
         CommonResponse<List<FoodTypeListItem>> response = CommonResponse.success(foodTypes);
         return ResponseEntity.ok(response);
     }
@@ -94,7 +94,7 @@ public class PlaceApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/amenities")
     public ResponseEntity<CommonResponse<List<AmenityListItem>>> getAmenities() {
-        List<AmenityListItem> amenities = placeService.findAllAmenities();
+        List<AmenityListItem> amenities = placeService.searchAllAmenities();
         CommonResponse<List<AmenityListItem>> response = CommonResponse.success(amenities);
         return ResponseEntity.ok(response);
     }

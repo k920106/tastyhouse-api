@@ -30,7 +30,7 @@ public class ProductService {
     private final ReviewCoreService reviewCoreService;
 
     @Transactional(readOnly = true)
-    public PageResult<TodayDiscountProductItem> findTodayDiscountProducts(PageRequest pageRequest) {
+    public PageResult<TodayDiscountProductItem> searchTodayDiscountProducts(PageRequest pageRequest) {
         return productCoreService.findTodayDiscountProducts(
             pageRequest.getPage(), pageRequest.getSize()
         ).map(this::convertToTodayDiscountProductItem);
@@ -49,7 +49,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductListItem> findProductsByPlaceId(Long placeId) {
+    public List<ProductListItem> searchProductsByPlaceId(Long placeId) {
         List<Product> products = productCoreService.findActiveProductsByPlaceId(placeId);
         Map<Long, String> categoryNameMap = buildCategoryNameMap(placeId);
 
@@ -59,7 +59,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductCategoryListItem> findProductCategoriesByPlaceId(Long placeId) {
+    public List<ProductCategoryListItem> searchProductCategoriesByPlaceId(Long placeId) {
         List<ProductCategory> categories = productCoreService.findProductCategoriesByPlaceId(placeId);
         return categories.stream()
             .map(this::convertToProductCategoryListItem)
@@ -123,7 +123,7 @@ public class ProductService {
 
         List<String> imageUrls = getAllImageUrls(product.getId());
 
-        Map<String, Object> reviewStatistics = reviewCoreService.getProductReviewStatistics(product.getId());
+        Map<String, Object> reviewStatistics = reviewCoreService.findProductReviewStatistics(product.getId());
         Long totalReviewCount = (Long) reviewStatistics.get("totalReviewCount");
         Integer reviewCount = totalReviewCount != null ? totalReviewCount.intValue() : 0;
 
@@ -247,7 +247,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductReviewsByRatingWithPagination getProductReviewsByRatingWithPagination(Long productId, int page, int size) {
-        ReviewsByRatingResult result = reviewCoreService.getProductReviewsByRating(productId, page, size);
+        ReviewsByRatingResult result = reviewCoreService.findProductReviewsByRating(productId, page, size);
 
         Map<Integer, List<ProductReviewListItem>> reviewsByRating = result.getReviewsByRating().entrySet().stream()
                 .collect(Collectors.toMap(
@@ -286,7 +286,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductReviewStatisticsResponse getProductReviewStatistics(Long productId) {
-        Map<String, Object> statistics = reviewCoreService.getProductReviewStatistics(productId);
+        Map<String, Object> statistics = reviewCoreService.findProductReviewStatistics(productId);
 
         Product product = productCoreService.findProductById(productId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));

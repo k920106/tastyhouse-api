@@ -98,7 +98,7 @@ public class ReviewApiController {
     @GetMapping("/v1/best")
     public ResponseEntity<CommonResponse<List<BestReviewListItem>>> getBestReviewList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<BestReviewListItem> pageResult = reviewService.findBestReviewList(pageRequest);
+        PageResult<BestReviewListItem> pageResult = reviewService.searchBestReviewList(pageRequest);
         CommonResponse<List<BestReviewListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
@@ -109,7 +109,7 @@ public class ReviewApiController {
     public ResponseEntity<CommonResponse<List<LatestReviewListItem>>> getLatestReviewList(@Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page, @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size, @Parameter(description = "조회 타입 (ALL: 전체, FOLLOWING: 팔로잉)", example = "ALL") @RequestParam(defaultValue = "ALL") ReviewType type, @AuthenticationPrincipal CustomUserDetails userDetails) {
         PageRequest pageRequest = new PageRequest(page, size);
         Long memberId = userDetails != null ? userDetails.getMemberId() : null;
-        PageResult<LatestReviewListItem> pageResult = reviewService.findLatestReviewList(pageRequest, type, memberId);
+        PageResult<LatestReviewListItem> pageResult = reviewService.searchLatestReviewList(pageRequest, type, memberId);
         CommonResponse<List<LatestReviewListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
@@ -174,7 +174,7 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommentListResponse.class)))})
     @GetMapping("/v1/{reviewId}/comments")
     public ResponseEntity<CommonResponse<CommentListResponse>> getComments(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId) {
-        CommentListResponse response = reviewService.findCommentsWithReplies(reviewId);
+        CommentListResponse response = reviewService.searchCommentsWithReplies(reviewId);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 }

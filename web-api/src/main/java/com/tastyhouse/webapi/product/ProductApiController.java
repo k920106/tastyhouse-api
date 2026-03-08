@@ -29,7 +29,7 @@ public class ProductApiController {
     @GetMapping("/v1/today-discounts")
     public ResponseEntity<CommonResponse<List<TodayDiscountProductItem>>> getTodayDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<TodayDiscountProductItem> pageResult = productService.findTodayDiscountProducts(pageRequest);
+        PageResult<TodayDiscountProductItem> pageResult = productService.searchTodayDiscountProducts(pageRequest);
         CommonResponse<List<TodayDiscountProductItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }
@@ -38,7 +38,7 @@ public class ProductApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/places/{placeId}")
     public ResponseEntity<CommonResponse<List<ProductListItem>>> getProductsByPlaceId(@PathVariable Long placeId) {
-        List<ProductListItem> products = productService.findProductsByPlaceId(placeId);
+        List<ProductListItem> products = productService.searchProductsByPlaceId(placeId);
         CommonResponse<List<ProductListItem>> response = CommonResponse.success(products);
         return ResponseEntity.ok(response);
     }
@@ -47,7 +47,7 @@ public class ProductApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/places/{placeId}/categories")
     public ResponseEntity<CommonResponse<List<ProductCategoryListItem>>> getProductCategoriesByPlaceId(@PathVariable Long placeId) {
-        List<ProductCategoryListItem> categories = productService.findProductCategoriesByPlaceId(placeId);
+        List<ProductCategoryListItem> categories = productService.searchProductCategoriesByPlaceId(placeId);
         CommonResponse<List<ProductCategoryListItem>> response = CommonResponse.success(categories);
         return ResponseEntity.ok(response);
     }

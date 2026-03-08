@@ -30,7 +30,7 @@ public class PolicyApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/terms-of-service/latest")
     public ResponseEntity<CommonResponse<PolicyDetailResponse>> getLatestTermsOfService() {
-        PolicyDetailResponse response = policyService.findCurrentByType(PolicyType.TERMS_OF_SERVICE);
+        PolicyDetailResponse response = policyService.getCurrentByType(PolicyType.TERMS_OF_SERVICE);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -38,7 +38,7 @@ public class PolicyApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/privacy-policy/latest")
     public ResponseEntity<CommonResponse<PolicyDetailResponse>> getLatestPrivacyPolicy() {
-        PolicyDetailResponse response = policyService.findCurrentByType(PolicyType.PRIVACY_POLICY);
+        PolicyDetailResponse response = policyService.getCurrentByType(PolicyType.PRIVACY_POLICY);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -46,7 +46,7 @@ public class PolicyApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/terms-of-service/version/{version}")
     public ResponseEntity<CommonResponse<PolicyDetailResponse>> getTermsOfServiceByVersion(@PathVariable String version) {
-        PolicyDetailResponse response = policyService.findByTypeAndVersion(PolicyType.TERMS_OF_SERVICE, version);
+        PolicyDetailResponse response = policyService.getByTypeAndVersion(PolicyType.TERMS_OF_SERVICE, version);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -54,7 +54,7 @@ public class PolicyApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/privacy-policy/version/{version}")
     public ResponseEntity<CommonResponse<PolicyDetailResponse>> getPrivacyPolicyByVersion(@PathVariable String version) {
-        PolicyDetailResponse response = policyService.findByTypeAndVersion(PolicyType.PRIVACY_POLICY, version);
+        PolicyDetailResponse response = policyService.getByTypeAndVersion(PolicyType.PRIVACY_POLICY, version);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -65,7 +65,7 @@ public class PolicyApiController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PolicyListItemResponse> pageResult = policyService.findAllByType(PolicyType.TERMS_OF_SERVICE, pageRequest);
+        PageResult<PolicyListItemResponse> pageResult = policyService.searchAllByType(PolicyType.TERMS_OF_SERVICE, pageRequest);
         CommonResponse<List<PolicyListItemResponse>> response = CommonResponse.success(
             pageResult.getContent(), page, size, pageResult.getTotalElements()
         );
@@ -79,7 +79,7 @@ public class PolicyApiController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<PolicyListItemResponse> pageResult = policyService.findAllByType(PolicyType.PRIVACY_POLICY, pageRequest);
+        PageResult<PolicyListItemResponse> pageResult = policyService.searchAllByType(PolicyType.PRIVACY_POLICY, pageRequest);
         CommonResponse<List<PolicyListItemResponse>> response = CommonResponse.success(
             pageResult.getContent(), page, size, pageResult.getTotalElements()
         );

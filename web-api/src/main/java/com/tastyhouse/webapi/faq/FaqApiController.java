@@ -30,7 +30,7 @@ public class FaqApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/categories")
     public ResponseEntity<CommonResponse<List<FaqCategoryItem>>> getFaqCategories() {
-        List<FaqCategoryItem> categories = faqService.findCategories();
+        List<FaqCategoryItem> categories = faqService.searchCategories();
         return ResponseEntity.ok(CommonResponse.success(categories));
     }
 
@@ -39,7 +39,7 @@ public class FaqApiController {
     @GetMapping("/v1")
     public ResponseEntity<CommonResponse<List<FaqItem>>> getFaqList(
             @RequestParam(required = false) Long categoryId) {
-        List<FaqItem> faqs = faqService.findFaqItems(categoryId);
+        List<FaqItem> faqs = faqService.searchFaqItems(categoryId);
         return ResponseEntity.ok(CommonResponse.success(faqs));
     }
 }

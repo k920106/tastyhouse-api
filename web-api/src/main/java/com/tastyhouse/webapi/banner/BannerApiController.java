@@ -32,7 +32,7 @@ public class BannerApiController {
     @GetMapping("/v1")
     public ResponseEntity<CommonResponse<List<BannerListItem>>> getBannerList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
-        PageResult<BannerListItem> pageResult = bannerService.findBannerList(pageRequest);
+        PageResult<BannerListItem> pageResult = bannerService.searchBannerList(pageRequest);
         CommonResponse<List<BannerListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
         return ResponseEntity.ok(response);
     }

@@ -23,7 +23,7 @@ public class RankService {
         RankType type = parseRankType(rankType);
         LocalDate baseDate = calculateBaseDate(type);
 
-        List<MemberRankDto> ranks = rankCoreService.getMemberRankList(type, baseDate, limit);
+        List<MemberRankDto> ranks = rankCoreService.searchMemberRankList(type, baseDate, limit);
 
         return ranks.stream()
             .map(this::convertToMemberRankItem)
@@ -35,7 +35,7 @@ public class RankService {
         RankType type = parseRankType(rankType);
         LocalDate baseDate = calculateBaseDate(type);
 
-        return rankCoreService.getMemberRank(memberId, type, baseDate)
+        return rankCoreService.findMemberRank(memberId, type, baseDate)
             .map(MyRankResponse::from)
             .orElse(null);
     }

@@ -32,18 +32,18 @@ public class EventCoreService {
     private final EventAnnouncementJpaRepository eventAnnouncementJpaRepository;
 
     @Transactional(readOnly = true)
-    public Optional<Event> getActiveRankingEvent() {
+    public Optional<Event> findActiveRankingEvent() {
         return eventJpaRepository.findFirstByStatusAndTypeOrderByStartAtDesc(EventStatus.ACTIVE, EventType.RANKING);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<Event> getEventsByStatus(EventStatus status, int page, int size) {
+    public PageResult<Event> searchEventsByStatus(EventStatus status, int page, int size) {
         Page<Event> eventPage = eventJpaRepository.findByStatusOrderByStartAtDesc(status, PageRequest.of(page, size));
         return PageResult.from(eventPage);
     }
 
     @Transactional(readOnly = true)
-    public List<EventPrize> getEventPrizes(Long eventId) {
+    public List<EventPrize> findEventPrizes(Long eventId) {
         return eventPrizeJpaRepository.findByEventIdOrderByPrizeRankAsc(eventId);
     }
 

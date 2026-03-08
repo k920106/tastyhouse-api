@@ -16,7 +16,7 @@ public class NoticeService {
     private final NoticeCoreService noticeCoreService;
 
     @Transactional(readOnly = true)
-    public PageResult<NoticeListItem> findNoticeList(PageRequest pageRequest) {
+    public PageResult<NoticeListItem> searchNoticeList(PageRequest pageRequest) {
         return noticeCoreService.findAllWithPagination(
             pageRequest.getPage(), pageRequest.getSize()
         ).map(this::convertToNoticeListItem);
