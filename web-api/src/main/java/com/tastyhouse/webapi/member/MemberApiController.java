@@ -18,8 +18,8 @@ import com.tastyhouse.webapi.member.response.VerifyPasswordResponse;
 import com.tastyhouse.webapi.grade.GradeService;
 import com.tastyhouse.webapi.member.response.MyBookmarkedPlaceListItemResponse;
 import com.tastyhouse.webapi.member.response.MyGradeResponse;
+import com.tastyhouse.webapi.member.response.MemberStatsResponse;
 import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
-import com.tastyhouse.webapi.member.response.MyReviewStatsResponse;
 import com.tastyhouse.webapi.member.response.PointHistoryResponse;
 import com.tastyhouse.webapi.member.response.PointResponse;
 import com.tastyhouse.webapi.member.response.UsablePointResponse;
@@ -178,16 +178,16 @@ public class MemberApiController {
         return ResponseEntity.ok(CommonResponse.success(myGrade));
     }
 
-    @Operation(summary = "내 리뷰 통계 조회", description = "로그인한 회원의 리뷰 통계(전체 리뷰 개수)를 조회합니다.")
+    @Operation(summary = "내 통계 조회", description = "로그인한 회원의 리뷰 수, 팔로잉 수, 팔로워 수를 조회합니다.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MyReviewStatsResponse.class))),
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberStatsResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
     })
-    @GetMapping("/v1/me/review-stats")
-    public ResponseEntity<CommonResponse<MyReviewStatsResponse>> getMyReviewStats(
+    @GetMapping("/v1/me/stats")
+    public ResponseEntity<CommonResponse<MemberStatsResponse>> getMyStats(
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        MyReviewStatsResponse stats = memberService.getMyReviewStats(userDetails.getMemberId());
+        MemberStatsResponse stats = memberService.getMemberStats(userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(stats));
     }
 
@@ -333,6 +333,20 @@ public class MemberApiController {
     ) {
         OtherMemberProfileResponse profile = memberService.getOtherMemberProfile(memberId, userDetails.getMemberId());
         return ResponseEntity.ok(CommonResponse.success(profile));
+    }
+
+    @Operation(summary = "특정 회원 통계 조회", description = "특정 회원의 리뷰 수, 팔로잉 수, 팔로워 수를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberStatsResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
+    @GetMapping("/v1/{memberId}/stats")
+    public ResponseEntity<CommonResponse<MemberStatsResponse>> getMemberStats(
+        @Parameter(description = "조회할 회원 ID", example = "2") @PathVariable Long memberId
+    ) {
+        MemberStatsResponse stats = memberService.getMemberStats(memberId);
+        return ResponseEntity.ok(CommonResponse.success(stats));
     }
 
     @Operation(summary = "회원 탈퇴", description = "탈퇴 사유를 선택하여 회원 탈퇴를 처리합니다. 탈퇴 즉시 Access Token이 무효화됩니다.")

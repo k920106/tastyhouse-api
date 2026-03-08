@@ -1,8 +1,6 @@
 package com.tastyhouse.webapi.member;
 
 import com.tastyhouse.core.entity.place.dto.MyBookmarkedPlaceItemDto;
-import com.tastyhouse.core.entity.rank.MemberReviewRank;
-import com.tastyhouse.core.entity.rank.RankType;
 import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.entity.user.MemberStatus;
@@ -16,7 +14,6 @@ import com.tastyhouse.core.repository.member.MemberWithdrawalJpaRepository;
 import com.tastyhouse.core.repository.place.PlaceRepository;
 import com.tastyhouse.core.repository.point.MemberPointHistoryJpaRepository;
 import com.tastyhouse.core.repository.point.MemberPointJpaRepository;
-import com.tastyhouse.core.repository.rank.MemberReviewRankJpaRepository;
 import com.tastyhouse.core.repository.follow.FollowRepository;
 import com.tastyhouse.core.repository.review.ReviewJpaRepository;
 import com.tastyhouse.core.repository.review.ReviewRepository;
@@ -53,7 +50,6 @@ public class MemberService {
     private final MemberWithdrawalJpaRepository memberWithdrawalJpaRepository;
     private final MemberPointJpaRepository memberPointJpaRepository;
     private final MemberPointHistoryJpaRepository memberPointHistoryJpaRepository;
-    private final MemberReviewRankJpaRepository memberReviewRankJpaRepository;
     private final CouponService couponService;
     private final ReviewRepository reviewRepository;
     private final ReviewJpaRepository reviewJpaRepository;
@@ -304,14 +300,15 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public MyReviewStatsResponse getMyReviewStats(Long memberId) {
-        Integer reviewCount = memberReviewRankJpaRepository
-            .findLatestByMemberIdAndRankType(memberId, RankType.ALL)
-            .map(MemberReviewRank::getReviewCount)
-            .orElse(0);
+    public MemberStatsResponse getMemberStats(Long memberId) {
+        long reviewCount = reviewJpaRepository.countByMemberIdAndIsHiddenFalse(memberId);
+        long followingCount = followRepository.countByFollowerId(memberId);
+        long followerCount = followRepository.countByFollowingId(memberId);
 
-        return MyReviewStatsResponse.builder()
-            .totalReviewCount(reviewCount)
+        return MemberStatsResponse.builder()
+            .reviewCount(reviewCount)
+            .followingCount(followingCount)
+            .followerCount(followerCount)
             .build();
     }
 
@@ -325,9 +322,6 @@ public class MemberService {
             profileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
         }
 
-        long reviewCount = reviewJpaRepository.countByMemberIdAndIsHiddenFalse(targetMemberId);
-        long followingCount = followRepository.countByFollowerId(targetMemberId);
-        long followerCount = followRepository.countByFollowingId(targetMemberId);
         boolean isFollowing = viewerMemberId != null
             && followRepository.existsByFollowerIdAndFollowingId(viewerMemberId, targetMemberId);
 
@@ -337,9 +331,6 @@ public class MemberService {
             .memberGrade(member.getMemberGrade())
             .statusMessage(member.getStatusMessage())
             .profileImageUrl(profileImageUrl)
-            .reviewCount(reviewCount)
-            .followingCount(followingCount)
-            .followerCount(followerCount)
             .isFollowing(isFollowing)
             .build();
     }

@@ -26,15 +26,6 @@ public class OtherMemberProfileResponse {
     @Schema(description = "프로필 이미지 URL")
     private String profileImageUrl;
 
-    @Schema(description = "리뷰 수", example = "7")
-    private long reviewCount;
-
-    @Schema(description = "팔로잉 수", example = "12")
-    private long followingCount;
-
-    @Schema(description = "팔로워 수", example = "34")
-    private long followerCount;
-
     @Schema(description = "내가 이 회원을 팔로우 중인지 여부", example = "false")
     private boolean isFollowing;
 }
