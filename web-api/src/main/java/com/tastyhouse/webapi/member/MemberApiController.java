@@ -178,20 +178,7 @@ public class MemberApiController {
         return ResponseEntity.ok(CommonResponse.success(myGrade));
     }
 
-    @Operation(summary = "내 통계 조회", description = "로그인한 회원의 리뷰 수, 팔로잉 수, 팔로워 수를 조회합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = MemberStatsResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
-    })
-    @GetMapping("/v1/me/stats")
-    public ResponseEntity<CommonResponse<MemberStatsResponse>> getMyStats(
-        @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        MemberStatsResponse stats = memberService.getMemberStats(userDetails.getMemberId());
-        return ResponseEntity.ok(CommonResponse.success(stats));
-    }
-
-    @Operation(summary = "보유 포인트 조회", description = "현재 로그인한 회원의 사용 가능한 포인트와 이번달 소멸 예정 포인트를 조회합니다.")
+@Operation(summary = "보유 포인트 조회", description = "현재 로그인한 회원의 사용 가능한 포인트와 이번달 소멸 예정 포인트를 조회합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = CommonResponse.class)))
