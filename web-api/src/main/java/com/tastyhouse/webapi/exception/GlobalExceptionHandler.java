@@ -2,6 +2,7 @@ package com.tastyhouse.webapi.exception;
 
 import com.tastyhouse.core.common.CommonResponse;
 import com.tastyhouse.core.exception.BusinessException;
+import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.external.exception.ExternalApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(status)
             .body(CommonResponse.error(e.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<CommonResponse<Void>> handleRateLimitException(RateLimitException e) {
+        log.warn("RateLimitException: {}", e.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(CommonResponse.error(ErrorCode.RATE_LIMIT_EXCEEDED.getDefaultMessage()));
     }
 
     @ExceptionHandler(UnauthorizedException.class)

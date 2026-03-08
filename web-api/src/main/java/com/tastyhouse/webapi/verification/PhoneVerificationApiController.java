@@ -1,6 +1,8 @@
 package com.tastyhouse.webapi.verification;
 
 import com.tastyhouse.core.common.CommonResponse;
+import com.tastyhouse.webapi.ratelimit.RateLimit;
+import com.tastyhouse.webapi.ratelimit.RateLimitKeyType;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import com.tastyhouse.webapi.verification.request.ConfirmVerificationCodeRequest;
 import com.tastyhouse.webapi.verification.request.SendVerificationCodeRequest;
@@ -35,8 +37,10 @@ public class PhoneVerificationApiController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "인증번호 발송 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 휴대폰번호 형식"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "429", description = "요청 횟수 초과 (전화번호당 일 5회)")
     })
+    @RateLimit(limit = 5, windowSeconds = 86400, keyType = RateLimitKeyType.PHONE, keyPrefix = "rate_limit:sms")
     @PostMapping("/v1/send")
     public ResponseEntity<CommonResponse<Void>> sendVerificationCode(
         @AuthenticationPrincipal CustomUserDetails userDetails,

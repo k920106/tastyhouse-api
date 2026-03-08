@@ -8,6 +8,8 @@ import com.tastyhouse.webapi.config.jwt.JwtProperties;
 import com.tastyhouse.webapi.config.jwt.JwtTokenProvider;
 import com.tastyhouse.webapi.config.jwt.TokenBlacklist;
 import com.tastyhouse.webapi.config.jwt.TokenRedisRepository;
+import com.tastyhouse.webapi.ratelimit.RateLimit;
+import com.tastyhouse.webapi.ratelimit.RateLimitKeyType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,8 +46,10 @@ public class AuthController {
     @Operation(summary = "로그인", description = "사용자 인증을 통해 JWT 토큰을 발급합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class))),
-        @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true)))
+        @ApiResponse(responseCode = "401", description = "인증 실패 (아이디 또는 비밀번호 불일치)", content = @Content(schema = @Schema(hidden = true))),
+        @ApiResponse(responseCode = "429", description = "요청 횟수 초과 (IP당 분당 10회)", content = @Content(schema = @Schema(hidden = true)))
     })
+    @RateLimit(limit = 10, windowSeconds = 60, keyType = RateLimitKeyType.IP, keyPrefix = "rate_limit:login")
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(

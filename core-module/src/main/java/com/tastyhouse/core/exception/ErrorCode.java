@@ -108,7 +108,10 @@ public enum ErrorCode {
     FOLLOW_ALREADY_EXISTS(400, "FOLLOW_ALREADY_EXISTS", "이미 팔로우한 사용자입니다."),
     FOLLOW_NOT_FOUND(400, "FOLLOW_NOT_FOUND", "팔로우 관계가 존재하지 않습니다."),
     FOLLOW_TARGET_NOT_FOUND(404, "FOLLOW_TARGET_NOT_FOUND", "팔로우 대상 회원을 찾을 수 없습니다."),
-    FOLLOWER_REMOVE_ACCESS_DENIED(403, "FOLLOWER_REMOVE_ACCESS_DENIED", "본인의 팔로워만 삭제할 수 있습니다.");
+    FOLLOWER_REMOVE_ACCESS_DENIED(403, "FOLLOWER_REMOVE_ACCESS_DENIED", "본인의 팔로워만 삭제할 수 있습니다."),
+
+    // Rate Limiting
+    RATE_LIMIT_EXCEEDED(429, "RATE_LIMIT_EXCEEDED", "요청 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요.");
 
     private final int httpStatusCode;
     private final String code;
