@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notices")
+@Validated
 public class NoticeApiController {
 
     private final NoticeService noticeService;
@@ -30,7 +33,7 @@ public class NoticeApiController {
     @Operation(summary = "공지사항 목록 조회", description = "페이징된 공지사항 목록을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1")
-    public ResponseEntity<CommonResponse<List<NoticeListItem>>> getNoticeList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<CommonResponse<List<NoticeListItem>>> getNoticeList(@RequestParam(defaultValue = "0") int page, @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<NoticeListItem> pageResult = noticeService.searchNoticeList(pageRequest);
         CommonResponse<List<NoticeListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());

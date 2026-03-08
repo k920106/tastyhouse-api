@@ -15,9 +15,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/places")
+@Validated
 public class PlaceApiController {
 
     private final PlaceService placeService;
@@ -44,7 +47,7 @@ public class PlaceApiController {
     @Operation(summary = "베스트 플레이스 목록 조회", description = "평점 기준 베스트 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그 정보를 포함합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/best")
-    public ResponseEntity<CommonResponse<List<BestPlaceListItem>>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
+    public ResponseEntity<CommonResponse<List<BestPlaceListItem>>> getBestPlaces(@RequestParam(defaultValue = "0") int page, @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "5") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<BestPlaceListItem> pageResult = placeService.searchBestPlaces(pageRequest);
         CommonResponse<List<BestPlaceListItem>> response = CommonResponse.success(pageResult.getContent(), page, size, pageResult.getTotalElements());
@@ -54,7 +57,7 @@ public class PlaceApiController {
     @Operation(summary = "테하 초이스 조회", description = "특정 테하 초이스의 가게 이미지, 제목, 내용, 관련 상품 목록을 조회합니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/editor-choice")
-    public ResponseEntity<CommonResponse<List<EditorChoiceResponse>>> getEditorChoices(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<CommonResponse<List<EditorChoiceResponse>>> getEditorChoices(@RequestParam(defaultValue = "0") int page, @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "10") int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         List<EditorChoiceResponse> editorChoiceResponses = placeService.searchEditorChoices(pageRequest);
         CommonResponse<List<EditorChoiceResponse>> response = CommonResponse.success(editorChoiceResponses);
@@ -64,7 +67,7 @@ public class PlaceApiController {
     @Operation(summary = "최신 플레이스 목록 조회", description = "최근 등록된 플레이스를 페이징하여 조회합니다. 이미지, 전철역명, 평점, 가게명, 태그, 등록일 정보를 포함합니다. 전철역, 음식종류, 편의시설 필터를 적용할 수 있습니다.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class)))})
     @GetMapping("/v1/latest")
-    public ResponseEntity<CommonResponse<List<LatestPlaceListItem>>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) Long stationId, @RequestParam(required = false) List<FoodType> foodTypes, @RequestParam(required = false) List<Amenity> amenities) {
+    public ResponseEntity<CommonResponse<List<LatestPlaceListItem>>> getLatestPlaces(@RequestParam(defaultValue = "0") int page, @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) Long stationId, @RequestParam(required = false) List<FoodType> foodTypes, @RequestParam(required = false) List<Amenity> amenities) {
         PageRequest pageRequest = new PageRequest(page, size);
         LatestPlaceFilterRequest filterRequest = new LatestPlaceFilterRequest(stationId, foodTypes, amenities);
         PageResult<LatestPlaceListItem> pageResult = placeService.searchLatestPlaces(pageRequest, filterRequest);
@@ -150,7 +153,7 @@ public class PlaceApiController {
     public ResponseEntity<CommonResponse<PlaceReviewsByRatingResponse>> getPlaceReviews(
             @PathVariable Long placeId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "10") int size) {
         PlaceService.PlaceReviewsByRatingWithPagination result = placeService.getPlaceReviewsByRatingWithPagination(placeId, page, size);
         CommonResponse<PlaceReviewsByRatingResponse> response = CommonResponse.success(result.getResponse());
         return ResponseEntity.ok(response);

@@ -15,9 +15,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
+@Validated
 public class OrderApiController {
 
     private final OrderService orderService;
@@ -54,7 +57,7 @@ public class OrderApiController {
     public ResponseEntity<CommonResponse<List<OrderListItemResponse>>> getOrderList(
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
+        @Parameter(description = "페이지 크기", example = "10") @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = userDetails.getMemberId();
         PageRequest pageRequest = new PageRequest(page, size);

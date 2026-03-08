@@ -13,9 +13,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/follows")
+@Validated
 public class FollowApiController {
 
     private final FollowService followService;
@@ -90,7 +93,7 @@ public class FollowApiController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "조회할 회원 ID", example = "1") @PathVariable Long memberId,
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "페이지 크기", example = "20") @RequestParam(defaultValue = "20") int size
+        @Parameter(description = "페이지 크기", example = "20") @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "20") int size
     ) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<FollowMemberResponse> pageResult = followService.getFollowingList(memberId, userDetails.getMemberId(), pageRequest);
@@ -112,7 +115,7 @@ public class FollowApiController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "조회할 회원 ID", example = "1") @PathVariable Long memberId,
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "페이지 크기", example = "20") @RequestParam(defaultValue = "20") int size
+        @Parameter(description = "페이지 크기", example = "20") @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "20") int size
     ) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<FollowMemberResponse> pageResult = followService.getFollowerList(memberId, userDetails.getMemberId(), pageRequest);
@@ -134,7 +137,7 @@ public class FollowApiController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Parameter(description = "검색할 닉네임", example = "맛집") @RequestParam String nickname,
         @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "페이지 크기", example = "20") @RequestParam(defaultValue = "20") int size
+        @Parameter(description = "페이지 크기", example = "20") @Max(value = 10, message = "페이지 크기는 최대 10입니다") @RequestParam(defaultValue = "20") int size
     ) {
         PageRequest pageRequest = new PageRequest(page, size);
         PageResult<MemberSearchResponse> pageResult = followService.searchMembersByNickname(nickname, userDetails.getMemberId(), pageRequest);
