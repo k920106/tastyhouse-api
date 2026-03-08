@@ -7,11 +7,13 @@ import com.tastyhouse.core.repository.report.BugReportJpaRepository;
 import com.tastyhouse.webapi.bug.request.BugReportCreateRequest;
 import com.tastyhouse.webapi.bug.response.BugReportResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BugReportService {

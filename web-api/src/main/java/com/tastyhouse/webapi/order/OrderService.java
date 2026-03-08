@@ -35,6 +35,7 @@ import com.tastyhouse.webapi.order.request.OrderItemOptionRequest;
 import com.tastyhouse.webapi.order.request.OrderItemRequest;
 import com.tastyhouse.webapi.order.response.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {

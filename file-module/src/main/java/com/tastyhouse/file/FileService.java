@@ -6,6 +6,7 @@ import com.tastyhouse.core.exception.ErrorCode;
 import com.tastyhouse.core.service.FileCoreService;
 import com.tastyhouse.file.storage.FileStorageStrategy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {

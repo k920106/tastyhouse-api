@@ -8,6 +8,7 @@ import com.tastyhouse.core.service.MemberGradeService;
 import com.tastyhouse.webapi.grade.response.GradeInfoItem;
 import com.tastyhouse.webapi.member.response.MyGradeResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GradeService {

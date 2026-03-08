@@ -6,11 +6,13 @@ import com.tastyhouse.core.service.FaqCoreService;
 import com.tastyhouse.webapi.faq.response.FaqCategoryItem;
 import com.tastyhouse.webapi.faq.response.FaqItem;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FaqService {
