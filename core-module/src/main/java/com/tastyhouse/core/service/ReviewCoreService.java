@@ -3,6 +3,7 @@ package com.tastyhouse.core.service;
 import com.tastyhouse.core.common.PageResult;
 import com.tastyhouse.core.common.ReviewsByRatingResult;
 import com.tastyhouse.core.entity.review.Review;
+import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.entity.review.ReviewComment;
 import com.tastyhouse.core.entity.review.ReviewImage;
 import com.tastyhouse.core.entity.review.ReviewReply;
@@ -346,6 +347,13 @@ public class ReviewCoreService {
             allReviewsPage.getNumber(),
             allReviewsPage.getSize()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<MyReviewListItemDto> findReviewsByMemberId(Long memberId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<MyReviewListItemDto> reviewPage = reviewRepository.findReviewsByMemberId(memberId, pageRequest);
+        return PageResult.from(reviewPage);
     }
 
     @Transactional(readOnly = true)

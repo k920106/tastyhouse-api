@@ -8,6 +8,7 @@ import com.tastyhouse.webapi.review.request.ReplyCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.request.ReviewUpdateRequest;
+import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.review.response.*;
 import com.tastyhouse.webapi.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -176,5 +177,23 @@ public class ReviewApiController {
     public ResponseEntity<CommonResponse<CommentListResponse>> getComments(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId) {
         CommentListResponse response = reviewService.searchCommentsWithReplies(reviewId);
         return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @Operation(summary = "특정 회원의 리뷰 목록 조회", description = "특정 회원이 작성한 리뷰 목록을 페이징하여 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CommonResponse.class))),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음")
+    })
+    @GetMapping("/v1/members/{memberId}")
+    public ResponseEntity<CommonResponse<List<MyReviewListItemResponse>>> getMemberReviews(
+            @Parameter(description = "조회할 회원 ID", example = "1") @PathVariable Long memberId,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageRequest = new PageRequest(page, size);
+        PageResult<MyReviewListItemResponse> pageResult = reviewService.findMemberReviews(memberId, pageRequest);
+        CommonResponse<List<MyReviewListItemResponse>> response = CommonResponse.success(
+            pageResult.getContent(), pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotalElements()
+        );
+        return ResponseEntity.ok(response);
     }
 }

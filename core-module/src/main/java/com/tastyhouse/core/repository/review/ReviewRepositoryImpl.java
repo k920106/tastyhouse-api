@@ -634,6 +634,43 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         return new PageImpl<>(reviews, pageable, total);
     }
 
+    @Override
+    public Page<MyReviewListItemDto> findReviewsByMemberId(Long memberId, Pageable pageable) {
+        QReview review = QReview.review;
+
+        List<Long> allReviewIds = queryFactory
+            .select(review.id)
+            .from(review)
+            .where(
+                review.memberId.eq(memberId),
+                review.isHidden.eq(false)
+            )
+            .orderBy(review.createdAt.desc())
+            .fetch();
+
+        long total = allReviewIds.size();
+
+        List<Long> pagedReviewIds = queryFactory
+            .select(review.id)
+            .from(review)
+            .where(
+                review.memberId.eq(memberId),
+                review.isHidden.eq(false)
+            )
+            .orderBy(review.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Map<Long, String> imageUrlMap = findFirstImageUrlsByReviewIds(pagedReviewIds);
+
+        List<MyReviewListItemDto> reviews = pagedReviewIds.stream()
+            .map(reviewId -> new MyReviewListItemDto(reviewId, imageUrlMap.get(reviewId)))
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(reviews, pageable, total);
+    }
+
     private Map<Long, String> findFirstImageUrlsByReviewIds(List<Long> reviewIds) {
         if (reviewIds.isEmpty()) {
             return Map.of();

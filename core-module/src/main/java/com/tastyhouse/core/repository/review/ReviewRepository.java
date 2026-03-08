@@ -36,4 +36,6 @@ public interface ReviewRepository {
     Optional<ReviewDetailDto> findReviewDetail(Long reviewId);
 
     Page<MyReviewListItemDto> findMyReviews(Long memberId, Pageable pageable);
+
+    Page<MyReviewListItemDto> findReviewsByMemberId(Long memberId, Pageable pageable);
 }

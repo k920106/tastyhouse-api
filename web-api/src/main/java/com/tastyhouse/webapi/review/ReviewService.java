@@ -8,6 +8,7 @@ import com.tastyhouse.core.entity.review.ReviewReply;
 import com.tastyhouse.core.entity.review.ReviewTag;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.LatestReviewListItemDto;
+import com.tastyhouse.core.entity.review.dto.MyReviewListItemDto;
 import com.tastyhouse.core.entity.review.dto.ReviewDetailDto;
 import com.tastyhouse.core.entity.user.Member;
 import com.tastyhouse.core.exception.AccessDeniedException;
@@ -27,6 +28,7 @@ import com.tastyhouse.webapi.common.PageRequest;
 import com.tastyhouse.webapi.review.request.ReviewCreateRequest;
 import com.tastyhouse.webapi.review.request.ReviewType;
 import com.tastyhouse.webapi.review.request.ReviewUpdateRequest;
+import com.tastyhouse.webapi.member.response.MyReviewListItemResponse;
 import com.tastyhouse.webapi.review.response.BestReviewListItem;
 import com.tastyhouse.webapi.review.response.CommentListResponse;
 import com.tastyhouse.webapi.review.response.CommentResponse;
@@ -485,6 +487,14 @@ public class ReviewService {
         }
         reviewCoreService.saveReviewImages(images);
         return uploadedFileIds;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<MyReviewListItemResponse> findMemberReviews(Long memberId, PageRequest pageRequest) {
+        PageResult<MyReviewListItemDto> coreResult = reviewCoreService.findReviewsByMemberId(
+            memberId, pageRequest.getPage(), pageRequest.getSize()
+        );
+        return coreResult.map(dto -> MyReviewListItemResponse.from(dto));
     }
 
     private List<String> saveReviewTags(Long reviewId, List<String> tagNames) {
