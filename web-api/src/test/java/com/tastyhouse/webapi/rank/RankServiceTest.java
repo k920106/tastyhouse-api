@@ -61,11 +61,11 @@ class RankServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getMemberId()).isEqualTo(memberId);
-        assertThat(result.getNickname()).isEqualTo("테스트유저");
-        assertThat(result.getReviewCount()).isEqualTo(100);
-        assertThat(result.getRankNo()).isEqualTo(1);
-        assertThat(result.getGrade()).isEqualTo(MemberGrade.NEWCOMER);
+        assertThat(result.memberId()).isEqualTo(memberId);
+        assertThat(result.nickname()).isEqualTo("테스트유저");
+        assertThat(result.reviewCount()).isEqualTo(100);
+        assertThat(result.rankNo()).isEqualTo(1);
+        assertThat(result.grade()).isEqualTo(MemberGrade.NEWCOMER);
     }
 
     @Test

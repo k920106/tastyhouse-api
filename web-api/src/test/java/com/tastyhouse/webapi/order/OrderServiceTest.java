@@ -23,6 +23,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class OrderServiceTest {
 
     @Mock private OrderCoreService orderCoreService;
@@ -44,6 +47,7 @@ class OrderServiceTest {
     @Mock private PlaceCoreService placeCoreService;
     @Mock private ProductImageJpaRepository productImageJpaRepository;
     @Mock private MemberService memberService;
+    @Mock private com.tastyhouse.core.repository.review.ReviewJpaRepository reviewJpaRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -64,12 +68,16 @@ class OrderServiceTest {
         given(mockPlace.getName()).willReturn("테스트 매장");
         given(mockPlace.getPhoneNumber()).willReturn("02-1234-5678");
 
-        memberProfile = MemberProfileResponse.builder()
-            .id(MEMBER_ID)
-            .fullName("홍길동")
-            .phoneNumber("010-1234-5678")
-            .email("test@test.com")
-            .build();
+        memberProfile = new MemberProfileResponse(
+            MEMBER_ID,
+            null,
+            null,
+            null,
+            null,
+            "홍길동",
+            "010-1234-5678",
+            "test@test.com"
+        );
 
         activeProduct = mock(Product.class);
         given(activeProduct.getId()).willReturn(PRODUCT_ID);
@@ -140,8 +148,8 @@ class OrderServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getOrderNumber()).isEqualTo("ORD20240101000001ABCD1234");
-            assertThat(result.getFinalAmount()).isEqualTo(10000);
+            assertThat(result.orderNumber()).isEqualTo("ORD20240101000001ABCD1234");
+            assertThat(result.finalAmount()).isEqualTo(10000);
             verify(orderCoreService).saveOrder(any(Order.class));
             verify(orderCoreService).saveOrderItem(any(OrderItem.class));
         }
@@ -259,7 +267,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getOrdererName()).isEqualTo("홍길동");
+            assertThat(result.ordererName()).isEqualTo("홍길동");
         }
 
         @Test

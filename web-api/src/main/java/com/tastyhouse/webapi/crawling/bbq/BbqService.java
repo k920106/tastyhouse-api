@@ -193,13 +193,13 @@ public class BbqService {
                 ProductCategory savedCategory = saveOrGetCategory(placeId, categoryResponse, categoryIndex);
 
                 // 2. getMenusByCategoryId 호출하여 상품 목록 가져오기
-                List<BbqProductResponse> menus = getMenusByCategoryId(categoryResponse.getId());
-                log.info("카테고리 '{}' - 상품 {}개 조회", categoryResponse.getName(), menus.size());
+                List<BbqProductResponse> menus = getMenusByCategoryId(categoryResponse.id());
+                log.info("카테고리 '{}' - 상품 {}개 조회", categoryResponse.name(), menus.size());
 
                 // 상품(+이미지) 저장
                 for (int menuIndex = 0; menuIndex < menus.size(); menuIndex++) {
                     BbqProductResponse menuResponse = menus.get(menuIndex);
-                    saveProductWithImage(placeId, savedCategory.getId(), menuResponse, categoryResponse.getId(), menuIndex);
+                    saveProductWithImage(placeId, savedCategory.getId(), menuResponse, categoryResponse.id(), menuIndex);
                 }
 
                 // 마지막 카테고리가 아닌 경우 10초 대기
@@ -224,14 +224,14 @@ public class BbqService {
      * 카테고리 저장 또는 기존 카테고리 조회
      */
     private ProductCategory saveOrGetCategory(Long placeId, BbqProductCategoryResponse categoryResponse, int sort) {
-        List<ProductCategory> existingCategories = productCategoryJpaRepository.findByNameAndPlaceId(categoryResponse.getName(), placeId);
+        List<ProductCategory> existingCategories = productCategoryJpaRepository.findByNameAndPlaceId(categoryResponse.name(), placeId);
         if (!existingCategories.isEmpty()) {
             return existingCategories.get(0);
         }
 
         ProductCategory category = ProductCategory.builder()
                 .placeId(placeId)
-                .name(categoryResponse.getName())
+                .name(categoryResponse.name())
                 .sort(sort)
                 .isActive(true)
                 .build();
@@ -243,31 +243,31 @@ public class BbqService {
      */
     private void saveProductWithImage(Long placeId, Long categoryId, BbqProductResponse menuResponse, Long bbqCategoryId, int sort) {
         // 상품 상세 정보 조회
-        BbqProductResponse menuDetail = getMenuDetail(menuResponse.getId());
+        BbqProductResponse menuDetail = getMenuDetail(menuResponse.id());
 
         Product product = Product.builder()
                 .placeId(placeId)
                 .productCategoryId(categoryId)
-                .name(menuDetail.getName())
-                .description(menuDetail.getDescription())
-                .originalPrice(menuDetail.getOriginalPrice())
+                .name(menuDetail.name())
+                .description(menuDetail.description())
+                .originalPrice(menuDetail.originalPrice())
                 .discountPrice(null)
                 .discountRate(null)
                 .rating(null)
                 .reviewCount(0)
                 .isRepresentative(false)
                 .spiciness(null)
-                .isSoldOut(menuDetail.getIsSoldOut() != null ? menuDetail.getIsSoldOut() : false)
+                .isSoldOut(menuDetail.isSoldOut() != null ? menuDetail.isSoldOut() : false)
                 .isActive(true)
                 .sort(sort)
                 .build();
         Product savedProduct = productJpaRepository.save(product);
 
         // 상품 이미지 저장
-        if (menuDetail.getImageUrl() != null && !menuDetail.getImageUrl().isEmpty()) {
+        if (menuDetail.imageUrl() != null && !menuDetail.imageUrl().isEmpty()) {
             ProductImage productImage = ProductImage.builder()
                     .productId(savedProduct.getId())
-                    .imageUrl(menuDetail.getImageUrl())
+                    .imageUrl(menuDetail.imageUrl())
                     .sort(0)
                     .isActive(true)
                     .build();
@@ -277,7 +277,7 @@ public class BbqService {
         // ProductBbq 매핑 저장 (외부 BBQ 메뉴 ID 저장)
         ProductBbq productBbq = ProductBbq.builder()
                 .productId(savedProduct.getId())
-                .bbqMenuId(menuResponse.getId())
+                .bbqMenuId(menuResponse.id())
                 .bbqCategoryId(bbqCategoryId)
                 .build();
         productBbqJpaRepository.save(productBbq);

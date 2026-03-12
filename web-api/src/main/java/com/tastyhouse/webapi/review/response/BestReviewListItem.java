@@ -8,7 +8,3 @@ public record BestReviewListItem(
         String content
 ) {
 }
-  private final String stationName;
-    private final Double totalRating;
-    private final String content;
-}

@@ -111,8 +111,8 @@ class PaymentServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getAmount()).isEqualTo(AMOUNT);
-            assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.PENDING);
+            assertThat(result.amount()).isEqualTo(AMOUNT);
+            assertThat(result.paymentStatus()).isEqualTo(PaymentStatus.PENDING);
             verify(paymentJpaRepository).save(any(Payment.class));
         }
 
@@ -448,7 +448,7 @@ class PaymentServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getRefundAmount()).isEqualTo(10000);
+            assertThat(result.refundAmount()).isEqualTo(10000);
             verify(paymentRefundJpaRepository).save(any(PaymentRefund.class));
         }
 

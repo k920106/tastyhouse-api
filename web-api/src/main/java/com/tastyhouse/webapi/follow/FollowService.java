@@ -75,7 +75,7 @@ public class FollowService {
 
         List<FollowMemberResponse> content = page.getContent().stream()
             .map(dto -> {
-                String profileImageUrl = resolveProfileImageUrl(dto.getProfileImageFileId());
+                String profileImageUrl = resolveProfileImageUrl(dto.profileImageFileId());
                 return FollowMemberResponse.of(dto, profileImageUrl);
             })
             .collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class FollowService {
 
         List<FollowMemberResponse> content = page.getContent().stream()
             .map(dto -> {
-                String profileImageUrl = resolveProfileImageUrl(dto.getProfileImageFileId());
+                String profileImageUrl = resolveProfileImageUrl(dto.profileImageFileId());
                 return FollowMemberResponse.of(dto, profileImageUrl);
             })
             .collect(Collectors.toList());

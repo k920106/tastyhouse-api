@@ -83,8 +83,8 @@ public class MemberGradeService {
 
         for (MemberGrade grade : MemberGrade.values()) {
             gradeGroups.put(grade, reviewCounts.stream()
-                    .filter(dto -> determineGrade(dto.getReviewCount().intValue()) == grade)
-                    .map(MemberReviewCountDto::getMemberId)
+                    .filter(dto -> determineGrade(dto.reviewCount().intValue()) == grade)
+                    .map(MemberReviewCountDto::memberId)
                     .collect(Collectors.toList()));
         }
 

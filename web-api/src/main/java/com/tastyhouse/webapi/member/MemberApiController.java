@@ -88,9 +88,9 @@ public class MemberApiController {
     ) {
         memberService.updateMemberProfile(
             userDetails.getMemberId(),
-            request.getNickname(),
-            request.getStatusMessage(),
-            request.getProfileImageFileId()
+            request.nickname(),
+            request.statusMessage(),
+            request.profileImageFileId()
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
@@ -107,12 +107,12 @@ public class MemberApiController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @Valid @RequestBody VerifyPasswordRequest request
     ) {
-        memberService.verifyPassword(userDetails.getMemberId(), request.getPassword());
+        memberService.verifyPassword(userDetails.getMemberId(), request.password());
 
         String verifyToken = jwtTokenProvider.createPersonalInfoVerifyToken(userDetails.getMemberId());
 
         return ResponseEntity.ok(CommonResponse.success(
-            VerifyPasswordResponse.builder().verifyToken(verifyToken).build()
+            new VerifyPasswordResponse(verifyToken)
         ));
     }
 
@@ -149,20 +149,20 @@ public class MemberApiController {
     ) {
         memberService.verifyPersonalInfoToken(userDetails.getMemberId(), verifyToken);
 
-        String phoneNumberToUpdate = request.getPhoneNumber();
+        String phoneNumberToUpdate = request.phoneNumber();
         if (phoneNumberToUpdate != null) {
             memberService.verifyPhoneToken(userDetails.getMemberId(), phoneVerifyToken, phoneNumberToUpdate);
         }
 
         memberService.updatePersonalInfo(
             userDetails.getMemberId(),
-            request.getFullName(),
+            request.fullName(),
             phoneNumberToUpdate,
-            request.getBirthDate(),
-            request.getGender(),
-            request.getPushNotificationEnabled(),
-            request.getMarketingInfoEnabled(),
-            request.getEventInfoEnabled()
+            request.birthDate(),
+            request.gender(),
+            request.pushNotificationEnabled(),
+            request.marketingInfoEnabled(),
+            request.eventInfoEnabled()
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
@@ -306,7 +306,7 @@ public class MemberApiController {
         @Valid @RequestBody UpdatePasswordRequest request
     ) {
         memberService.verifyPersonalInfoToken(userDetails.getMemberId(), verifyToken);
-        memberService.updatePassword(userDetails.getMemberId(), request.getNewPassword(), request.getNewPasswordConfirm());
+        memberService.updatePassword(userDetails.getMemberId(), request.newPassword(), request.newPasswordConfirm());
         return ResponseEntity.ok(CommonResponse.success(null));
     }
 
@@ -353,8 +353,8 @@ public class MemberApiController {
     ) {
         memberService.withdrawMember(
             userDetails.getMemberId(),
-            request.getReason(),
-            request.getReasonDetail()
+            request.reason(),
+            request.reasonDetail()
         );
 
         memberService.invalidateToken(bearerToken);

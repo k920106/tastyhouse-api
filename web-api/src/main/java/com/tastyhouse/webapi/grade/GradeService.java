@@ -54,12 +54,11 @@ public class GradeService {
      */
     public List<GradeInfoItem> getGradeInfoList() {
         return Arrays.stream(MemberGrade.values())
-                .map(grade -> GradeInfoItem.builder()
-                        .grade(grade)
-                        .displayName(grade.getDisplayName())
-                        .minReviewCount(getMinReviewCount(grade))
-                        .maxReviewCount(getMaxReviewCount(grade))
-                        .build())
+                .map(grade -> new GradeInfoItem(
+                        grade,
+                        grade.getDisplayName(),
+                        getMinReviewCount(grade),
+                        getMaxReviewCount(grade)))
                 .collect(Collectors.toList());
     }
 
@@ -81,13 +80,13 @@ public class GradeService {
             reviewsNeeded = getMinReviewCount(nextGrade) - currentReviewCount;
         }
 
-        return MyGradeResponse.builder()
-                .currentGrade(currentGrade)
-                .currentGradeDisplayName(currentGrade.getDisplayName())
-                .nextGrade(nextGrade)
-                .nextGradeDisplayName(nextGrade != null ? nextGrade.getDisplayName() : null)
-                .currentReviewCount(currentReviewCount)
-                .reviewsNeededForNextGrade(reviewsNeeded)
-                .build();
+        return new MyGradeResponse(
+                currentGrade,
+                currentGrade.getDisplayName(),
+                nextGrade,
+                nextGrade != null ? nextGrade.getDisplayName() : null,
+                currentReviewCount,
+                reviewsNeeded
+        );
     }
 }

@@ -115,30 +115,30 @@ public class ProductScheduler {
             // ProductOptionGroup 저장
             ProductOptionGroup optionGroup = ProductOptionGroup.builder()
                 .productId(productId)
-                .name(subOption.getSubOptionTitle())
+                .name(subOption.subOptionTitle())
                 .description(null)
-                .isRequired(subOption.getRequiredSelectCount() != null && subOption.getRequiredSelectCount() > 0)
-                .isMultipleSelect(subOption.getMaxSelectCount() != null && subOption.getMaxSelectCount() > 1)
-                .minSelect(subOption.getRequiredSelectCount())
-                .maxSelect(subOption.getMaxSelectCount())
+                .isRequired(subOption.requiredSelectCount() != null && subOption.requiredSelectCount() > 0)
+                .isMultipleSelect(subOption.maxSelectCount() != null && subOption.maxSelectCount() > 1)
+                .minSelect(subOption.requiredSelectCount())
+                .maxSelect(subOption.maxSelectCount())
                 .sort(i)
                 .isActive(true)
                 .build();
             ProductOptionGroup savedOptionGroup = productOptionGroupJpaRepository.save(optionGroup);
 
             // ProductOption 저장
-            if (subOption.getSubOptionItemDetailResponseList() != null) {
-                for (int j = 0; j < subOption.getSubOptionItemDetailResponseList().size(); j++) {
+            if (subOption.subOptionItemDetailResponseList() != null) {
+                for (int j = 0; j < subOption.subOptionItemDetailResponseList().size(); j++) {
                     BbqProductSubOptionResponse.SubOptionItemDetailResponse itemDetail =
-                        subOption.getSubOptionItemDetailResponseList().get(j);
+                        subOption.subOptionItemDetailResponseList().get(j);
 
                     ProductOption productOption = ProductOption.builder()
                         .optionGroupId(savedOptionGroup.getId())
-                        .name(itemDetail.getItemTitle())
-                        .additionalPrice(itemDetail.getAddPrice() != null ? itemDetail.getAddPrice() : 0)
+                        .name(itemDetail.itemTitle())
+                        .additionalPrice(itemDetail.addPrice() != null ? itemDetail.addPrice() : 0)
                         .sort(j)
-                        .isSoldOut(itemDetail.getIsSoldOut() != null ? itemDetail.getIsSoldOut() : false)
-                        .isActive(!(itemDetail.getIsHidden() != null && itemDetail.getIsHidden()))
+                        .isSoldOut(itemDetail.isSoldOut() != null ? itemDetail.isSoldOut() : false)
+                        .isActive(!(itemDetail.isHidden() != null && itemDetail.isHidden()))
                         .build();
                     productOptionJpaRepository.save(productOption);
                 }

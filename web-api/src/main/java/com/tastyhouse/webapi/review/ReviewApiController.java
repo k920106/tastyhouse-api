@@ -162,7 +162,7 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "댓글 등록 성공", content = @Content(schema = @Schema(implementation = CommentResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")})
     @PostMapping("/v1/{reviewId}/comments")
     public ResponseEntity<CommonResponse<CommentResponse>> createComment(@Parameter(description = "리뷰 ID", example = "1") @PathVariable Long reviewId, @Valid @RequestBody CommentCreateRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        CommentResponse response = reviewService.createComment(reviewId, userDetails.getMemberId(), request.getContent());
+        CommentResponse response = reviewService.createComment(reviewId, userDetails.getMemberId(), request.content());
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -170,7 +170,7 @@ public class ReviewApiController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "답글 등록 성공", content = @Content(schema = @Schema(implementation = ReplyResponse.class))), @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")})
     @PostMapping("/v1/comments/{commentId}/replies")
     public ResponseEntity<CommonResponse<ReplyResponse>> createReply(@Parameter(description = "댓글 ID", example = "1") @PathVariable Long commentId, @Valid @RequestBody ReplyCreateRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        ReplyResponse response = reviewService.createReply(commentId, userDetails.getMemberId(), request.getReplyToMemberId(), request.getContent());
+        ReplyResponse response = reviewService.createReply(commentId, userDetails.getMemberId(), request.replyToMemberId(), request.content());
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 

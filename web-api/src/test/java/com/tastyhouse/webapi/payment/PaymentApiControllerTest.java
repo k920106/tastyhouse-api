@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -35,7 +37,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PaymentApiController.class)
+@WebMvcTest(value = PaymentApiController.class,
+    excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+            classes = com.tastyhouse.webapi.config.SecurityConfig.class),
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+            classes = com.tastyhouse.webapi.config.jwt.JwtAuthenticationFilter.class)
+    })
 @Import(PaymentApiControllerTest.TestSecurityConfig.class)
 class PaymentApiControllerTest {
 
@@ -47,6 +55,9 @@ class PaymentApiControllerTest {
 
     @MockBean
     private PaymentService paymentService;
+
+    @MockBean
+    private com.tastyhouse.webapi.config.jwt.JwtTokenProvider jwtTokenProvider;
 
     private static final Long MEMBER_ID = 1L;
     private static final Long ORDER_ID = 10L;
@@ -64,15 +75,26 @@ class PaymentApiControllerTest {
     }
 
     private PaymentResponse buildPaymentResponse(PaymentStatus status) {
-        return PaymentResponse.builder()
-            .id(PAYMENT_ID)
-            .orderId(ORDER_ID)
-            .paymentMethod(PaymentMethod.CREDIT_CARD)
-            .paymentStatus(status)
-            .amount(AMOUNT)
-            .pgOrderId("PG1234567890ABCDEFGH")
-            .createdAt(LocalDateTime.now())
-            .build();
+        return new PaymentResponse(
+            PAYMENT_ID,
+            ORDER_ID,
+            PaymentMethod.CREDIT_CARD,
+            status,
+            AMOUNT,
+            null,
+            null,
+            "PG1234567890ABCDEFGH",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            LocalDateTime.now()
+        );
     }
 
     @org.springframework.boot.test.context.TestConfiguration
@@ -82,7 +104,7 @@ class PaymentApiControllerTest {
             org.springframework.security.config.annotation.web.builders.HttpSecurity http
         ) throws Exception {
             http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
             return http.build();
         }
     }
@@ -122,7 +144,7 @@ class PaymentApiControllerTest {
             mockMvc.perform(post("/api/payments/v1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
         }
 
         @Test
@@ -245,13 +267,16 @@ class PaymentApiControllerTest {
         void requestRefund_success() throws Exception {
             // Given
             RefundRequest request = new RefundRequest(10000, "상품 불량");
-            PaymentRefundResponse response = PaymentRefundResponse.builder()
-                .id(1L)
-                .paymentId(PAYMENT_ID)
-                .refundAmount(10000)
-                .refundReason("상품 불량")
-                .createdAt(LocalDateTime.now())
-                .build();
+            PaymentRefundResponse response = new PaymentRefundResponse(
+                1L,
+                PAYMENT_ID,
+                10000,
+                "상품 불량",
+                null,
+                null,
+                null,
+                LocalDateTime.now()
+            );
 
             given(paymentService.requestRefund(eq(MEMBER_ID), eq(PAYMENT_ID), any(RefundRequest.class)))
                 .willReturn(response);

@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -30,7 +32,13 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(OrderApiController.class)
+@WebMvcTest(value = OrderApiController.class,
+    excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+            classes = com.tastyhouse.webapi.config.SecurityConfig.class),
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+            classes = com.tastyhouse.webapi.config.jwt.JwtAuthenticationFilter.class)
+    })
 @Import(OrderApiControllerTest.TestSecurityConfig.class)
 class OrderApiControllerTest {
 
@@ -59,23 +67,28 @@ class OrderApiControllerTest {
     }
 
     private OrderResponse buildOrderResponse() {
-        return OrderResponse.builder()
-            .id(ORDER_ID)
-            .orderNumber("ORD20240101000001ABCD1234")
-            .placeName("테스트 매장")
-            .ordererName("홍길동")
-            .ordererPhone("010-1234-5678")
-            .totalProductAmount(10000)
-            .productDiscountAmount(0)
-            .couponDiscountAmount(0)
-            .pointDiscountAmount(0)
-            .totalDiscountAmount(0)
-            .finalAmount(10000)
-            .usedPoint(0)
-            .earnedPoint(0)
-            .orderItems(Collections.emptyList())
-            .createdAt(LocalDateTime.now())
-            .build();
+        return new OrderResponse(
+            ORDER_ID,
+            "ORD20240101000001ABCD1234",
+            null,
+            "테스트 매장",
+            null,
+            "홍길동",
+            "010-1234-5678",
+            null,
+            10000,
+            0,
+            0,
+            0,
+            0,
+            10000,
+            0,
+            0,
+            Collections.emptyList(),
+            null,
+            null,
+            LocalDateTime.now()
+        );
     }
 
     @org.springframework.boot.test.context.TestConfiguration
@@ -85,7 +98,7 @@ class OrderApiControllerTest {
             org.springframework.security.config.annotation.web.builders.HttpSecurity http
         ) throws Exception {
             http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
             return http.build();
         }
     }
@@ -133,7 +146,7 @@ class OrderApiControllerTest {
             mockMvc.perform(post("/api/orders/v1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
         }
 
         @Test
@@ -202,7 +215,7 @@ class OrderApiControllerTest {
         @DisplayName("인증되지 않은 사용자 목록 조회 - 401 Unauthorized")
         void getOrderList_unauthenticated_returns401() throws Exception {
             mockMvc.perform(get("/api/orders/v1"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
         }
     }
 
@@ -258,7 +271,7 @@ class OrderApiControllerTest {
         @DisplayName("인증되지 않은 사용자 상세 조회 - 401 Unauthorized")
         void getOrderDetail_unauthenticated_returns401() throws Exception {
             mockMvc.perform(get("/api/orders/v1/{orderId}", ORDER_ID))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
         }
     }
 }

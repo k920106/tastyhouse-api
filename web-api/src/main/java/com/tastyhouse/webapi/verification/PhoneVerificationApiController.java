@@ -48,7 +48,7 @@ public class PhoneVerificationApiController {
     ) {
         phoneVerificationService.sendVerificationCode(
             userDetails.getMemberId(),
-            request.getPhoneNumber()
+            request.phoneNumber()
         );
 
         return ResponseEntity.ok(CommonResponse.success(null));
@@ -72,14 +72,12 @@ public class PhoneVerificationApiController {
     ) {
         String phoneVerifyToken = phoneVerificationService.confirmVerificationCode(
             userDetails.getMemberId(),
-            request.getPhoneNumber(),
-            request.getVerificationCode()
+            request.phoneNumber(),
+            request.verificationCode()
         );
 
         return ResponseEntity.ok(CommonResponse.success(
-            PhoneVerifyTokenResponse.builder()
-                .phoneVerifyToken(phoneVerifyToken)
-                .build()
+            new PhoneVerifyTokenResponse(phoneVerifyToken)
         ));
     }
 }

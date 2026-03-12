@@ -108,8 +108,3 @@ public class SolapiSmsClient {
         return hex.toString();
     }
 }
-       hex.append(String.format("%02x", b));
-        }
-        return hex.toString();
-    }
-}
