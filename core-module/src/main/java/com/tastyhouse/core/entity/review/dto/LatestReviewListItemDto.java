@@ -28,6 +28,15 @@ public record LatestReviewListItemDto(
         this(id, List.of(), stationName, totalRating, content, memberId, memberNickname, memberProfileImageUrl, createdAt, productId, productName, 0L, 0L);
     }
 
+    @QueryProjection
+    public LatestReviewListItemDto(Long id, String stationName,
+                                   Double totalRating, String content,
+                                   Long memberId, String memberNickname, String memberProfileImageUrl,
+                                   LocalDateTime createdAt, Long productId, String productName,
+                                   Long likeCount, Long commentCount) {
+        this(id, List.of(), stationName, totalRating, content, memberId, memberNickname, memberProfileImageUrl, createdAt, productId, productName, likeCount, commentCount);
+    }
+
     public LatestReviewListItemDto withImageUrls(List<String> imageUrls) {
         return new LatestReviewListItemDto(id, imageUrls, stationName, totalRating, content, memberId, memberNickname, memberProfileImageUrl, createdAt, productId, productName, likeCount, commentCount);
     }

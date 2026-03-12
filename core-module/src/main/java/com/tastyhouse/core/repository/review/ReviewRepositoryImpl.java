@@ -10,6 +10,7 @@ import com.tastyhouse.core.entity.product.QProduct;
 import com.tastyhouse.core.entity.rank.dto.MemberReviewCountDto;
 import com.tastyhouse.core.entity.rank.dto.QMemberReviewCountDto;
 import com.tastyhouse.core.entity.review.QReview;
+import com.tastyhouse.core.entity.review.QReviewComment;
 import com.tastyhouse.core.entity.review.QReviewImage;
 import com.tastyhouse.core.entity.review.QReviewLike;
 import com.tastyhouse.core.entity.review.dto.BestReviewListItemDto;
@@ -86,10 +87,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QReview review = QReview.review;
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
         QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -102,7 +104,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
@@ -158,6 +167,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QMember member = QMember.member;
         QProduct product = QProduct.product;
         QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
@@ -170,7 +181,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
@@ -207,10 +225,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QReview review = QReview.review;
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-        QReviewLike reviewLike = QReviewLike.reviewLike;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
         if (rating != null) {
@@ -250,8 +269,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
         }
 
-        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
-
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
                 review.id,
@@ -263,7 +280,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
@@ -276,13 +300,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         // 정렬 로직
         if ("RECOMMENDED".equals(sortType)) {
             // 추천순: 좋아요 수 기준 (내림차순)
-            // 좋아요 수를 계산하기 위해 leftJoin 사용
-            QReviewLike subReviewLike = new QReviewLike("subReviewLike");
-            query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
+            QReviewLike sortReviewLike = new QReviewLike("sortReviewLike");
+            query.leftJoin(sortReviewLike).on(sortReviewLike.reviewId.eq(review.id))
                 .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
                     member.id, member.nickname, uploadedFile.filePath, review.createdAt,
                     product.id, product.name)
-                .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
+                .orderBy(sortReviewLike.count().desc(), review.createdAt.desc());
         } else if ("OLDEST".equals(sortType)) {
             // 오래된순
             query.orderBy(review.createdAt.asc());
@@ -391,6 +414,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QMember member = QMember.member;
         QProduct product = QProduct.product;
         QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         var whereClause = review.placeId.eq(placeId).and(review.isHidden.eq(false));
 
@@ -416,7 +441,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
@@ -445,10 +477,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QReview review = QReview.review;
         QPlace place = QPlace.place;
         QPlaceStation placeStation = QPlaceStation.placeStation;
-        QReviewImage reviewImage = QReviewImage.reviewImage;
-        QReviewLike reviewLike = QReviewLike.reviewLike;
         QMember member = QMember.member;
         QProduct product = QProduct.product;
+        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         var whereClause = review.productId.eq(productId).and(review.isHidden.eq(false));
         if (rating != null) {
@@ -483,8 +516,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             }
         }
 
-        QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
-
         JPAQuery<LatestReviewListItemDto> query = queryFactory
             .select(new QLatestReviewListItemDto(
                 review.id,
@@ -496,7 +527,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
@@ -507,12 +545,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .where(whereClause);
 
         if ("RECOMMENDED".equals(sortType)) {
-            QReviewLike subReviewLike = new QReviewLike("subReviewLike");
-            query.leftJoin(subReviewLike).on(subReviewLike.reviewId.eq(review.id))
+            QReviewLike sortReviewLike = new QReviewLike("sortReviewLike");
+            query.leftJoin(sortReviewLike).on(sortReviewLike.reviewId.eq(review.id))
                 .groupBy(review.id, placeStation.stationName, review.totalRating, review.content,
                     member.id, member.nickname, uploadedFile.filePath, review.createdAt,
                     product.id, product.name)
-                .orderBy(subReviewLike.count().desc(), review.createdAt.desc());
+                .orderBy(sortReviewLike.count().desc(), review.createdAt.desc());
         } else if ("OLDEST".equals(sortType)) {
             query.orderBy(review.createdAt.asc());
         } else {
@@ -545,6 +583,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         QMember member = QMember.member;
         QProduct product = QProduct.product;
         QUploadedFile uploadedFile = QUploadedFile.uploadedFile;
+        QReviewLike subReviewLike = new QReviewLike("subReviewLike");
+        QReviewComment subReviewComment = new QReviewComment("subReviewComment");
 
         var whereClause = review.productId.eq(productId).and(review.isHidden.eq(false));
 
@@ -568,7 +608,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 uploadedFile.filePath,
                 review.createdAt,
                 product.id,
-                product.name
+                product.name,
+                JPAExpressions.select(subReviewLike.count())
+                    .from(subReviewLike)
+                    .where(subReviewLike.reviewId.eq(review.id)),
+                JPAExpressions.select(subReviewComment.count())
+                    .from(subReviewComment)
+                    .where(subReviewComment.reviewId.eq(review.id)
+                        .and(subReviewComment.isHidden.eq(false)))
             ))
             .from(review)
             .innerJoin(place).on(review.placeId.eq(place.id))
