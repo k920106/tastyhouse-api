@@ -41,34 +41,21 @@ public class PolicyService {
     @Transactional(readOnly = true)
     public PageResult<PolicyListItemResponse> searchAllByType(PolicyType type, PageRequest pageRequest) {
         return policyDocumentCoreService
-            .findAllByTypeWithPagination(type, pageRequest.getPage(), pageRequest.getSize())
+            .findAllByTypeWithPagination(type, pageRequest.page(), pageRequest.size())
             .map(this::convertToPolicyListItemResponse);
     }
 
     private PolicyDetailResponse convertToPolicyDetailResponse(PolicyDocumentDto dto) {
-        return PolicyDetailResponse.builder()
-            .id(dto.getId())
-            .type(dto.getType())
-            .version(dto.getVersion())
-            .title(dto.getTitle())
-            .content(dto.getContent())
-            .current(dto.getCurrent())
-            .mandatory(dto.getMandatory())
-            .effectiveDate(dto.getEffectiveDate())
-            .createdAt(dto.getCreatedAt())
-            .updatedAt(dto.getUpdatedAt())
-            .build();
+        return new PolicyDetailResponse(
+            dto.id(), dto.type(), dto.version(), dto.title(), dto.content(),
+            dto.current(), dto.mandatory(), dto.effectiveDate(), dto.createdAt(), dto.updatedAt()
+        );
     }
 
     private PolicyListItemResponse convertToPolicyListItemResponse(PolicyListItemDto dto) {
-        return PolicyListItemResponse.builder()
-            .id(dto.getId())
-            .type(dto.getType())
-            .version(dto.getVersion())
-            .title(dto.getTitle())
-            .current(dto.getCurrent())
-            .effectiveDate(dto.getEffectiveDate())
-            .createdAt(dto.getCreatedAt())
-            .build();
+        return new PolicyListItemResponse(
+            dto.id(), dto.type(), dto.version(), dto.title(), dto.current(),
+            dto.effectiveDate(), dto.createdAt()
+        );
     }
 }

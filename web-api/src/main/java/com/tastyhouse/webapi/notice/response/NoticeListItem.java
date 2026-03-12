@@ -1,15 +1,11 @@
 package com.tastyhouse.webapi.notice.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 
-@Getter
-@Builder
-public class NoticeListItem {
-    private final Long id;
-    private final String title;
-    private final String content;
-    private final LocalDateTime createdAt;
+public record NoticeListItem(
+        Long id,
+        String title,
+        String content,
+        LocalDateTime createdAt
+) {
 }

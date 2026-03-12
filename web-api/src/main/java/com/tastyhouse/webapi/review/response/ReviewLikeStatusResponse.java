@@ -1,13 +1,6 @@
 package com.tastyhouse.webapi.review.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ReviewLikeStatusResponse {
-
-    private Boolean liked;
+public record ReviewLikeStatusResponse(
+        Boolean liked
+) {
 }

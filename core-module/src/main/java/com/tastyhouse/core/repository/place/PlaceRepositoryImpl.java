@@ -196,17 +196,17 @@ public class PlaceRepositoryImpl implements PlaceRepository {
             ));
 
         // 7. 결과 조합
-        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> LatestPlaceItemDto.builder()
-            .id(p.getId())
-            .name(p.getName())
-            .stationName(stationMap.get(p.getId()))
-            .rating(p.getRating())
-            .imageUrl(p.getThumbnailImageUrl())
-            .createdAt(p.getCreatedAt())
-            .reviewCount(reviewCountMap.getOrDefault(p.getId(), 0L))
-            .bookmarkCount(bookmarkCountMap.getOrDefault(p.getId(), 0L))
-            .foodTypes(foodTypeMap.getOrDefault(p.getId(), List.of()))
-            .build()).collect(Collectors.toList());
+        List<LatestPlaceItemDto> content = pagedPlaces.stream().map(p -> new LatestPlaceItemDto(
+            p.getId(),
+            p.getName(),
+            stationMap.get(p.getId()),
+            p.getRating(),
+            p.getThumbnailImageUrl(),
+            p.getCreatedAt(),
+            reviewCountMap.getOrDefault(p.getId(), 0L),
+            bookmarkCountMap.getOrDefault(p.getId(), 0L),
+            foodTypeMap.getOrDefault(p.getId(), List.of())
+        )).collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, total);
     }

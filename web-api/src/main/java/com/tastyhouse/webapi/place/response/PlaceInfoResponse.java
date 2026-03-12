@@ -1,111 +1,101 @@
 package com.tastyhouse.webapi.place.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Builder
 @Schema(description = "플레이스 기본 정보 응답")
-public class PlaceInfoResponse {
+public record PlaceInfoResponse(
+        @Schema(description = "플레이스 ID", example = "1")
+        Long id,
 
-    @Schema(description = "플레이스 ID", example = "1")
-    private Long id;
+        @Schema(description = "위도", example = "37.5234")
+        BigDecimal latitude,
 
-    @Schema(description = "위도", example = "37.5234")
-    private BigDecimal latitude;
+        @Schema(description = "경도", example = "127.0234")
+        BigDecimal longitude,
 
-    @Schema(description = "경도", example = "127.0234")
-    private BigDecimal longitude;
+        @Schema(description = "전철역명", example = "신사역")
+        String stationName,
 
-    @Schema(description = "전철역명", example = "신사역")
-    private String stationName;
+        @Schema(description = "전화번호", example = "02-1234-5678")
+        String phoneNumber,
 
-    @Schema(description = "전화번호", example = "02-1234-5678")
-    private String phoneNumber;
+        @Schema(description = "휴무일 목록")
+        List<ClosedDayItem> closedDays,
 
-    @Schema(description = "휴무일 목록")
-    private List<ClosedDayItem> closedDays;
+        @Schema(description = "운영시간 목록")
+        List<BusinessHourItem> businessHours,
 
-    @Schema(description = "운영시간 목록")
-    private List<BusinessHourItem> businessHours;
+        @Schema(description = "브레이크타임 목록")
+        List<BreakTimeItem> breakTimes,
 
-    @Schema(description = "브레이크타임 목록")
-    private List<BreakTimeItem> breakTimes;
+        @Schema(description = "편의시설 목록")
+        List<AmenityItem> amenities,
 
-    @Schema(description = "편의시설 목록")
-    private List<AmenityItem> amenities;
+        @Schema(description = "사장님 한마디", example = "사장님의 한마디는 환영의 노래입니다...")
+        String ownerMessage,
 
-    @Schema(description = "사장님 한마디", example = "사장님의 한마디는 환영의 노래입니다...")
-    private String ownerMessage;
-
-    @Schema(description = "사장님 한마디 생성일시", example = "2024-01-01T12:00:00")
-    private LocalDateTime ownerMessageCreatedAt;
-
-    @Getter
-    @Builder
+        @Schema(description = "사장님 한마디 생성일시", example = "2024-01-01T12:00:00")
+        LocalDateTime ownerMessageCreatedAt
+) {
     @Schema(description = "운영시간 정보")
-    public static class BusinessHourItem {
+    public record BusinessHourItem(
+            @Schema(description = "요일 타입", example = "WEEKDAY")
+            String dayType,
 
-        @Schema(description = "요일 타입", example = "WEEKDAY")
-        private String dayType;
+            @Schema(description = "요일 타입 설명", example = "평일")
+            String dayTypeDescription,
 
-        @Schema(description = "요일 타입 설명", example = "평일")
-        private String dayTypeDescription;
+            @Schema(description = "오픈 시간", example = "11:00")
+            String openTime,
 
-        @Schema(description = "오픈 시간", example = "11:00")
-        private String openTime;
+            @Schema(description = "마감 시간", example = "22:00")
+            String closeTime,
 
-        @Schema(description = "마감 시간", example = "22:00")
-        private String closeTime;
-
-        @Schema(description = "휴무 여부", example = "false")
-        private Boolean isClosed;
+            @Schema(description = "휴무 여부", example = "false")
+            Boolean isClosed
+    ) {
     }
 
-    @Getter
-    @Builder
     @Schema(description = "브레이크타임 정보")
-    public static class BreakTimeItem {
-        @Schema(description = "요일 타입", example = "WEEKDAY")
-        private String dayType;
+    public record BreakTimeItem(
+            @Schema(description = "요일 타입", example = "WEEKDAY")
+            String dayType,
 
-        @Schema(description = "요일 타입 설명", example = "평일")
-        private String dayTypeDescription;
+            @Schema(description = "요일 타입 설명", example = "평일")
+            String dayTypeDescription,
 
-        @Schema(description = "브레이크타임 시작", example = "15:00")
-        private String startTime;
+            @Schema(description = "브레이크타임 시작", example = "15:00")
+            String startTime,
 
-        @Schema(description = "브레이크타임 종료", example = "17:00")
-        private String endTime;
+            @Schema(description = "브레이크타임 종료", example = "17:00")
+            String endTime
+    ) {
     }
 
-    @Getter
-    @Builder
     @Schema(description = "휴무일 정보")
-    public static class ClosedDayItem {
-        @Schema(description = "휴무일 타입", example = "EVERY_WEEK_MONDAY")
-        private String closedDayType;
+    public record ClosedDayItem(
+            @Schema(description = "휴무일 타입", example = "EVERY_WEEK_MONDAY")
+            String closedDayType,
 
-        @Schema(description = "휴무일 설명", example = "매주 월요일")
-        private String description;
+            @Schema(description = "휴무일 설명", example = "매주 월요일")
+            String description
+    ) {
     }
 
-    @Getter
-    @Builder
     @Schema(description = "편의시설 정보")
-    public static class AmenityItem {
-        @Schema(description = "편의시설 코드", example = "PARKING")
-        private String code;
+    public record AmenityItem(
+            @Schema(description = "편의시설 코드", example = "PARKING")
+            String code,
 
-        @Schema(description = "편의시설 표시명", example = "주차 가능")
-        private String name;
+            @Schema(description = "편의시설 표시명", example = "주차 가능")
+            String name,
 
-        @Schema(description = "편의시설 이미지 URL (ON)", example = "https://example.com/parking-on.png")
-        private String imageUrlOn;
+            @Schema(description = "편의시설 이미지 URL (ON)", example = "https://example.com/parking-on.png")
+            String imageUrlOn
+    ) {
     }
 }

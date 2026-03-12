@@ -78,13 +78,13 @@ public class BbqService {
      * @return ProductCategory 구조에 맞춘 응답
      */
     private BbqProductCategoryResponse convertToProductCategoryResponse(BbqMenuCategoryResponse externalResponse) {
-        return BbqProductCategoryResponse.builder()
-                .id(externalResponse.getId())
-                .placeId(null) // 외부 API에는 placeId 정보가 없으므로 null로 설정
-                .name(externalResponse.getCategoryName())
-                .sort(externalResponse.getPriority())
-                .isActive(true) // 외부 API에서 조회된 카테고리는 활성화 상태로 간주
-                .build();
+        return new BbqProductCategoryResponse(
+                externalResponse.getId(),
+                null, // 외부 API에는 placeId 정보가 없으므로 null로 설정
+                externalResponse.getCategoryName(),
+                externalResponse.getPriority(),
+                true // 외부 API에서 조회된 카테고리는 활성화 상태로 간주
+        );
     }
 
     /**
@@ -110,18 +110,18 @@ public class BbqService {
      * @return Product 구조에 맞춘 응답
      */
     private BbqProductResponse convertToProductResponse(BbqMenuResponse externalResponse) {
-        return BbqProductResponse.builder()
-                .id(externalResponse.getId())
-                .name(externalResponse.getMenuName())
-                .description(externalResponse.getDescription())
-                .imageUrl(externalResponse.getMenuImageUrl())
-                .originalPrice(externalResponse.getMenuPrice())
-                .addPrice(externalResponse.getAddPrice())
-                .isSoldOut(externalResponse.getIsSoldOut() != null ? externalResponse.getIsSoldOut() : false)
-                .isAdultOnly(externalResponse.getIsAdultOnly() != null ? externalResponse.getIsAdultOnly() : false)
-                .canDeliver(externalResponse.getCanDeliver() != null ? externalResponse.getCanDeliver() : false)
-                .canTakeout(externalResponse.getCanTakeout() != null ? externalResponse.getCanTakeout() : false)
-                .build();
+        return new BbqProductResponse(
+                externalResponse.getId(),
+                externalResponse.getMenuName(),
+                externalResponse.getDescription(),
+                externalResponse.getMenuImageUrl(),
+                externalResponse.getMenuPrice(),
+                externalResponse.getAddPrice(),
+                externalResponse.getIsSoldOut() != null ? externalResponse.getIsSoldOut() : false,
+                externalResponse.getIsAdultOnly() != null ? externalResponse.getIsAdultOnly() : false,
+                externalResponse.getCanDeliver() != null ? externalResponse.getCanDeliver() : false,
+                externalResponse.getCanTakeout() != null ? externalResponse.getCanTakeout() : false
+        );
     }
 
     /**
@@ -152,23 +152,23 @@ public class BbqService {
         List<BbqProductSubOptionResponse.SubOptionItemDetailResponse> itemDetails = null;
         if (externalResponse.getSubOptionItemDetailResponseList() != null) {
             itemDetails = externalResponse.getSubOptionItemDetailResponseList().stream()
-                    .map(item -> BbqProductSubOptionResponse.SubOptionItemDetailResponse.builder()
-                            .id(item.getId())
-                            .itemTitle(item.getItemTitle())
-                            .addPrice(item.getAddPrice())
-                            .isSoldOut(item.getIsSoldOut() != null ? item.getIsSoldOut() : false)
-                            .isHidden(item.getIsHidden() != null ? item.getIsHidden() : false)
-                            .build())
+                    .map(item -> new BbqProductSubOptionResponse.SubOptionItemDetailResponse(
+                            item.getId(),
+                            item.getItemTitle(),
+                            item.getAddPrice(),
+                            item.getIsSoldOut() != null ? item.getIsSoldOut() : false,
+                            item.getIsHidden() != null ? item.getIsHidden() : false
+                    ))
                     .collect(Collectors.toList());
         }
 
-        return BbqProductSubOptionResponse.builder()
-                .id(externalResponse.getId())
-                .subOptionTitle(externalResponse.getSubOptionTitle())
-                .requiredSelectCount(externalResponse.getRequiredSelectCount())
-                .maxSelectCount(externalResponse.getMaxSelectCount())
-                .subOptionItemDetailResponseList(itemDetails)
-                .build();
+        return new BbqProductSubOptionResponse(
+                externalResponse.getId(),
+                externalResponse.getSubOptionTitle(),
+                externalResponse.getRequiredSelectCount(),
+                externalResponse.getMaxSelectCount(),
+                itemDetails
+        );
     }
 
     /**

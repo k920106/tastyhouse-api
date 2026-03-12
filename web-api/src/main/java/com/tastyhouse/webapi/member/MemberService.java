@@ -136,10 +136,7 @@ public class MemberService {
     public PointResponse getMemberPoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
             .map(PointResponse::from)
-            .orElseGet(() -> PointResponse.builder()
-                .availablePoints(0)
-                .expiredThisMonth(0)
-                .build());
+            .orElseGet(() -> new PointResponse(0, 0));
     }
 
     @Transactional(readOnly = true)
@@ -152,11 +149,7 @@ public class MemberService {
             .map(PointHistoryItemResponse::from)
             .collect(Collectors.toList());
 
-        return PointHistoryResponse.builder()
-            .availablePoints(pointResponse.getAvailablePoints())
-            .expiredThisMonth(pointResponse.getExpiredThisMonth())
-            .histories(histories)
-            .build();
+        return new PointHistoryResponse(pointResponse.availablePoints(), pointResponse.expiredThisMonth(), histories);
     }
 
     @Transactional(readOnly = true)
@@ -173,9 +166,7 @@ public class MemberService {
     public UsablePointResponse getUsablePoint(Long memberId) {
         return memberPointJpaRepository.findByMemberId(memberId)
             .map(UsablePointResponse::from)
-            .orElseGet(() -> UsablePointResponse.builder()
-                .usablePoints(0)
-                .build());
+            .orElseGet(() -> new UsablePointResponse(0));
     }
 
     @Transactional(readOnly = true)
@@ -187,16 +178,11 @@ public class MemberService {
                     profileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
                 }
 
-                return MemberProfileResponse.builder()
-                    .id(member.getId())
-                    .nickname(member.getNickname())
-                    .grade(member.getMemberGrade())
-                    .statusMessage(member.getStatusMessage())
-                    .profileImageUrl(profileImageUrl)
-                    .fullName(member.getFullName())
-                    .phoneNumber(member.getPhoneNumber())
-                    .email(member.getUsername())
-                    .build();
+                return new MemberProfileResponse(
+                    member.getId(), member.getNickname(), member.getMemberGrade(),
+                    member.getStatusMessage(), profileImageUrl, member.getFullName(),
+                    member.getPhoneNumber(), member.getUsername()
+                );
             });
     }
 
@@ -264,7 +250,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public PageResult<MyReviewListItemResponse> getMyReviews(Long memberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+            org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
 
         Page<MyReviewListItemDto> page = reviewRepository.findMyReviews(memberId, springPageRequest);
 
@@ -284,7 +270,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public PageResult<MyBookmarkedPlaceListItemResponse> getMyBookmarkedPlaces(Long memberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+            org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
 
         Page<MyBookmarkedPlaceItemDto> page = placeRepository.findMyBookmarkedPlaces(memberId, springPageRequest);
 
@@ -307,11 +293,7 @@ public class MemberService {
         long followingCount = followRepository.countByFollowerId(memberId);
         long followerCount = followRepository.countByFollowingId(memberId);
 
-        return MemberStatsResponse.builder()
-            .reviewCount(reviewCount)
-            .followingCount(followingCount)
-            .followerCount(followerCount)
-            .build();
+        return new MemberStatsResponse(reviewCount, followingCount, followerCount);
     }
 
     @Transactional(readOnly = true)
@@ -327,13 +309,9 @@ public class MemberService {
         boolean isFollowing = viewerMemberId != null
             && followRepository.existsByFollowerIdAndFollowingId(viewerMemberId, targetMemberId);
 
-        return OtherMemberProfileResponse.builder()
-            .id(member.getId())
-            .nickname(member.getNickname())
-            .memberGrade(member.getMemberGrade())
-            .statusMessage(member.getStatusMessage())
-            .profileImageUrl(profileImageUrl)
-            .isFollowing(isFollowing)
-            .build();
+        return new OtherMemberProfileResponse(
+            member.getId(), member.getNickname(), member.getMemberGrade(),
+            member.getStatusMessage(), profileImageUrl, isFollowing
+        );
     }
 }

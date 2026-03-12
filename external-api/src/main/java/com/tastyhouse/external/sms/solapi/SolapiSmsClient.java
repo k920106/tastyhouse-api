@@ -29,16 +29,15 @@ public class SolapiSmsClient {
     private final SolapiProperties solapiProperties;
 
     public SolapiMessageResponse sendSms(String to, String text) {
-        SolapiMessageRequest request = SolapiMessageRequest.builder()
-            .messages(List.of(
-                SolapiMessageRequest.SolapiMessage.builder()
-                    .to(to)
-                    .from(solapiProperties.getSenderNumber())
-                    .text(text)
-                    .type("SMS")
-                    .build()
+        SolapiMessageRequest request = new SolapiMessageRequest(
+            List.of(new SolapiMessageRequest.SolapiMessage(
+                to,
+                solapiProperties.getSenderNumber(),
+                text,
+                "SMS",
+                null
             ))
-            .build();
+        );
 
         log.info("Solapi SMS 발송 요청. to: {}", to);
 
@@ -105,6 +104,11 @@ public class SolapiSmsClient {
         StringBuilder hex = new StringBuilder();
         for (byte b : bytes) {
             hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
+    }
+}
+       hex.append(String.format("%02x", b));
         }
         return hex.toString();
     }

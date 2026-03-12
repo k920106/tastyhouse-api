@@ -31,10 +31,7 @@ public class EventService {
     @Transactional(readOnly = true)
     public Optional<EventDurationResponse> getRankingEventDuration() {
         return eventCoreService.findActiveRankingEvent()
-                .map(event -> EventDurationResponse.builder()
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .build());
+                .map(event -> new EventDurationResponse(event.getStartAt(), event.getEndAt()));
     }
 
     @Transactional(readOnly = true)
@@ -50,18 +47,18 @@ public class EventService {
     }
 
     private PrizeItem convertToPrizeItem(EventPrize eventPrize) {
-        return PrizeItem.builder()
-            .id(eventPrize.getId())
-            .prizeRank(eventPrize.getPrizeRank())
-            .name(eventPrize.getName())
-            .brand(eventPrize.getBrand())
-            .imageUrl(fileService.getFileUrl(eventPrize.getImageFileId()))
-            .build();
+        return new PrizeItem(
+            eventPrize.getId(),
+            eventPrize.getPrizeRank(),
+            eventPrize.getName(),
+            eventPrize.getBrand(),
+            fileService.getFileUrl(eventPrize.getImageFileId())
+        );
     }
 
     @Transactional(readOnly = true)
     public PageResult<EventListItemResponse> getEventList(EventStatus status, PageRequest pageRequest) {
-        return eventCoreService.searchEventsByStatus(status, pageRequest.getPage(), pageRequest.getSize())
+        return eventCoreService.searchEventsByStatus(status, pageRequest.page(), pageRequest.size())
             .map(this::convertToEventListItemResponse);
     }
 
@@ -75,32 +72,30 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public PageResult<EventAnnouncementListItemResponse> getEventAnnouncementList(PageRequest pageRequest) {
-        return eventCoreService.findAllEventAnnouncements(pageRequest.getPage(), pageRequest.getSize())
+        return eventCoreService.findAllEventAnnouncements(pageRequest.page(), pageRequest.size())
             .map(this::convertToEventAnnouncementListItemResponse);
     }
 
     private EventListItemResponse convertToEventListItemResponse(Event event) {
-        return EventListItemResponse.builder()
-            .id(event.getId())
-            .name(event.getName())
-            .thumbnailImageUrl(fileService.getFileUrl(event.getThumbnailImageFileId()))
-            .startAt(event.getStartAt())
-            .endAt(event.getEndAt())
-            .build();
+        return new EventListItemResponse(
+            event.getId(),
+            event.getName(),
+            fileService.getFileUrl(event.getThumbnailImageFileId()),
+            event.getStartAt(),
+            event.getEndAt()
+        );
     }
 
     private EventDetailResponse convertToEventDetailResponse(Event event) {
-        return EventDetailResponse.builder()
-            .bannerImageUrl(fileService.getFileUrl(event.getBannerImageFileId()))
-            .build();
+        return new EventDetailResponse(fileService.getFileUrl(event.getBannerImageFileId()));
     }
 
     private EventAnnouncementListItemResponse convertToEventAnnouncementListItemResponse(EventAnnouncement announcement) {
-        return EventAnnouncementListItemResponse.builder()
-            .id(announcement.getId())
-            .name(announcement.getName())
-            .content(announcement.getContent())
-            .announcedAt(announcement.getAnnouncedAt())
-            .build();
+        return new EventAnnouncementListItemResponse(
+            announcement.getId(),
+            announcement.getName(),
+            announcement.getContent(),
+            announcement.getAnnouncedAt()
+        );
     }
 }

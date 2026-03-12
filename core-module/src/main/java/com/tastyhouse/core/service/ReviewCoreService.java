@@ -279,10 +279,6 @@ public class ReviewCoreService {
             ratingMap.putIfAbsent(r, 0L);
         }
 
-        PlaceReviewStatisticsDto.PlaceReviewStatisticsDtoBuilder builder = PlaceReviewStatisticsDto.builder()
-                .totalReviewCount(totalCount)
-                .ratingCounts(ratingMap);
-
         if (totalCount > 0) {
             Long willRevisitCount = reviewJpaRepository.countWillRevisit(placeId);
             double willRevisitPercentage = (willRevisitCount * 100.0) / totalCount;
@@ -294,17 +290,26 @@ public class ReviewCoreService {
                 monthlyMap.put((Integer) row[0], (Long) row[1]);
             }
 
-            builder.averageTasteRating(reviewJpaRepository.getAverageTasteRating(placeId))
-                    .averageAmountRating(reviewJpaRepository.getAverageAmountRating(placeId))
-                    .averagePriceRating(reviewJpaRepository.getAveragePriceRating(placeId))
-                    .averageAtmosphereRating(reviewJpaRepository.getAverageAtmosphereRating(placeId))
-                    .averageKindnessRating(reviewJpaRepository.getAverageKindnessRating(placeId))
-                    .averageHygieneRating(reviewJpaRepository.getAverageHygieneRating(placeId))
-                    .willRevisitPercentage(willRevisitPercentage)
-                    .monthlyReviewCounts(monthlyMap);
+            return new PlaceReviewStatisticsDto(
+                    totalCount,
+                    reviewJpaRepository.getAverageTasteRating(placeId),
+                    reviewJpaRepository.getAverageAmountRating(placeId),
+                    reviewJpaRepository.getAveragePriceRating(placeId),
+                    reviewJpaRepository.getAverageAtmosphereRating(placeId),
+                    reviewJpaRepository.getAverageKindnessRating(placeId),
+                    reviewJpaRepository.getAverageHygieneRating(placeId),
+                    willRevisitPercentage,
+                    ratingMap,
+                    monthlyMap
+            );
         }
 
-        return builder.build();
+        return new PlaceReviewStatisticsDto(
+                totalCount,
+                null, null, null, null, null, null, null,
+                ratingMap,
+                null
+        );
     }
 
     @Transactional(readOnly = true)

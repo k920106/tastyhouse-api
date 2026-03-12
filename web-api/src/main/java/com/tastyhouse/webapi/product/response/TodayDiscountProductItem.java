@@ -1,18 +1,14 @@
 package com.tastyhouse.webapi.product.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.math.BigDecimal;
 
-@Getter
-@Builder
-public class TodayDiscountProductItem {
-    private final Long id;
-    private final String placeName;
-    private final String name;
-    private final String imageUrl;
-    private final Integer originalPrice;
-    private final Integer discountPrice;
-    private final BigDecimal discountRate;
+public record TodayDiscountProductItem(
+        Long id,
+        String placeName,
+        String name,
+        String imageUrl,
+        Integer originalPrice,
+        Integer discountPrice,
+        BigDecimal discountRate
+) {
 }

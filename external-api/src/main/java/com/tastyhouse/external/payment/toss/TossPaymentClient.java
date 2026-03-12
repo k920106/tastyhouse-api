@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Slf4j
@@ -139,36 +140,50 @@ public class TossPaymentClient {
         TossPaymentConfirmResponse response = cancelPayment(paymentKey, cancelReason);
 
         if (response.isError()) {
-            return TossPaymentCancelResult.builder()
-                .success(false)
-                .errorCode(response.getCode())
-                .errorMessage(response.getMessage())
-                .build();
+            return new TossPaymentCancelResult(
+                false,
+                null, null, null, null, null, null,
+                null, null, null, null, null,
+                response.getCode(),
+                response.getMessage()
+            );
         }
 
         return mapToCancelResult(response);
     }
 
     private TossPaymentCancelResult mapToCancelResult(TossPaymentConfirmResponse response) {
-        TossPaymentCancelResult.TossPaymentCancelResultBuilder builder = TossPaymentCancelResult.builder()
-            .success(true)
-            .paymentKey(response.getPaymentKey())
-            .orderId(response.getOrderId())
-            .orderName(response.getOrderName())
-            .status(response.getStatus())
-            .totalAmount(response.getTotalAmount())
-            .balanceAmount(response.getBalanceAmount());
+        String cancelReason = null;
+        LocalDateTime canceledAt = null;
+        Integer cancelAmount = null;
+        Integer refundableAmount = null;
+        String cancelStatus = null;
 
         if (response.getCancels() != null && !response.getCancels().isEmpty()) {
             TossPaymentConfirmResponse.Cancel latestCancel = response.getCancels().get(0);
-            builder.cancelReason(latestCancel.getCancelReason())
-                .canceledAt(TossPaymentUtils.parseDateTime(latestCancel.getCanceledAt()))
-                .cancelAmount(latestCancel.getCancelAmount())
-                .refundableAmount(latestCancel.getRefundableAmount())
-                .cancelStatus(latestCancel.getCancelStatus());
+            cancelReason = latestCancel.getCancelReason();
+            canceledAt = TossPaymentUtils.parseDateTime(latestCancel.getCanceledAt());
+            cancelAmount = latestCancel.getCancelAmount();
+            refundableAmount = latestCancel.getRefundableAmount();
+            cancelStatus = latestCancel.getCancelStatus();
         }
 
-        return builder.build();
+        return new TossPaymentCancelResult(
+            true,
+            response.getPaymentKey(),
+            response.getOrderId(),
+            response.getOrderName(),
+            response.getStatus(),
+            response.getTotalAmount(),
+            response.getBalanceAmount(),
+            cancelReason,
+            canceledAt,
+            cancelAmount,
+            refundableAmount,
+            cancelStatus,
+            null,
+            null
+        );
     }
 
     private String createAuthorizationHeader() {
@@ -178,37 +193,50 @@ public class TossPaymentClient {
     }
 
     private TossPaymentConfirmResult mapToResult(TossPaymentConfirmResponse response) {
-        TossPaymentConfirmResult.TossPaymentConfirmResultBuilder builder = TossPaymentConfirmResult.builder()
-            .success(response.isSuccess())
-            .paymentKey(response.getPaymentKey())
-            .orderId(response.getOrderId())
-            .orderName(response.getOrderName())
-            .totalAmount(response.getTotalAmount())
-            .status(response.getStatus())
-            .approvedAt(TossPaymentUtils.parseDateTime(response.getApprovedAt()))
-            .method(response.getMethod());
+        String receiptUrl = response.getReceipt() != null ? response.getReceipt().getUrl() : null;
 
-        if (response.getReceipt() != null) {
-            builder.receiptUrl(response.getReceipt().getUrl());
-        }
+        String cardCompany = null;
+        String cardNumber = null;
+        Integer installmentPlanMonths = null;
+        Boolean isInterestFree = null;
+        String cardType = null;
 
         if (response.getCard() != null) {
             TossPaymentConfirmResponse.Card card = response.getCard();
-            builder.cardCompany(TossPaymentUtils.mapIssuerCodeToCardCompany(card.getIssuerCode()))
-                .cardNumber(card.getNumber())
-                .installmentPlanMonths(card.getInstallmentPlanMonths())
-                .isInterestFree(card.getIsInterestFree())
-                .cardType(card.getCardType());
+            cardCompany = TossPaymentUtils.mapIssuerCodeToCardCompany(card.getIssuerCode());
+            cardNumber = card.getNumber();
+            installmentPlanMonths = card.getInstallmentPlanMonths();
+            isInterestFree = card.getIsInterestFree();
+            cardType = card.getCardType();
         }
 
-        return builder.build();
+        return new TossPaymentConfirmResult(
+            response.isSuccess(),
+            response.getPaymentKey(),
+            response.getOrderId(),
+            response.getOrderName(),
+            response.getTotalAmount(),
+            response.getStatus(),
+            TossPaymentUtils.parseDateTime(response.getApprovedAt()),
+            receiptUrl,
+            cardCompany,
+            cardNumber,
+            installmentPlanMonths,
+            isInterestFree,
+            cardType,
+            response.getMethod(),
+            null,
+            null
+        );
     }
 
     private TossPaymentConfirmResult createErrorResult(String errorCode, String errorMessage) {
-        return TossPaymentConfirmResult.builder()
-            .success(false)
-            .errorCode(errorCode)
-            .errorMessage(errorMessage)
-            .build();
+        return new TossPaymentConfirmResult(
+            false,
+            null, null, null, null, null, null, null,
+            null, null, null, null, null, null,
+            errorCode,
+            errorMessage
+        );
     }
 }

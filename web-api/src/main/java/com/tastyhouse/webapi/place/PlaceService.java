@@ -44,19 +44,15 @@ public class PlaceService {
     @Transactional(readOnly = true)
     public List<PlaceMapMarkerResponse> searchMapMarkers(Double latitude, Double longitude) {
         return placeCoreService.findNearbyPlaces(latitude, longitude).stream()
-                .map(place -> PlaceMapMarkerResponse.builder()
-                        .id(place.getId())
-                        .latitude(place.getLatitude())
-                        .longitude(place.getLongitude())
-                        .name(place.getName())
-                        .build())
+                .map(place -> new PlaceMapMarkerResponse(
+                        place.getId(), place.getLatitude(), place.getLongitude(), place.getName()))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public PageResult<BestPlaceListItem> searchBestPlaces(PageRequest pageRequest) {
         org.springframework.data.domain.Page<BestPlaceItemDto> page =
-            placeCoreService.findBestPlaces(pageRequest.getPage(), pageRequest.getSize());
+            placeCoreService.findBestPlaces(pageRequest.page(), pageRequest.size());
 
         List<BestPlaceListItem> bestPlaceListItems = page.getContent().stream().map(this::convertToBestPlaceListItem).toList();
 
@@ -66,8 +62,8 @@ public class PlaceService {
     @Transactional(readOnly = true)
     public PageResult<LatestPlaceListItem> searchLatestPlaces(PageRequest pageRequest, LatestPlaceFilterRequest filterRequest) {
         org.springframework.data.domain.Page<LatestPlaceItemDto> page = placeCoreService.findLatestPlaces(
-                pageRequest.getPage(),
-                pageRequest.getSize(),
+                pageRequest.page(),
+                pageRequest.size(),
                 filterRequest.stationId(),
                 filterRequest.foodTypes(),
                 filterRequest.amenities()
@@ -85,26 +81,34 @@ public class PlaceService {
 
     @Transactional(readOnly = true)
     public List<EditorChoiceResponse> searchEditorChoices(PageRequest pageRequest) {
-        return placeCoreService.findEditorChoices(pageRequest.getPage(), pageRequest.getSize())
+        return placeCoreService.findEditorChoices(pageRequest.page(), pageRequest.size())
             .getContent().stream().map(this::convertToEditorChoiceResponse).toList();
     }
 
     private EditorChoiceResponse convertToEditorChoiceResponse(EditorChoiceDto dto) {
-        List<EditorChoiceProductItem> productItems = dto.getProducts() != null ? dto.getProducts().stream().map(this::convertToEditorChoiceProductItem).toList() : new ArrayList<EditorChoiceProductItem>();
+        List<EditorChoiceProductItem> productItems = dto.products() != null
+            ? dto.products().stream().map(this::convertToEditorChoiceProductItem).toList()
+            : new ArrayList<>();
 
-        return EditorChoiceResponse.builder().id(dto.getId()).name(dto.getName()).imageUrl(dto.getPlaceImageUrl()).title(dto.getTitle()).content(dto.getContent()).products(productItems).build();
+        return new EditorChoiceResponse(dto.id(), dto.name(), dto.placeImageUrl(), dto.title(), dto.content(), productItems);
     }
 
     private BestPlaceListItem convertToBestPlaceListItem(BestPlaceItemDto dto) {
-        return BestPlaceListItem.builder().id(dto.getId()).name(dto.getName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).foodTypes(dto.getFoodTypes()).build();
+        return new BestPlaceListItem(dto.id(), dto.name(), dto.stationName(), dto.rating(), dto.imageUrl(), dto.foodTypes());
     }
 
     private LatestPlaceListItem convertToLatestPlaceListItem(LatestPlaceItemDto dto) {
-        return LatestPlaceListItem.builder().id(dto.getId()).name(dto.getName()).stationName(dto.getStationName()).rating(dto.getRating()).imageUrl(dto.getImageUrl()).createdAt(dto.getCreatedAt()).reviewCount(dto.getReviewCount()).bookmarkCount(dto.getBookmarkCount()).foodTypes(dto.getFoodTypes()).build();
+        return new LatestPlaceListItem(
+            dto.id(), dto.name(), dto.stationName(), dto.rating(), dto.imageUrl(),
+            dto.createdAt(), dto.reviewCount(), dto.bookmarkCount(), dto.foodTypes()
+        );
     }
 
     private EditorChoiceProductItem convertToEditorChoiceProductItem(ProductSimpleDto dto) {
-        return EditorChoiceProductItem.builder().id(dto.getId()).placeName(dto.getPlaceName()).name(dto.getName()).imageUrl(dto.getImageUrl()).originalPrice(dto.getOriginalPrice()).discountPrice(dto.getDiscountPrice()).discountRate(dto.getDiscountRate()).build();
+        return new EditorChoiceProductItem(
+            dto.id(), dto.placeName(), dto.name(), dto.imageUrl(),
+            dto.originalPrice(), dto.discountPrice(), dto.discountRate()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -130,37 +134,27 @@ public class PlaceService {
     }
 
     private StationListItem convertToStationListItem(PlaceStation station) {
-        return StationListItem.builder().id(station.getId()).name(station.getStationName()).build();
+        return new StationListItem(station.getId(), station.getStationName());
     }
 
     private FoodTypeListItem convertToFoodTypeListItem(PlaceFoodTypeCategory category) {
-        return FoodTypeListItem.builder()
-                .code(category.getFoodType().name())
-                .name(category.getDisplayName())
-                .imageUrl(category.getImageUrl())
-                .build();
+        return new FoodTypeListItem(category.getFoodType().name(), category.getDisplayName(), category.getImageUrl());
     }
 
     private AmenityListItem convertToAmenityListItem(PlaceAmenityCategory category) {
-        return AmenityListItem.builder()
-                .code(category.getAmenity().name())
-                .name(category.getDisplayName())
-                .imageUrlOn(category.getImageUrlOn())
-                .imageUrlOff(category.getImageUrlOff())
-                .build();
+        return new AmenityListItem(
+            category.getAmenity().name(), category.getDisplayName(),
+            category.getImageUrlOn(), category.getImageUrlOff()
+        );
     }
 
     @Transactional(readOnly = true)
     public PlaceSummaryResponse getPlaceSummary(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
 
-        return PlaceSummaryResponse.builder()
-                .id(place.getId())
-                .name(place.getName())
-                .roadAddress(place.getRoadAddress())
-                .lotAddress(place.getLotAddress())
-                .rating(place.getRating())
-                .build();
+        return new PlaceSummaryResponse(
+            place.getId(), place.getName(), place.getRoadAddress(), place.getLotAddress(), place.getRating()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -197,19 +191,12 @@ public class PlaceService {
             ownerMessageCreatedAt = ownerMessageHistory.get().getCreatedAt();
         }
 
-        return PlaceInfoResponse.builder()
-                .id(place.getId())
-                .latitude(place.getLatitude())
-                .longitude(place.getLongitude())
-                .stationName(station.getStationName())
-                .phoneNumber(place.getPhoneNumber())
-                .closedDays(closedDayItems)
-                .businessHours(businessHourItems)
-                .breakTimes(breakTimeItems)
-                .amenities(amenityItems)
-                .ownerMessage(ownerMessage)
-                .ownerMessageCreatedAt(ownerMessageCreatedAt)
-                .build();
+        return new PlaceInfoResponse(
+            place.getId(), place.getLatitude(), place.getLongitude(),
+            station.getStationName(), place.getPhoneNumber(),
+            closedDayItems, businessHourItems, breakTimeItems, amenityItems,
+            ownerMessage, ownerMessageCreatedAt
+        );
     }
 
     @Transactional(readOnly = true)
@@ -237,10 +224,7 @@ public class PlaceService {
                     List<PlaceMenuResponse> menuResponses = categoryProducts.stream()
                             .map(this::convertToPlaceMenuResponse)
                             .toList();
-                    return PlaceMenuCategoryResponse.builder()
-                            .categoryName(category.getName())
-                            .menus(menuResponses)
-                            .build();
+                    return new PlaceMenuCategoryResponse(category.getName(), menuResponses);
                 })
                 .toList();
     }
@@ -262,10 +246,7 @@ public class PlaceService {
                     List<String> imageUrls = categoryImages.stream()
                             .map(PlacePhotoCategoryImage::getImageUrl)
                             .toList();
-                    return PlacePhotoCategoryResponse.builder()
-                            .name(category.getName())
-                            .imageUrls(imageUrls)
-                            .build();
+                    return new PlacePhotoCategoryResponse(category.getName(), imageUrls);
                 })
                 .toList();
     }
@@ -304,27 +285,19 @@ public class PlaceService {
                 .map(this::convertToPlaceReviewListItem)
                 .toList();
 
-        PlaceReviewsByRatingResponse response = PlaceReviewsByRatingResponse.builder()
-                .reviewsByRating(reviewsByRating)
-                .allReviews(allReviews)
-                .totalReviewCount(result.getTotalReviewCount())
-                .build();
+        PlaceReviewsByRatingResponse response = new PlaceReviewsByRatingResponse(
+            reviewsByRating, allReviews, result.getTotalReviewCount()
+        );
 
         return new PlaceReviewsByRatingWithPagination(response, result.getTotalElements());
     }
 
     private PlaceReviewListItem convertToPlaceReviewListItem(LatestReviewListItemDto dto) {
-        return PlaceReviewListItem.builder()
-                .id(dto.getId())
-                .imageUrls(dto.getImageUrls())
-                .totalRating(dto.getTotalRating())
-                .content(dto.getContent())
-                .memberNickname(dto.getMemberNickname())
-                .memberProfileImageUrl(dto.getMemberProfileImageUrl())
-                .createdAt(dto.getCreatedAt())
-                .productId(dto.getProductId())
-                .productName(dto.getProductName())
-                .build();
+        return new PlaceReviewListItem(
+            dto.getId(), dto.getImageUrls(), dto.getTotalRating(), dto.getContent(),
+            dto.getMemberNickname(), dto.getMemberProfileImageUrl(), dto.getCreatedAt(),
+            dto.getProductId(), dto.getProductName()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -333,83 +306,70 @@ public class PlaceService {
 
         Place place = placeCoreService.findPlaceById(placeId);
 
-        return PlaceReviewStatisticsResponse.builder()
-                .totalRating(place.getRating())
-                .totalReviewCount(statistics.getTotalReviewCount())
-                .averageTasteRating(statistics.getAverageTasteRating())
-                .averageAmountRating(statistics.getAverageAmountRating())
-                .averagePriceRating(statistics.getAveragePriceRating())
-                .averageAtmosphereRating(statistics.getAverageAtmosphereRating())
-                .averageKindnessRating(statistics.getAverageKindnessRating())
-                .averageHygieneRating(statistics.getAverageHygieneRating())
-                .willRevisitPercentage(statistics.getWillRevisitPercentage())
-                .monthlyReviewCounts(statistics.getMonthlyReviewCounts())
-                .ratingCounts(statistics.getRatingCounts())
-                .build();
+        return new PlaceReviewStatisticsResponse(
+            place.getRating(),
+            statistics.totalReviewCount(),
+            statistics.averageTasteRating(),
+            statistics.averageAmountRating(),
+            statistics.averagePriceRating(),
+            statistics.averageAtmosphereRating(),
+            statistics.averageKindnessRating(),
+            statistics.averageHygieneRating(),
+            statistics.willRevisitPercentage(),
+            statistics.monthlyReviewCounts(),
+            statistics.ratingCounts()
+        );
     }
 
     private PlaceInfoResponse.BusinessHourItem convertToBusinessHourItem(PlaceBusinessHour businessHour) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
-        return PlaceInfoResponse.BusinessHourItem.builder()
-                .dayType(businessHour.getDayType().name())
-                .dayTypeDescription(businessHour.getDayType().getDescription())
-                .openTime(businessHour.getOpenTime() != null ? businessHour.getOpenTime().format(formatter) : null)
-                .closeTime(businessHour.getCloseTime() != null ? businessHour.getCloseTime().format(formatter) : null)
-                .isClosed(businessHour.getIsClosed())
-                .build();
+        return new PlaceInfoResponse.BusinessHourItem(
+            businessHour.getDayType().name(),
+            businessHour.getDayType().getDescription(),
+            businessHour.getOpenTime() != null ? businessHour.getOpenTime().format(formatter) : null,
+            businessHour.getCloseTime() != null ? businessHour.getCloseTime().format(formatter) : null,
+            businessHour.getIsClosed()
+        );
     }
 
     private PlaceInfoResponse.BreakTimeItem convertToBreakTimeItem(PlaceBreakTime breakTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
-        return PlaceInfoResponse.BreakTimeItem.builder()
-                .dayType(breakTime.getDayType().name())
-                .dayTypeDescription(breakTime.getDayType().getDescription())
-                .startTime(breakTime.getStartTime() != null ? breakTime.getStartTime().format(formatter) : null)
-                .endTime(breakTime.getEndTime() != null ? breakTime.getEndTime().format(formatter) : null)
-                .build();
+        return new PlaceInfoResponse.BreakTimeItem(
+            breakTime.getDayType().name(),
+            breakTime.getDayType().getDescription(),
+            breakTime.getStartTime() != null ? breakTime.getStartTime().format(formatter) : null,
+            breakTime.getEndTime() != null ? breakTime.getEndTime().format(formatter) : null
+        );
     }
 
     private PlaceInfoResponse.ClosedDayItem convertToClosedDayItem(PlaceClosedDay closedDay) {
-        return PlaceInfoResponse.ClosedDayItem.builder()
-                .closedDayType(closedDay.getClosedDayType().name())
-                .description(closedDay.getClosedDayType().getDescription())
-                .build();
+        return new PlaceInfoResponse.ClosedDayItem(
+            closedDay.getClosedDayType().name(),
+            closedDay.getClosedDayType().getDescription()
+        );
     }
 
     private PlaceInfoResponse.AmenityItem convertToAmenityItem(PlaceAmenity placeAmenity) {
         PlaceAmenityCategory category = placeCoreService.findPlaceAmenityCategoryById(placeAmenity.getPlaceAmenityCategoryId());
-        return PlaceInfoResponse.AmenityItem.builder()
-                .code(category.getAmenity().name())
-                .name(category.getDisplayName())
-                .imageUrlOn(category.getImageUrlOn())
-                .build();
+        return new PlaceInfoResponse.AmenityItem(
+            category.getAmenity().name(), category.getDisplayName(), category.getImageUrlOn()
+        );
     }
 
     private PlaceBannerResponse convertToPlaceBannerResponse(PlaceBannerImage image) {
-        return PlaceBannerResponse.builder()
-                .id(image.getId())
-                .imageUrl(image.getImageUrl())
-                .sort(image.getSort())
-                .build();
+        return new PlaceBannerResponse(image.getId(), image.getImageUrl(), image.getSort());
     }
 
     private PlaceMenuResponse convertToPlaceMenuResponse(Product product) {
         String imageUrl = getFirstImageUrl(product.getId());
 
-        return PlaceMenuResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .imageUrl(imageUrl)
-                .originalPrice(product.getOriginalPrice())
-                .discountPrice(product.getDiscountPrice())
-                .discountRate(product.getDiscountRate())
-                .rating(product.getRating())
-                .reviewCount(product.getReviewCount())
-                .isRepresentative(product.getIsRepresentative())
-                .spiciness(product.getSpiciness())
-                .build();
+        return new PlaceMenuResponse(
+            product.getId(), product.getName(), imageUrl,
+            product.getOriginalPrice(), product.getDiscountPrice(), product.getDiscountRate(),
+            product.getRating(), product.getReviewCount(), product.getIsRepresentative(), product.getSpiciness()
+        );
     }
 
     private String getFirstImageUrl(Long productId) {
@@ -440,23 +400,14 @@ public class PlaceService {
         placeCoreService.findPlaceById(placeId); // Ensure place exists
 
         return placeOwnerMessageHistoryJpaRepository.findFirstByPlaceIdOrderByCreatedAtDesc(placeId)
-                .map(history -> PlaceOwnerMessageHistoryResponse.builder()
-                        .message(history.getMessage())
-                        .createdAt(history.getCreatedAt())
-                        .build())
-                .orElse(PlaceOwnerMessageHistoryResponse.builder()
-                        .message(null)
-                        .createdAt(null)
-                        .build());
+                .map(history -> new PlaceOwnerMessageHistoryResponse(history.getMessage(), history.getCreatedAt()))
+                .orElse(new PlaceOwnerMessageHistoryResponse(null, null));
     }
 
     @Transactional(readOnly = true)
     public PlaceNameResponse getPlaceName(Long placeId) {
         Place place = placeCoreService.findPlaceById(placeId);
-        return PlaceNameResponse.builder()
-                .id(place.getId())
-                .name(place.getName())
-                .build();
+        return new PlaceNameResponse(place.getId(), place.getName());
     }
 
     @Transactional(readOnly = true)
@@ -465,15 +416,10 @@ public class PlaceService {
         List<PlaceOrderMethod> placeOrderMethods = placeCoreService.findPlaceOrderMethods(placeId);
 
         List<PlaceOrderMethodResponse.OrderMethodItem> orderMethodItems = placeOrderMethods.stream()
-                .map(pom -> PlaceOrderMethodResponse.OrderMethodItem.builder()
-                        .code(pom.getOrderMethod().name())
-                        .name(pom.getOrderMethod().getDisplayName())
-                        .build())
+                .map(pom -> new PlaceOrderMethodResponse.OrderMethodItem(
+                        pom.getOrderMethod().name(), pom.getOrderMethod().getDisplayName()))
                 .toList();
 
-        return PlaceOrderMethodResponse.builder()
-                .placeId(placeId)
-                .orderMethods(orderMethodItems)
-                .build();
+        return new PlaceOrderMethodResponse(placeId, orderMethodItems);
     }
 }

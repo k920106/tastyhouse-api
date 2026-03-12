@@ -44,13 +44,13 @@ public class BugReportService {
             }
         }
 
-        return BugReportResponse.builder()
-            .id(savedReport.getId())
-            .device(savedReport.getDevice())
-            .title(savedReport.getTitle())
-            .content(savedReport.getContent())
-            .uploadedFileIds(uploadedFileIds)
-            .createdAt(savedReport.getCreatedAt())
-            .build();
+        return new BugReportResponse(
+            savedReport.getId(),
+            savedReport.getDevice(),
+            savedReport.getTitle(),
+            savedReport.getContent(),
+            uploadedFileIds,
+            savedReport.getCreatedAt()
+        );
     }
 }

@@ -373,39 +373,39 @@ public class PaymentService {
     }
 
     private PaymentResponse buildPaymentResponse(Payment payment) {
-        return PaymentResponse.builder()
-            .id(payment.getId())
-            .orderId(payment.getOrderId())
-            .paymentMethod(payment.getPaymentMethod())
-            .paymentStatus(payment.getPaymentStatus())
-            .amount(payment.getAmount())
-            .pgProvider(payment.getPgProvider())
-            .pgTid(payment.getPgTid())
-            .pgOrderId(payment.getPgOrderId())
-            .cardCompany(payment.getCardCompany())
-            .cardNumber(payment.getCardNumber())
-            .installmentMonths(payment.getInstallmentMonths())
-            .approvedAt(payment.getApprovedAt())
-            .cancelledAt(payment.getCancelledAt())
-            .cancelReason(payment.getCancelReason())
-            .receiptUrl(payment.getReceiptUrl())
-            .cashReceiptNumber(payment.getCashReceiptNumber())
-            .cashReceiptType(payment.getCashReceiptType())
-            .createdAt(payment.getCreatedAt())
-            .build();
+        return new PaymentResponse(
+            payment.getId(),
+            payment.getOrderId(),
+            payment.getPaymentMethod(),
+            payment.getPaymentStatus(),
+            payment.getAmount(),
+            payment.getPgProvider(),
+            payment.getPgTid(),
+            payment.getPgOrderId(),
+            payment.getCardCompany(),
+            payment.getCardNumber(),
+            payment.getInstallmentMonths(),
+            payment.getApprovedAt(),
+            payment.getCancelledAt(),
+            payment.getCancelReason(),
+            payment.getReceiptUrl(),
+            payment.getCashReceiptNumber(),
+            payment.getCashReceiptType(),
+            payment.getCreatedAt()
+        );
     }
 
     private PaymentRefundResponse buildRefundResponse(PaymentRefund refund) {
-        return PaymentRefundResponse.builder()
-            .id(refund.getId())
-            .paymentId(refund.getPaymentId())
-            .refundAmount(refund.getRefundAmount())
-            .refundReason(refund.getRefundReason())
-            .refundStatus(refund.getRefundStatus())
-            .pgRefundId(refund.getPgRefundId())
-            .refundedAt(refund.getRefundedAt())
-            .createdAt(refund.getCreatedAt())
-            .build();
+        return new PaymentRefundResponse(
+            refund.getId(),
+            refund.getPaymentId(),
+            refund.getRefundAmount(),
+            refund.getRefundReason(),
+            refund.getRefundStatus(),
+            refund.getPgRefundId(),
+            refund.getRefundedAt(),
+            refund.getCreatedAt()
+        );
     }
 
     private TossPaymentRecord buildTossPaymentRecord(Long paymentId, TossPaymentConfirmResponse response) {

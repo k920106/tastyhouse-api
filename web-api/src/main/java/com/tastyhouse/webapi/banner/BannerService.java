@@ -20,16 +20,11 @@ public class BannerService {
     @Transactional(readOnly = true)
     public PageResult<BannerListItem> searchBannerList(PageRequest pageRequest) {
         return bannerCoreService.findAllWithPagination(
-            pageRequest.getPage(), pageRequest.getSize()
+            pageRequest.page(), pageRequest.size()
         ).map(this::convertToBannerListItem);
     }
 
     private BannerListItem convertToBannerListItem(BannerListItemDto dto) {
-        return BannerListItem.builder()
-            .id(dto.getId())
-            .title(dto.getTitle())
-            .imageUrl(dto.getImageUrl())
-            .linkUrl(dto.getLinkUrl())
-            .build();
+        return new BannerListItem(dto.id(), dto.title(), dto.imageUrl(), dto.linkUrl());
     }
 }

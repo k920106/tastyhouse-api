@@ -18,13 +18,13 @@ public class PolicyAdminService {
     @Transactional
     public Long createPolicy(PolicyCreateRequest request) {
         return policyDocumentCoreService.create(
-            request.getType(),
-            request.getVersion(),
-            request.getTitle(),
-            request.getContent(),
-            request.getMandatory(),
-            request.getEffectiveDate(),
-            request.getCreatedBy()
+            request.type(),
+            request.version(),
+            request.title(),
+            request.content(),
+            request.mandatory(),
+            request.effectiveDate(),
+            request.createdBy()
         ).getId();
     }
 
@@ -32,11 +32,11 @@ public class PolicyAdminService {
     public void updatePolicy(Long id, PolicyUpdateRequest request) {
         policyDocumentCoreService.update(
             id,
-            request.getTitle(),
-            request.getContent(),
-            request.getMandatory(),
-            request.getEffectiveDate(),
-            request.getUpdatedBy()
+            request.title(),
+            request.content(),
+            request.mandatory(),
+            request.effectiveDate(),
+            request.updatedBy()
         );
     }
 

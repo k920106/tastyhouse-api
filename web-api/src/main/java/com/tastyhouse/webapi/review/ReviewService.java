@@ -65,18 +65,18 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public PageResult<BestReviewListItem> searchBestReviewList(PageRequest pageRequest) {
         return reviewCoreService.findBestReviewsWithPagination(
-            pageRequest.getPage(), pageRequest.getSize()
+            pageRequest.page(), pageRequest.size()
         ).map(this::convertToBestReviewListItem);
     }
 
     private BestReviewListItem convertToBestReviewListItem(BestReviewListItemDto dto) {
-        return BestReviewListItem.builder()
-            .id(dto.getId())
-            .imageUrl(fileService.getUrlByPath(dto.getImageUrl()))
-            .stationName(dto.getStationName())
-            .totalRating(dto.getTotalRating())
-            .content(dto.getContent())
-            .build();
+        return new BestReviewListItem(
+            dto.id(),
+            fileService.getUrlByPath(dto.imageUrl()),
+            dto.stationName(),
+            dto.totalRating(),
+            dto.content()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -90,13 +90,13 @@ public class ReviewService {
         if (type == ReviewType.FOLLOWING && memberId != null) {
             coreResult = reviewCoreService.findLatestReviewsByFollowingWithPagination(
                 memberId,
-                pageRequest.getPage(),
-                pageRequest.getSize()
+                pageRequest.page(),
+                pageRequest.size()
             );
         } else {
             coreResult = reviewCoreService.findLatestReviewsWithPagination(
-                pageRequest.getPage(),
-                pageRequest.getSize()
+                pageRequest.page(),
+                pageRequest.size()
             );
         }
 
@@ -109,19 +109,12 @@ public class ReviewService {
                 .map(fileService::getUrlByPath)
                 .toList();
 
-        return LatestReviewListItem.builder()
-            .id(dto.getId())
-            .imageUrls(imageUrls)
-            .stationName(dto.getStationName())
-            .totalRating(dto.getTotalRating())
-            .content(dto.getContent())
-            .memberId(dto.getMemberId())
-            .memberNickname(dto.getMemberNickname())
-            .memberProfileImageUrl(fileService.getUrlByPath(dto.getMemberProfileImageUrl()))
-            .createdAt(dto.getCreatedAt())
-            .likeCount(dto.getLikeCount())
-            .commentCount(dto.getCommentCount())
-            .build();
+        return new LatestReviewListItem(
+            dto.getId(), imageUrls, dto.getStationName(), dto.getTotalRating(), dto.getContent(),
+            dto.getMemberId(), dto.getMemberNickname(),
+            fileService.getUrlByPath(dto.getMemberProfileImageUrl()),
+            dto.getCreatedAt(), dto.getLikeCount(), dto.getCommentCount()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -136,27 +129,14 @@ public class ReviewService {
                 .map(fileService::getUrlByPath)
                 .toList();
 
-        return ReviewDetailResponse.builder()
-            .id(dto.getId())
-            .placeId(dto.getPlaceId())
-            .placeName(dto.getPlaceName())
-            .stationName(dto.getStationName())
-            .content(dto.getContent())
-            .totalRating(dto.getTotalRating())
-            .tasteRating(dto.getTasteRating())
-            .amountRating(dto.getAmountRating())
-            .priceRating(dto.getPriceRating())
-            .atmosphereRating(dto.getAtmosphereRating())
-            .kindnessRating(dto.getKindnessRating())
-            .hygieneRating(dto.getHygieneRating())
-            .willRevisit(dto.getWillRevisit())
-            .memberId(dto.getMemberId())
-            .memberNickname(dto.getMemberNickname())
-            .memberProfileImageUrl(fileService.getUrlByPath(dto.getMemberProfileImageUrl()))
-            .createdAt(dto.getCreatedAt())
-            .imageUrls(imageUrls)
-            .tagNames(dto.getTagNames())
-            .build();
+        return new ReviewDetailResponse(
+            dto.getId(), dto.getPlaceId(), dto.getPlaceName(), dto.getStationName(),
+            dto.getContent(), dto.getTotalRating(), dto.getTasteRating(), dto.getAmountRating(),
+            dto.getPriceRating(), dto.getAtmosphereRating(), dto.getKindnessRating(),
+            dto.getHygieneRating(), dto.getWillRevisit(), dto.getMemberId(),
+            dto.getMemberNickname(), fileService.getUrlByPath(dto.getMemberProfileImageUrl()),
+            dto.getCreatedAt(), imageUrls, dto.getTagNames()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -241,16 +221,11 @@ public class ReviewService {
             memberProfileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
         }
 
-        return CommentResponse.builder()
-            .id(comment.getId())
-            .reviewId(comment.getReviewId())
-            .memberId(comment.getMemberId())
-            .memberNickname(member != null ? member.getNickname() : null)
-            .memberProfileImageUrl(memberProfileImageUrl)
-            .content(comment.getContent())
-            .createdAt(comment.getCreatedAt())
-            .replies(replies)
-            .build();
+        return new CommentResponse(
+            comment.getId(), comment.getReviewId(), comment.getMemberId(),
+            member != null ? member.getNickname() : null,
+            memberProfileImageUrl, comment.getContent(), comment.getCreatedAt(), replies
+        );
     }
 
     private ReplyResponse convertToReplyResponse(ReviewReply reply, Member member, Member replyToMember) {
@@ -259,17 +234,13 @@ public class ReviewService {
             memberProfileImageUrl = fileService.getFileUrl(member.getProfileImageFileId());
         }
 
-        return ReplyResponse.builder()
-            .id(reply.getId())
-            .commentId(reply.getCommentId())
-            .memberId(reply.getMemberId())
-            .memberNickname(member != null ? member.getNickname() : null)
-            .memberProfileImageUrl(memberProfileImageUrl)
-            .replyToMemberId(reply.getReplyToMemberId())
-            .replyToMemberNickname(replyToMember != null ? replyToMember.getNickname() : null)
-            .content(reply.getContent())
-            .createdAt(reply.getCreatedAt())
-            .build();
+        return new ReplyResponse(
+            reply.getId(), reply.getCommentId(), reply.getMemberId(),
+            member != null ? member.getNickname() : null,
+            memberProfileImageUrl, reply.getReplyToMemberId(),
+            replyToMember != null ? replyToMember.getNickname() : null,
+            reply.getContent(), reply.getCreatedAt()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -294,52 +265,30 @@ public class ReviewService {
                     ? product.getDiscountPrice()
                     : product.getOriginalPrice();
 
-                return ReviewProductResponse.builder()
-                    .productId(product.getId())
-                    .productName(product.getName())
-                    .productImageUrl(getFirstImageUrl(product.getId()))
-                    .productPrice(price)
-                    .reviewId(reviewDetail.getId())
-                    .content(reviewDetail.getContent())
-                    .totalRating(reviewDetail.getTotalRating())
-                    .tasteRating(reviewDetail.getTasteRating())
-                    .amountRating(reviewDetail.getAmountRating())
-                    .priceRating(reviewDetail.getPriceRating())
-                    .atmosphereRating(reviewDetail.getAtmosphereRating())
-                    .kindnessRating(reviewDetail.getKindnessRating())
-                    .hygieneRating(reviewDetail.getHygieneRating())
-                    .willRevisit(reviewDetail.getWillRevisit())
-                    .memberId(reviewDetail.getMemberId())
-                    .memberNickname(reviewDetail.getMemberNickname())
-                    .memberProfileImageUrl(reviewMemberProfileImageUrl)
-                    .createdAt(reviewDetail.getCreatedAt())
-                    .imageUrls(reviewImageUrls)
-                    .tagNames(reviewDetail.getTagNames())
-                    .build();
+                return new ReviewProductResponse(
+                    product.getId(), product.getName(), getFirstImageUrl(product.getId()), price,
+                    reviewDetail.getId(), reviewDetail.getContent(),
+                    reviewDetail.getTotalRating(), reviewDetail.getTasteRating(),
+                    reviewDetail.getAmountRating(), reviewDetail.getPriceRating(),
+                    reviewDetail.getAtmosphereRating(), reviewDetail.getKindnessRating(),
+                    reviewDetail.getHygieneRating(), reviewDetail.getWillRevisit(),
+                    reviewDetail.getMemberId(), reviewDetail.getMemberNickname(),
+                    reviewMemberProfileImageUrl, reviewDetail.getCreatedAt(),
+                    reviewImageUrls, reviewDetail.getTagNames()
+                );
             })
             .or(() -> Optional.of(
-                ReviewProductResponse.builder()
-                    .productId(null)
-                    .productName(null)
-                    .productImageUrl(null)
-                    .productPrice(null)
-                    .reviewId(reviewDetail.getId())
-                    .content(reviewDetail.getContent())
-                    .totalRating(reviewDetail.getTotalRating())
-                    .tasteRating(reviewDetail.getTasteRating())
-                    .amountRating(reviewDetail.getAmountRating())
-                    .priceRating(reviewDetail.getPriceRating())
-                    .atmosphereRating(reviewDetail.getAtmosphereRating())
-                    .kindnessRating(reviewDetail.getKindnessRating())
-                    .hygieneRating(reviewDetail.getHygieneRating())
-                    .willRevisit(reviewDetail.getWillRevisit())
-                    .memberId(reviewDetail.getMemberId())
-                    .memberNickname(reviewDetail.getMemberNickname())
-                    .memberProfileImageUrl(reviewMemberProfileImageUrl)
-                    .createdAt(reviewDetail.getCreatedAt())
-                    .imageUrls(reviewImageUrls)
-                    .tagNames(reviewDetail.getTagNames())
-                    .build()
+                new ReviewProductResponse(
+                    null, null, null, null,
+                    reviewDetail.getId(), reviewDetail.getContent(),
+                    reviewDetail.getTotalRating(), reviewDetail.getTasteRating(),
+                    reviewDetail.getAmountRating(), reviewDetail.getPriceRating(),
+                    reviewDetail.getAtmosphereRating(), reviewDetail.getKindnessRating(),
+                    reviewDetail.getHygieneRating(), reviewDetail.getWillRevisit(),
+                    reviewDetail.getMemberId(), reviewDetail.getMemberNickname(),
+                    reviewMemberProfileImageUrl, reviewDetail.getCreatedAt(),
+                    reviewImageUrls, reviewDetail.getTagNames()
+                )
             ));
     }
 
@@ -352,8 +301,6 @@ public class ReviewService {
         OrderItem orderItem = orderItemJpaRepository.findById(orderItemId)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.REVIEW_ORDER_ITEM_NOT_FOUND));
 
-        // 본인 주문인지 검증 (OrderItem의 orderId로 Order 접근은 OrderCoreService가 필요하나,
-        // 여기서는 Product 정보 조회 후 리뷰 작성 여부 확인으로 처리)
         Product product = productCoreService.findProductById(orderItem.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ORDER_PRODUCT_NOT_FOUND));
 
@@ -364,19 +311,14 @@ public class ReviewService {
         boolean isReviewed = reviewCoreService.isReviewedByOrderAndProduct(
                 orderItem.getOrderId(), orderItem.getProductId(), memberId);
 
-        return ReviewWriteInfoResponse.builder()
-                .productId(product.getId())
-                .productName(product.getName())
-                .productImageUrl(getFirstImageUrl(product.getId()))
-                .productPrice(price)
-                .orderId(orderItem.getOrderId())
-                .isReviewed(isReviewed)
-                .build();
+        return new ReviewWriteInfoResponse(
+            product.getId(), product.getName(), getFirstImageUrl(product.getId()),
+            price, orderItem.getOrderId(), isReviewed
+        );
     }
 
     @Transactional
     public ReviewResponse createReview(Long memberId, ReviewCreateRequest request) {
-        // 주문 기반 리뷰인 경우 중복 작성 검증
         Long orderId = null;
         if (request.orderItemId() != null) {
             OrderItem orderItem = orderItemJpaRepository.findById(request.orderItemId())
@@ -411,18 +353,12 @@ public class ReviewService {
         List<Long> savedUploadedFileIds = saveReviewImages(savedReview.getId(), request.uploadedFileIds());
         List<String> tags = saveReviewTags(savedReview.getId(), request.tags());
 
-        return ReviewResponse.builder()
-                .reviewId(savedReview.getId())
-                .productId(savedReview.getProductId())
-                .tasteRating(savedReview.getTasteRating())
-                .amountRating(savedReview.getAmountRating())
-                .priceRating(savedReview.getPriceRating())
-                .totalRating(savedReview.getTotalRating())
-                .content(savedReview.getContent())
-                .uploadedFileIds(savedUploadedFileIds)
-                .tags(tags)
-                .createdAt(savedReview.getCreatedAt())
-                .build();
+        return new ReviewResponse(
+            savedReview.getId(), savedReview.getProductId(),
+            savedReview.getTasteRating(), savedReview.getAmountRating(), savedReview.getPriceRating(),
+            savedReview.getTotalRating(), savedReview.getContent(),
+            savedUploadedFileIds, tags, savedReview.getCreatedAt()
+        );
     }
 
     @Transactional
@@ -447,18 +383,12 @@ public class ReviewService {
         List<Long> savedUploadedFileIds = saveReviewImages(reviewId, request.uploadedFileIds());
         List<String> tags = saveReviewTags(reviewId, request.tags());
 
-        return ReviewResponse.builder()
-                .reviewId(review.getId())
-                .productId(review.getProductId())
-                .tasteRating(review.getTasteRating())
-                .amountRating(review.getAmountRating())
-                .priceRating(review.getPriceRating())
-                .totalRating(review.getTotalRating())
-                .content(review.getContent())
-                .uploadedFileIds(savedUploadedFileIds)
-                .tags(tags)
-                .createdAt(review.getCreatedAt())
-                .build();
+        return new ReviewResponse(
+            review.getId(), review.getProductId(),
+            review.getTasteRating(), review.getAmountRating(), review.getPriceRating(),
+            review.getTotalRating(), review.getContent(),
+            savedUploadedFileIds, tags, review.getCreatedAt()
+        );
     }
 
     @Transactional
@@ -494,7 +424,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public PageResult<MyReviewListItemResponse> findMemberReviews(Long memberId, PageRequest pageRequest) {
         PageResult<MyReviewListItemDto> coreResult = reviewCoreService.findReviewsByMemberId(
-            memberId, pageRequest.getPage(), pageRequest.getSize()
+            memberId, pageRequest.page(), pageRequest.size()
         );
         return coreResult.map(dto -> MyReviewListItemResponse.from(dto));
     }

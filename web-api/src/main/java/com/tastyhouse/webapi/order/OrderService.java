@@ -74,9 +74,9 @@ public class OrderService {
             .placeId(request.placeId())
             .orderNumber(generateOrderNumber())
             .orderStatus(OrderStatus.PENDING)
-            .ordererName(contact.getFullName())
-            .ordererPhone(contact.getPhoneNumber())
-            .ordererEmail(contact.getEmail())
+            .ordererName(contact.fullName())
+            .ordererPhone(contact.phoneNumber())
+            .ordererEmail(contact.email())
             .build();
 
         Order savedOrder = orderCoreService.saveOrder(order);
@@ -234,7 +234,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public PageResult<OrderListItemResponse> getOrderList(Long memberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest = org.springframework.data.domain.PageRequest
-            .of(pageRequest.getPage(), pageRequest.getSize());
+            .of(pageRequest.page(), pageRequest.size());
 
         Page<OrderListItemDto> page =
             orderCoreService.findOrderListByMemberId(memberId, springPageRequest);
@@ -278,68 +278,41 @@ public class OrderService {
             List<OrderItemOption> options = orderCoreService.findOrderItemOptionsByOrderItemId(item.getId());
 
             List<OrderItemOptionResponse> optionResponses = options.stream()
-                .map(opt -> OrderItemOptionResponse.builder()
-                    .id(opt.getId())
-                    .optionGroupName(opt.getOptionGroupName())
-                    .optionName(opt.getOptionName())
-                    .additionalPrice(opt.getAdditionalPrice())
-                    .build())
+                .map(opt -> new OrderItemOptionResponse(
+                    opt.getId(), opt.getOptionGroupName(), opt.getOptionName(), opt.getAdditionalPrice()))
                 .toList();
 
             boolean isReviewed = reviewJpaRepository.existsByOrderIdAndProductIdAndMemberId(
                 order.getId(), item.getProductId(), memberId);
 
-            return OrderItemResponse.builder()
-                .id(item.getId())
-                .productId(item.getProductId())
-                .productName(item.getProductName())
-                .productImageUrl(item.getProductImageUrl())
-                .quantity(item.getQuantity())
-                .unitPrice(item.getUnitPrice())
-                .discountPrice(item.getDiscountPrice())
-                .optionTotalPrice(item.getOptionTotalPrice())
-                .totalPrice(item.getTotalPrice())
-                .isReviewed(isReviewed)
-                .options(optionResponses)
-                .build();
+            return new OrderItemResponse(
+                item.getId(), item.getProductId(), item.getProductName(), item.getProductImageUrl(),
+                item.getQuantity(), item.getUnitPrice(), item.getDiscountPrice(),
+                item.getOptionTotalPrice(), item.getTotalPrice(), isReviewed, optionResponses
+            );
         }).toList();
 
         PaymentSummaryResponse paymentSummary = null;
         Payment payment = orderCoreService.findPaymentByOrderId(order.getId()).orElse(null);
         if (payment != null) {
-            paymentSummary = PaymentSummaryResponse.builder()
-                .id(payment.getId())
-                .paymentMethod(payment.getPaymentMethod())
-                .paymentStatus(payment.getPaymentStatus())
-                .amount(payment.getAmount())
-                .cardCompany(payment.getCardCompany())
-                .cardNumber(payment.getCardNumber())
-                .approvedAt(payment.getApprovedAt())
-                .receiptUrl(payment.getReceiptUrl())
-                .build();
+            paymentSummary = new PaymentSummaryResponse(
+                payment.getId(), payment.getPaymentMethod(), payment.getPaymentStatus(),
+                payment.getAmount(), payment.getCardCompany(), payment.getCardNumber(),
+                payment.getApprovedAt(), payment.getReceiptUrl()
+            );
         }
 
-        return OrderResponse.builder()
-            .id(order.getId())
-            .orderNumber(order.getOrderNumber())
-            .paymentStatus(payment != null ? payment.getPaymentStatus() : null)
-            .placeName(place != null ? place.getName() : null)
-            .placePhoneNumber(place != null ? place.getPhoneNumber() : null)
-            .ordererName(order.getOrdererName())
-            .ordererPhone(order.getOrdererPhone())
-            .ordererEmail(order.getOrdererEmail())
-            .totalProductAmount(order.getTotalProductAmount())
-            .productDiscountAmount(order.getProductDiscountAmount())
-            .couponDiscountAmount(order.getCouponDiscountAmount())
-            .pointDiscountAmount(order.getPointDiscountAmount())
-            .totalDiscountAmount(order.getTotalDiscountAmount())
-            .finalAmount(order.getFinalAmount())
-            .usedPoint(order.getUsedPoint())
-            .earnedPoint(order.getEarnedPoint())
-            .orderItems(itemResponses)
-            .payment(paymentSummary)
-            .approvedAt(payment != null ? payment.getApprovedAt() : null)
-            .createdAt(order.getCreatedAt())
-            .build();
+        return new OrderResponse(
+            order.getId(), order.getOrderNumber(),
+            payment != null ? payment.getPaymentStatus() : null,
+            place != null ? place.getName() : null,
+            place != null ? place.getPhoneNumber() : null,
+            order.getOrdererName(), order.getOrdererPhone(), order.getOrdererEmail(),
+            order.getTotalProductAmount(), order.getProductDiscountAmount(),
+            order.getCouponDiscountAmount(), order.getPointDiscountAmount(),
+            order.getTotalDiscountAmount(), order.getFinalAmount(),
+            order.getUsedPoint(), order.getEarnedPoint(), itemResponses, paymentSummary,
+            payment != null ? payment.getApprovedAt() : null, order.getCreatedAt()
+        );
     }
 }

@@ -2,20 +2,17 @@ package com.tastyhouse.webapi.order.response;
 
 import com.tastyhouse.core.entity.payment.PaymentMethod;
 import com.tastyhouse.core.entity.payment.PaymentStatus;
-import lombok.Builder;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Builder
-public class PaymentSummaryResponse {
-    private Long id;
-    private PaymentMethod paymentMethod;
-    private PaymentStatus paymentStatus;
-    private Integer amount;
-    private String cardCompany;
-    private String cardNumber;
-    private LocalDateTime approvedAt;
-    private String receiptUrl;
+public record PaymentSummaryResponse(
+        Long id,
+        PaymentMethod paymentMethod,
+        PaymentStatus paymentStatus,
+        Integer amount,
+        String cardCompany,
+        String cardNumber,
+        LocalDateTime approvedAt,
+        String receiptUrl
+) {
 }

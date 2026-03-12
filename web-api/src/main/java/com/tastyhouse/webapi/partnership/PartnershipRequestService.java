@@ -29,15 +29,15 @@ public class PartnershipRequestService {
 
         PartnershipRequest savedRequest = partnershipRequestJpaRepository.save(partnershipRequest);
 
-        return PartnershipRequestResponse.builder()
-            .id(savedRequest.getId())
-            .businessName(savedRequest.getBusinessName())
-            .address(savedRequest.getAddress())
-            .addressDetail(savedRequest.getAddressDetail())
-            .contactName(savedRequest.getContactName())
-            .contactPhone(savedRequest.getContactPhone())
-            .consultationRequestedAt(savedRequest.getConsultationRequestedAt())
-            .createdAt(savedRequest.getCreatedAt())
-            .build();
+        return new PartnershipRequestResponse(
+            savedRequest.getId(),
+            savedRequest.getBusinessName(),
+            savedRequest.getAddress(),
+            savedRequest.getAddressDetail(),
+            savedRequest.getContactName(),
+            savedRequest.getContactPhone(),
+            savedRequest.getConsultationRequestedAt(),
+            savedRequest.getCreatedAt()
+        );
     }
 }

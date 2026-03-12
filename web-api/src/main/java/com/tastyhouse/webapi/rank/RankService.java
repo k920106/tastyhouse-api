@@ -43,14 +43,10 @@ public class RankService {
     }
 
     private MemberRankItem convertToMemberRankItem(MemberRankDto dto) {
-        return MemberRankItem.builder()
-            .memberId(dto.getMemberId())
-            .nickname(dto.getNickname())
-            .profileImageUrl(dto.getProfileImageUrl())
-            .reviewCount(dto.getReviewCount())
-            .rankNo(dto.getRankNo())
-            .grade(dto.getGrade())
-            .build();
+        return new MemberRankItem(
+            dto.memberId(), dto.nickname(), dto.profileImageUrl(),
+            dto.reviewCount(), dto.rankNo(), dto.grade()
+        );
     }
 
     private RankType parseRankType(String rankType) {

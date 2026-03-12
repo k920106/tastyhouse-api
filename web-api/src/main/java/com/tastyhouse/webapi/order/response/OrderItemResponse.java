@@ -1,22 +1,18 @@
 package com.tastyhouse.webapi.order.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.List;
 
-@Getter
-@Builder
-public class OrderItemResponse {
-    private Long id;
-    private Long productId;
-    private String productName;
-    private String productImageUrl;
-    private Integer quantity;
-    private Integer unitPrice;
-    private Integer discountPrice;
-    private Integer optionTotalPrice;
-    private Integer totalPrice;
-    private boolean isReviewed;
-    private List<OrderItemOptionResponse> options;
+public record OrderItemResponse(
+        Long id,
+        Long productId,
+        String productName,
+        String productImageUrl,
+        Integer quantity,
+        Integer unitPrice,
+        Integer discountPrice,
+        Integer optionTotalPrice,
+        Integer totalPrice,
+        boolean isReviewed,
+        List<OrderItemOptionResponse> options
+) {
 }

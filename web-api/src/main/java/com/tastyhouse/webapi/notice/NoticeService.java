@@ -20,16 +20,11 @@ public class NoticeService {
     @Transactional(readOnly = true)
     public PageResult<NoticeListItem> searchNoticeList(PageRequest pageRequest) {
         return noticeCoreService.findAllWithPagination(
-            pageRequest.getPage(), pageRequest.getSize()
+            pageRequest.page(), pageRequest.size()
         ).map(this::convertToNoticeListItem);
     }
 
     private NoticeListItem convertToNoticeListItem(NoticeListItemDto dto) {
-        return NoticeListItem.builder()
-            .id(dto.getId())
-            .title(dto.getTitle())
-            .content(dto.getContent())
-            .createdAt(dto.getCreatedAt())
-            .build();
+        return new NoticeListItem(dto.id(), dto.title(), dto.content(), dto.createdAt());
     }
 }

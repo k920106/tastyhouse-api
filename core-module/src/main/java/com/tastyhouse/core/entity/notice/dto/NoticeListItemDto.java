@@ -1,22 +1,16 @@
 package com.tastyhouse.core.entity.notice.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Getter
-public class NoticeListItemDto {
-    private final Long id;
-    private final String title;
-    private final String content;
-    private final LocalDateTime createdAt;
-
+public record NoticeListItemDto(
+        Long id,
+        String title,
+        String content,
+        LocalDateTime createdAt
+) {
     @QueryProjection
-    public NoticeListItemDto(Long id, String title, String content, LocalDateTime createdAt) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.createdAt = createdAt;
+    public NoticeListItemDto {
     }
 }

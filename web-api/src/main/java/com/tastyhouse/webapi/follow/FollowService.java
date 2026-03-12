@@ -69,7 +69,7 @@ public class FollowService {
     @Transactional(readOnly = true)
     public PageResult<FollowMemberResponse> getFollowingList(Long memberId, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+            org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
 
         Page<FollowMemberDto> page = followRepository.findFollowingList(memberId, viewerMemberId, springPageRequest);
 
@@ -86,7 +86,7 @@ public class FollowService {
     @Transactional(readOnly = true)
     public PageResult<FollowMemberResponse> getFollowerList(Long memberId, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+            org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
 
         Page<FollowMemberDto> page = followRepository.findFollowerList(memberId, viewerMemberId, springPageRequest);
 
@@ -103,7 +103,7 @@ public class FollowService {
     @Transactional(readOnly = true)
     public PageResult<MemberSearchResponse> searchMembersByNickname(String nickname, Long viewerMemberId, PageRequest pageRequest) {
         org.springframework.data.domain.PageRequest springPageRequest =
-            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize());
+            org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
 
         Page<Member> page = memberJpaRepository.findByNicknameContainingIgnoreCase(nickname, springPageRequest);
 
