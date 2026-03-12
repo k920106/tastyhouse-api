@@ -32,6 +32,12 @@ subprojects {
         mavenCentral()
     }
 
+    dependencyManagement {
+        imports {
+            mavenBom 'io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1'
+        }
+    }
+
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'

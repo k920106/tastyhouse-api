@@ -29,7 +29,18 @@ public class FileStorageProperties {
 
     /**
      * 저장소 타입 (local, s3)
-     * 향후 S3 구현 시 사용
      */
     private String type = "local";
+
+    /**
+     * S3 버킷 이름
+     * 예: tastyhouse-uploads
+     */
+    private String s3BucketName;
+
+    /**
+     * S3 리전
+     * 예: ap-northeast-2
+     */
+    private String s3Region = "ap-northeast-2";
 }
