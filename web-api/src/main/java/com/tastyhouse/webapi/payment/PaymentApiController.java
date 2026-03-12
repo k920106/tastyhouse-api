@@ -35,7 +35,8 @@ public class PaymentApiController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "결제 생성 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 주문이 아닌 경우)")
     })
     @PostMapping("/v1")
     public ResponseEntity<CommonResponse<PaymentResponse>> createPayment(
@@ -64,6 +65,7 @@ public class PaymentApiController {
         @ApiResponse(responseCode = "200", description = "결제 승인 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 결제 승인 실패"),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 주문이 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
     })
     @PostMapping("/v1/toss/confirm")
@@ -79,6 +81,7 @@ public class PaymentApiController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 주문이 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음")
     })
     @GetMapping("/v1/order/{orderId}")
@@ -94,6 +97,7 @@ public class PaymentApiController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "취소 결과", content = @Content(schema = @Schema(implementation = PaymentCancelResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 결제가 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
     })
     @PostMapping("/v1/{paymentId}/cancel")
@@ -111,6 +115,7 @@ public class PaymentApiController {
         @ApiResponse(responseCode = "200", description = "현장결제 완료 성공", content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
         @ApiResponse(responseCode = "400", description = "완료할 수 없는 결제 상태"),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 결제가 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
     })
     @PostMapping("/v1/{paymentId}/complete")
@@ -127,6 +132,7 @@ public class PaymentApiController {
         @ApiResponse(responseCode = "200", description = "환불 요청 성공", content = @Content(schema = @Schema(implementation = PaymentRefundResponse.class))),
         @ApiResponse(responseCode = "400", description = "환불할 수 없는 결제 상태"),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 결제가 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
     })
     @PostMapping("/v1/{paymentId}/refund")

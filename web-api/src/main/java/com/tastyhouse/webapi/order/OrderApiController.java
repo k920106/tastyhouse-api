@@ -75,6 +75,7 @@ public class OrderApiController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = OrderResponse.class))),
         @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @ApiResponse(responseCode = "403", description = "접근 권한 없음 (본인 주문이 아닌 경우)"),
         @ApiResponse(responseCode = "404", description = "주문을 찾을 수 없음")
     })
     @GetMapping("/v1/{orderId}")
