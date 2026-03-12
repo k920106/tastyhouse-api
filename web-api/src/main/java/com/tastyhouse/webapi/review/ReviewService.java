@@ -104,16 +104,16 @@ public class ReviewService {
     }
 
     private LatestReviewListItem convertToLatestReviewListItem(LatestReviewListItemDto dto) {
-        List<String> imageUrls = dto.getImageUrls() == null ? List.of() :
-            dto.getImageUrls().stream()
+        List<String> imageUrls = dto.imageUrls() == null ? List.of() :
+            dto.imageUrls().stream()
                 .map(fileService::getUrlByPath)
                 .toList();
 
         return new LatestReviewListItem(
-            dto.getId(), imageUrls, dto.getStationName(), dto.getTotalRating(), dto.getContent(),
-            dto.getMemberId(), dto.getMemberNickname(),
-            fileService.getUrlByPath(dto.getMemberProfileImageUrl()),
-            dto.getCreatedAt(), dto.getLikeCount(), dto.getCommentCount()
+            dto.id(), imageUrls, dto.stationName(), dto.totalRating(), dto.content(),
+            dto.memberId(), dto.memberNickname(),
+            fileService.getUrlByPath(dto.memberProfileImageUrl()),
+            dto.createdAt(), dto.likeCount(), dto.commentCount()
         );
     }
 
@@ -124,18 +124,18 @@ public class ReviewService {
     }
 
     private ReviewDetailResponse convertToReviewDetailResponse(ReviewDetailDto dto) {
-        List<String> imageUrls = dto.getImageUrls() == null ? List.of() :
-            dto.getImageUrls().stream()
+        List<String> imageUrls = dto.imageUrls() == null ? List.of() :
+            dto.imageUrls().stream()
                 .map(fileService::getUrlByPath)
                 .toList();
 
         return new ReviewDetailResponse(
-            dto.getId(), dto.getPlaceId(), dto.getPlaceName(), dto.getStationName(),
-            dto.getContent(), dto.getTotalRating(), dto.getTasteRating(), dto.getAmountRating(),
-            dto.getPriceRating(), dto.getAtmosphereRating(), dto.getKindnessRating(),
-            dto.getHygieneRating(), dto.getWillRevisit(), dto.getMemberId(),
-            dto.getMemberNickname(), fileService.getUrlByPath(dto.getMemberProfileImageUrl()),
-            dto.getCreatedAt(), imageUrls, dto.getTagNames()
+            dto.id(), dto.placeId(), dto.placeName(), dto.stationName(),
+            dto.content(), dto.totalRating(), dto.tasteRating(), dto.amountRating(),
+            dto.priceRating(), dto.atmosphereRating(), dto.kindnessRating(),
+            dto.hygieneRating(), dto.willRevisit(), dto.memberId(),
+            dto.memberNickname(), fileService.getUrlByPath(dto.memberProfileImageUrl()),
+            dto.createdAt(), imageUrls, dto.tagNames()
         );
     }
 
@@ -253,11 +253,11 @@ public class ReviewService {
         ReviewDetailDto reviewDetail = reviewDetailOpt.get();
         Review review = reviewCoreService.findById(reviewId);
 
-        List<String> reviewImageUrls = reviewDetail.getImageUrls() == null ? List.of() :
-            reviewDetail.getImageUrls().stream()
+        List<String> reviewImageUrls = reviewDetail.imageUrls() == null ? List.of() :
+            reviewDetail.imageUrls().stream()
                 .map(fileService::getUrlByPath)
                 .toList();
-        String reviewMemberProfileImageUrl = fileService.getUrlByPath(reviewDetail.getMemberProfileImageUrl());
+        String reviewMemberProfileImageUrl = fileService.getUrlByPath(reviewDetail.memberProfileImageUrl());
 
         return productCoreService.findProductById(review.getProductId())
             .map(product -> {
@@ -267,27 +267,27 @@ public class ReviewService {
 
                 return new ReviewProductResponse(
                     product.getId(), product.getName(), getFirstImageUrl(product.getId()), price,
-                    reviewDetail.getId(), reviewDetail.getContent(),
-                    reviewDetail.getTotalRating(), reviewDetail.getTasteRating(),
-                    reviewDetail.getAmountRating(), reviewDetail.getPriceRating(),
-                    reviewDetail.getAtmosphereRating(), reviewDetail.getKindnessRating(),
-                    reviewDetail.getHygieneRating(), reviewDetail.getWillRevisit(),
-                    reviewDetail.getMemberId(), reviewDetail.getMemberNickname(),
-                    reviewMemberProfileImageUrl, reviewDetail.getCreatedAt(),
-                    reviewImageUrls, reviewDetail.getTagNames()
+                    reviewDetail.id(), reviewDetail.content(),
+                    reviewDetail.totalRating(), reviewDetail.tasteRating(),
+                    reviewDetail.amountRating(), reviewDetail.priceRating(),
+                    reviewDetail.atmosphereRating(), reviewDetail.kindnessRating(),
+                    reviewDetail.hygieneRating(), reviewDetail.willRevisit(),
+                    reviewDetail.memberId(), reviewDetail.memberNickname(),
+                    reviewMemberProfileImageUrl, reviewDetail.createdAt(),
+                    reviewImageUrls, reviewDetail.tagNames()
                 );
             })
             .or(() -> Optional.of(
                 new ReviewProductResponse(
                     null, null, null, null,
-                    reviewDetail.getId(), reviewDetail.getContent(),
-                    reviewDetail.getTotalRating(), reviewDetail.getTasteRating(),
-                    reviewDetail.getAmountRating(), reviewDetail.getPriceRating(),
-                    reviewDetail.getAtmosphereRating(), reviewDetail.getKindnessRating(),
-                    reviewDetail.getHygieneRating(), reviewDetail.getWillRevisit(),
-                    reviewDetail.getMemberId(), reviewDetail.getMemberNickname(),
-                    reviewMemberProfileImageUrl, reviewDetail.getCreatedAt(),
-                    reviewImageUrls, reviewDetail.getTagNames()
+                    reviewDetail.id(), reviewDetail.content(),
+                    reviewDetail.totalRating(), reviewDetail.tasteRating(),
+                    reviewDetail.amountRating(), reviewDetail.priceRating(),
+                    reviewDetail.atmosphereRating(), reviewDetail.kindnessRating(),
+                    reviewDetail.hygieneRating(), reviewDetail.willRevisit(),
+                    reviewDetail.memberId(), reviewDetail.memberNickname(),
+                    reviewMemberProfileImageUrl, reviewDetail.createdAt(),
+                    reviewImageUrls, reviewDetail.tagNames()
                 )
             ));
     }

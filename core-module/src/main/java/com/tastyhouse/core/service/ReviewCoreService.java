@@ -68,17 +68,14 @@ public class ReviewCoreService {
 
     @Transactional(readOnly = true)
     public Optional<ReviewDetailDto> findReviewDetail(Long reviewId) {
-        Optional<ReviewDetailDto> result = reviewRepository.findReviewDetail(reviewId);
-
-        result.ifPresent(dto -> {
+        return reviewRepository.findReviewDetail(reviewId).map(dto -> {
             List<Long> tagIds = reviewTagJpaRepository.findTagIdsByReviewId(reviewId);
             if (!tagIds.isEmpty()) {
                 List<String> tagNames = tagJpaRepository.findTagNamesByIds(tagIds);
-                dto.setTagNames(tagNames);
+                return dto.withTagNames(tagNames);
             }
+            return dto;
         });
-
-        return result;
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +90,7 @@ public class ReviewCoreService {
 
         List<LatestReviewListItemDto> content = reviewPage.getContent();
         if (!content.isEmpty()) {
-            populateLikeAndCommentCounts(content);
+            content = populateLikeAndCommentCounts(content);
         }
 
         return new PageResult<>(
@@ -127,7 +124,7 @@ public class ReviewCoreService {
 
         List<LatestReviewListItemDto> content = reviewPage.getContent();
         if (!content.isEmpty()) {
-            populateLikeAndCommentCounts(content);
+            content = populateLikeAndCommentCounts(content);
         }
 
         return new PageResult<>(
@@ -161,20 +158,28 @@ public class ReviewCoreService {
         allReviewsForPopulate.addAll(rating5Reviews);
         allReviewsForPopulate.addAll(allReviews);
 
-        if (!allReviewsForPopulate.isEmpty()) {
-            populateLikeAndCommentCounts(allReviewsForPopulate);
-        }
+        List<LatestReviewListItemDto> populated = allReviewsForPopulate.isEmpty()
+            ? allReviewsForPopulate
+            : populateLikeAndCommentCounts(allReviewsForPopulate);
+
+        int r1Size = rating1Reviews.size();
+        int r2Size = rating2Reviews.size();
+        int r3Size = rating3Reviews.size();
+        int r4Size = rating4Reviews.size();
+        int r5Size = rating5Reviews.size();
 
         Map<Integer, List<LatestReviewListItemDto>> reviewsByRating = new HashMap<>();
-        reviewsByRating.put(1, rating1Reviews);
-        reviewsByRating.put(2, rating2Reviews);
-        reviewsByRating.put(3, rating3Reviews);
-        reviewsByRating.put(4, rating4Reviews);
-        reviewsByRating.put(5, rating5Reviews);
+        reviewsByRating.put(1, populated.subList(0, r1Size));
+        reviewsByRating.put(2, populated.subList(r1Size, r1Size + r2Size));
+        reviewsByRating.put(3, populated.subList(r1Size + r2Size, r1Size + r2Size + r3Size));
+        reviewsByRating.put(4, populated.subList(r1Size + r2Size + r3Size, r1Size + r2Size + r3Size + r4Size));
+        reviewsByRating.put(5, populated.subList(r1Size + r2Size + r3Size + r4Size, r1Size + r2Size + r3Size + r4Size + r5Size));
+
+        List<LatestReviewListItemDto> populatedAllReviews = populated.subList(r1Size + r2Size + r3Size + r4Size + r5Size, populated.size());
 
         return new ReviewsByRatingResult(
             reviewsByRating,
-            allReviews,
+            populatedAllReviews,
             totalReviewCount,
             allReviewsPage.getTotalElements(),
             allReviewsPage.getTotalPages(),
@@ -183,9 +188,9 @@ public class ReviewCoreService {
         );
     }
 
-    private void populateLikeAndCommentCounts(List<LatestReviewListItemDto> reviews) {
+    private List<LatestReviewListItemDto> populateLikeAndCommentCounts(List<LatestReviewListItemDto> reviews) {
         List<Long> reviewIds = reviews.stream()
-            .map(LatestReviewListItemDto::getId)
+            .map(LatestReviewListItemDto::id)
             .toList();
 
         Map<Long, Long> likeCountMap = reviewLikeJpaRepository.countByReviewIdIn(reviewIds).stream()
@@ -200,10 +205,11 @@ public class ReviewCoreService {
                 arr -> (Long) arr[1]
             ));
 
-        reviews.forEach(review -> {
-            review.setLikeCount(likeCountMap.getOrDefault(review.getId(), 0L));
-            review.setCommentCount(commentCountMap.getOrDefault(review.getId(), 0L));
-        });
+        return reviews.stream()
+            .map(review -> review
+                .withLikeCount(likeCountMap.getOrDefault(review.id(), 0L))
+                .withCommentCount(commentCountMap.getOrDefault(review.id(), 0L)))
+            .collect(Collectors.toList());
     }
 
     @Transactional
@@ -334,20 +340,28 @@ public class ReviewCoreService {
         allReviewsForPopulate.addAll(rating5Reviews);
         allReviewsForPopulate.addAll(allReviews);
 
-        if (!allReviewsForPopulate.isEmpty()) {
-            populateLikeAndCommentCounts(allReviewsForPopulate);
-        }
+        List<LatestReviewListItemDto> populated = allReviewsForPopulate.isEmpty()
+            ? allReviewsForPopulate
+            : populateLikeAndCommentCounts(allReviewsForPopulate);
+
+        int r1Size = rating1Reviews.size();
+        int r2Size = rating2Reviews.size();
+        int r3Size = rating3Reviews.size();
+        int r4Size = rating4Reviews.size();
+        int r5Size = rating5Reviews.size();
 
         Map<Integer, List<LatestReviewListItemDto>> reviewsByRating = new HashMap<>();
-        reviewsByRating.put(1, rating1Reviews);
-        reviewsByRating.put(2, rating2Reviews);
-        reviewsByRating.put(3, rating3Reviews);
-        reviewsByRating.put(4, rating4Reviews);
-        reviewsByRating.put(5, rating5Reviews);
+        reviewsByRating.put(1, populated.subList(0, r1Size));
+        reviewsByRating.put(2, populated.subList(r1Size, r1Size + r2Size));
+        reviewsByRating.put(3, populated.subList(r1Size + r2Size, r1Size + r2Size + r3Size));
+        reviewsByRating.put(4, populated.subList(r1Size + r2Size + r3Size, r1Size + r2Size + r3Size + r4Size));
+        reviewsByRating.put(5, populated.subList(r1Size + r2Size + r3Size + r4Size, r1Size + r2Size + r3Size + r4Size + r5Size));
+
+        List<LatestReviewListItemDto> populatedAllReviews = populated.subList(r1Size + r2Size + r3Size + r4Size + r5Size, populated.size());
 
         return new ReviewsByRatingResult(
             reviewsByRating,
-            allReviews,
+            populatedAllReviews,
             totalReviewCount,
             allReviewsPage.getTotalElements(),
             allReviewsPage.getTotalPages(),

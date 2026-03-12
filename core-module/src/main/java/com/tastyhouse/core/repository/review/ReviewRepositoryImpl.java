@@ -121,9 +121,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return new PageImpl<>(reviews, pageable, total);
@@ -190,9 +192,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return new PageImpl<>(reviews, pageable, total);
@@ -295,9 +299,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return new PageImpl<>(reviews, pageable, total);
@@ -371,7 +377,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
         if (result != null) {
             List<String> imageUrls = findImageUrlsByReviewId(reviewId);
-            result.setImageUrls(imageUrls);
+            result = result.withImageUrls(imageUrls);
         }
 
         return Optional.ofNullable(result);
@@ -424,9 +430,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return reviews;
@@ -519,9 +527,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return new PageImpl<>(reviews, pageable, total);
@@ -572,9 +582,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             .fetch();
 
         if (!reviews.isEmpty()) {
-            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::getId).toList();
+            List<Long> reviewIds = reviews.stream().map(LatestReviewListItemDto::id).toList();
             Map<Long, List<String>> imageUrlsMap = findImageUrlsByReviewIds(reviewIds);
-            reviews.forEach(r -> r.setImageUrls(imageUrlsMap.getOrDefault(r.getId(), List.of())));
+            reviews = reviews.stream()
+                .map(r -> r.withImageUrls(imageUrlsMap.getOrDefault(r.id(), List.of())))
+                .collect(Collectors.toList());
         }
 
         return reviews;

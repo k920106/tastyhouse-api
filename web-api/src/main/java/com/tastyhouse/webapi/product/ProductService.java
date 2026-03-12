@@ -227,9 +227,9 @@ public class ProductService {
 
     private ProductReviewListItem convertToProductReviewListItem(LatestReviewListItemDto dto) {
         return new ProductReviewListItem(
-            dto.getId(), dto.getImageUrls(), dto.getTotalRating(), dto.getContent(),
-            dto.getMemberNickname(), dto.getMemberProfileImageUrl(), dto.getCreatedAt(),
-            dto.getProductId(), dto.getProductName()
+            dto.id(), dto.imageUrls(), dto.totalRating(), dto.content(),
+            dto.memberNickname(), dto.memberProfileImageUrl(), dto.createdAt(),
+            dto.productId(), dto.productName()
         );
     }
 
