@@ -18,7 +18,7 @@ public record FollowMemberResponse(
         String profileImageUrl,
 
         @Schema(description = "내가 팔로우 중인지 여부", example = "true")
-        boolean isFollowing
+        boolean following
 ) {
     public static FollowMemberResponse of(FollowMemberDto dto, String profileImageUrl) {
         return new FollowMemberResponse(
